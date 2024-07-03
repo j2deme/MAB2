@@ -10,6 +10,7 @@
         "laravel/tinker": "^2.9",
         "livewire/livewire": "^3.4",
         "livewire/volt": "^1.0",
+        "wireui/phosphoricons": "^2.3",
         "wireui/wireui": "^2.0"
     },
     "require-dev": {
