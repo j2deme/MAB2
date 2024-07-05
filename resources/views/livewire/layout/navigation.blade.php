@@ -27,6 +27,11 @@ $logout = function (Logout $logout) {
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" wire:navigate>
                         <x-phosphor.icons::regular.house class="w-5 h-5" />
                     </x-nav-link>
+                    <x-nav-link :href="route('semestres.index')" :active="request()->routeIs('semestres.*')"
+                        title="Semestres" wire:navigate>
+                        <x-phosphor.icons::regular.calendar-dots class="w-5 h-5 mr-1" />
+                        Semestres
+                    </x-nav-link>
                 </div>
             </div>
 

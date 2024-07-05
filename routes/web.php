@@ -12,4 +12,11 @@ Route::view('profile', 'profile')
     ->middleware(['auth'])
     ->name('profile');
 
-require __DIR__.'/auth.php';
+Route::middleware(['auth'])->group(function () {
+    Route::get('/semestres', \App\Livewire\Semestres\Index::class)->name('semestres.index');
+    Route::get('/semestres/create', \App\Livewire\Semestres\Create::class)->name('semestres.create');
+    Route::get('/semestres/show/{semestre}', \App\Livewire\Semestres\Show::class)->name('semestres.show');
+    Route::get('/semestres/update/{semestre}', \App\Livewire\Semestres\Edit::class)->name('semestres.edit');
+});
+
+require __DIR__ . '/auth.php';
