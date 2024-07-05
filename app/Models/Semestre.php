@@ -25,7 +25,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Semestre extends Model
 {
-    
+
     protected $perPage = 20;
 
     /**
@@ -34,6 +34,13 @@ class Semestre extends Model
      * @var array<int, string>
      */
     protected $fillable = ['clave', 'nombre', 'nombre_completo', 'inicio_altas', 'fin_altas', 'inicio_bajas', 'fin_bajas', 'max_altas', 'activo'];
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<int, string>
+     */
+    protected $casts = ['inicio_altas' => 'datetime', 'fin_altas' => 'datetime', 'inicio_bajas' => 'datetime', 'fin_bajas' => 'datetime', 'max_altas' => 'integer', 'activo' => 'boolean'];
 
 
 }
