@@ -10,6 +10,7 @@
     "require": {
         "php": "^8.2",
         "ibex/crud-generator": "^2.1",
+        "laravel/folio": "^1.1",
         "laravel/framework": "^11.9",
         "laravel/tinker": "^2.9",
         "livewire/livewire": "^3.4",
