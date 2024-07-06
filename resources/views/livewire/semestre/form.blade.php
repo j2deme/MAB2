@@ -48,8 +48,8 @@
     </div>
     <div class="grid grid-cols-2 gap-6">
         <div>
-            <x-input wire:model.defer="form.max_altas" id="max_altas" name="max_altas" :label="__('Max Altas')"
-                type="number" min="0" max="10" placeholder="5" />
+            <x-input wire:model.defer="form.max_altas" id="max_altas" name="max_altas" :label="__('Máximo Altas')"
+                description="Cantidad máxima de altas permitidas" type="number" min="1" max="10" placeholder="5" />
         </div>
         <div>
             <x-toggle wire.model.defer="form.activo" id="activo" name="activo" :label="__('Activo')" lg />
