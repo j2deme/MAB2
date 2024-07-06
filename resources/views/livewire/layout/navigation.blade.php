@@ -25,11 +25,11 @@ $logout = function (Logout $logout) {
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" wire:navigate>
-                        <x-phosphor.icons::regular.house class="w-5 h-5" />
+                        <x-icon name="house" class="w-5 h-5" />
                     </x-nav-link>
                     <x-nav-link :href="route('semestres.index')" :active="request()->routeIs('semestres.*')"
                         title="Semestres" wire:navigate>
-                        <x-phosphor.icons::regular.calendar-dots class="w-5 h-5 mr-1" />
+                        <x-icon name="calendar-dots" class="w-5 h-5 mr-1" />
                         Semestres
                     </x-nav-link>
                 </div>
@@ -45,7 +45,7 @@ $logout = function (Logout $logout) {
                                 x-on:profile-updated.window="name = $event.detail.name"></div>
 
                             <div class="ms-1">
-                                <x-phosphor.icons::bold.caret-down class="w-3 h-3" />
+                                <x-icon name="caret-down" bold class="w-3 h-3" />
                             </div>
                         </button>
                     </x-slot>

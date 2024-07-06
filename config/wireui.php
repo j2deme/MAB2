@@ -115,6 +115,9 @@ return [
      */
 
     'components' => Config::defaultComponents([
+        'icon' => [
+            'alias' => 'hero-icon',
+        ],
         // 'button' => [
         //     'alias' => 'new-button',
         // ],
