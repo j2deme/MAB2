@@ -61,12 +61,12 @@ class Semestre extends Model
 
     public function getPeriodoAltasAttribute(): string
     {
-        return $this->inicio_altas->format('d/m/Y') . ' - ' . $this->fin_altas->format('d/m/Y');
+        return $this->inicio_altas->format('d/m/y') . ' - ' . $this->fin_altas->format('d/m/y');
     }
 
     public function getPeriodoBajasAttribute(): string
     {
-        return $this->inicio_bajas->format('d/m/Y') . ' - ' . $this->fin_bajas->format('d/m/Y');
+        return $this->inicio_bajas->format('d/m/y') . ' - ' . $this->fin_bajas->format('d/m/y');
     }
 
 }
