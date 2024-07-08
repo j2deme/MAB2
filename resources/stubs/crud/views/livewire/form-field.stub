@@ -1,0 +1,7 @@
+    <div>
+        <x-input wire:model.defer="form.{{ column }}" id="{{ column_snake }}" name="{{ column }}" class="" :label="__('{{ title }}')" placeholder="{{ title }}" />
+
+        @error('form.{{column}}')
+            <x-input-error class="mt-2" :messages="$message"/>
+        @enderror
+    </div>

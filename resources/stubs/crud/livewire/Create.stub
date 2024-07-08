@@ -1,0 +1,39 @@
+<?php
+
+namespace {{livewireNamespace}}\{{modelNamePluralUpperCase}};
+
+use {{livewireNamespace}}\Forms\{{modelName}}Form;
+use {{modelNamespace}}\{{modelName}};
+use Livewire\Attributes\Layout;
+use Livewire\Component;
+use WireUi\Traits\WireUiActions;
+
+class Create extends Component
+{
+    use WireUiActions;
+    public {{modelName}}Form $form;
+
+    public function mount({{modelName}} ${{modelNameLowerCase}})
+    {
+        $this->form->set{{modelName}}Model(${{modelNameLowerCase}});
+    }
+
+    public function save()
+    {
+        $this->form->store();
+
+        $this->notification()->session()->send([
+            'icon' => 'success',
+            'title' => 'Registro agregado',
+            'description' => '{{ modelTitle }} agregado correctamente.',
+        ]);
+
+        return $this->redirectRoute('{{modelRoute}}.index', navigate: true);
+    }
+
+    #[Layout('{{layout}}')]
+    public function render()
+    {
+        return view('livewire.{{modelView}}.create');
+    }
+}
