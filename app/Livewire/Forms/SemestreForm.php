@@ -25,7 +25,7 @@ class SemestreForm extends Form
             'clave' => 'bail|required|string',
             'nombre' => 'bail|required|string',
             'nombre_completo' => 'bail|required|string',
-            'activo' => 'required',
+            'activo' => 'boolean',
             'inicio_altas' => 'bail|required|date',
             'fin_altas' => 'bail|required|date|after:inicio_altas',
             'inicio_bajas' => 'bail|required|date',
@@ -51,6 +51,8 @@ class SemestreForm extends Form
 
     public function store(): void
     {
+        Semestre::query()->update(['activo' => false]);
+        $this->activo = true;
         $this->semestreModel->create($this->validate());
 
         $this->reset();
