@@ -30,86 +30,8 @@ state([
           </div>
         </div>
 
-        <div class="flow-root">
-          <div class="mt-8 overflow-x-auto">
-            <div class="inline-block min-w-full py-2 align-middle">
-              <table class="w-full divide-y divide-gray-300">
-                <thead>
-                  <tr>
-                    <th scope="col"
-                      class="py-3 pl-4 pr-3 text-xs font-semibold tracking-wide text-center text-gray-500 uppercase">
-                      No</th>
-
-                    <th scope="col"
-                      class="py-3 pl-4 pr-3 text-xs font-semibold tracking-wide text-center text-gray-500 uppercase">
-                      Clave</th>
-                    <th scope="col"
-                      class="py-3 pl-4 pr-3 text-xs font-semibold tracking-wide text-center text-gray-500 uppercase">
-                      Nombre</th>
-                    <th scope="col"
-                      class="py-3 pl-4 pr-3 text-xs font-semibold tracking-wide text-center text-gray-500 uppercase">
-                      Nombre Completo</th>
-                    <th scope="col"
-                      class="py-3 pl-4 pr-3 text-xs font-semibold tracking-wide text-center text-gray-500 uppercase">
-                      Periodo Altas</th>
-                    <th scope="col"
-                      class="py-3 pl-4 pr-3 text-xs font-semibold tracking-wide text-center text-gray-500 uppercase">
-                      Periodo Bajas</th>
-                    <th scope="col"
-                      class="py-3 pl-4 pr-3 text-xs font-semibold tracking-wide text-center text-gray-500 uppercase">
-                      Max Altas</th>
-                    <th scope="col"
-                      class="py-3 pl-4 pr-3 text-xs font-semibold tracking-wide text-center text-gray-500 uppercase">
-                      Activo</th>
-
-                    <th scope="col"
-                      class="px-3 py-3 text-xs font-semibold tracking-wide text-left text-gray-500 uppercase">
-                    </th>
-                  </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                  @foreach ($semestres as $semestre)
-                  <tr class="even:bg-gray-50" wire:key="{{ $semestre->id }}">
-                    <td class="py-4 pl-4 pr-3 text-sm font-semibold text-center text-gray-900 whitespace-nowrap">
-                      {{ $loop->iteration }}</td>
-
-                    <td class="px-3 py-4 text-sm text-center text-gray-500 whitespace-nowrap">{{
-                      $semestre->clave }}</td>
-                    <td class="px-3 py-4 text-sm text-center text-gray-500 whitespace-nowrap">{{
-                      $semestre->nombre }}</td>
-                    <td class="px-3 py-4 text-sm text-center text-gray-500 whitespace-nowrap">{{
-                      $semestre->nombre_completo }}</td>
-                    <td class="px-3 py-4 text-sm text-center text-gray-500 whitespace-nowrap">{{
-                      $semestre->periodo_altas }}</td>
-                    <td class="px-3 py-4 text-sm text-center text-gray-500 whitespace-nowrap">{{
-                      $semestre->periodo_bajas }}</td>
-                    <td class="px-3 py-4 text-sm text-center text-gray-500 whitespace-nowrap">{{
-                      $semestre->max_altas }}</td>
-                    <td class="px-3 py-4 text-sm text-center text-gray-500 whitespace-nowrap">{{
-                      $semestre->activo }}</td>
-
-                    <td class="py-4 pl-4 pr-3 text-sm font-medium text-center text-gray-900 whitespace-nowrap">
-                      <a wire:navigate href="{{ route('semestres.show', $semestre->id) }}"
-                        class="mr-2 font-bold text-gray-600 hover:text-gray-900">{{ __('Show')
-                        }}</a>
-                      <a wire:navigate href="{{ route('semestres.edit', $semestre->id) }}"
-                        class="mr-2 font-bold text-indigo-600 hover:text-indigo-900">{{
-                        __('Edit') }}</a>
-                      <button class="font-bold text-red-600 hover:text-red-900" type="button"
-                        wire:click="delete({{ $semestre->id }})" wire:confirm="Are you sure you want to delete?">
-                        {{ __('Delete') }}
-                      </button>
-                    </td>
-                  </tr>
-                  @endforeach
-                </tbody>
-              </table>
-
-              <div class="px-4 mt-4">
-                {!! $semestres->withQueryString()->links() !!}
-              </div>
-            </div>
-          </div>
+        <div class="flow-root mt-4">
+          <livewire:semestre-table />
         </div>
       </div>
     </div>
