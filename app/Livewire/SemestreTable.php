@@ -27,7 +27,7 @@ final class SemestreTable extends PowerGridComponent
         $this->showCheckBox();
 
         return [
-            Exportable::make('export')
+            Exportable::make('semestres')
                 ->striped()
                 ->type(Exportable::TYPE_XLS),
             Header::make()->showSearchInput(),
@@ -58,8 +58,11 @@ final class SemestreTable extends PowerGridComponent
             ->add('fin_altas_formatted', fn(Semestre $model) => Carbon::parse($model->fin_altas)->format('d/m/Y'))
             ->add('inicio_bajas_formatted', fn(Semestre $model) => Carbon::parse($model->inicio_bajas)->format('d/m/Y'))
             ->add('fin_bajas_formatted', fn(Semestre $model) => Carbon::parse($model->fin_bajas)->format('d/m/Y'))
+            ->add('periodo_altas')
+            ->add('periodo_bajas')
             ->add('max_altas')
-            ->add('activo');
+            ->add('activo')
+            ->add('activo_formatted', fn(Semestre $model) => ($model->activo) ? 'Sí' : 'No');
     }
 
     public function columns(): array
@@ -88,12 +91,17 @@ final class SemestreTable extends PowerGridComponent
                 ->contentClasses('text-center')
                 ->searchable(),
 
-            Column::make('Max altas', 'max_altas')
+            Column::make('Máx. altas', 'max_altas')
                 ->contentClasses('text-center'),
 
             Column::make('Activo', 'activo')
                 ->contentClasses('text-center')
+                ->visibleInExport(false)
                 ->toggleable(),
+
+            Column::make('Activo', 'activo_formatted')
+                ->hidden(true)
+                ->visibleInExport(true),
 
             Column::action(''),
         ];
