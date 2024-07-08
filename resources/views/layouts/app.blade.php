@@ -20,6 +20,17 @@
 <body class="font-sans antialiased">
     <x-notifications />
     <x-dialog />
+    @if (session()->has('wireui:notification'))
+    <script>
+        Wireui.hook('notifications:load', () => {   
+            $wireui.notify({
+            title: '{{ session('wireui:notification.options.title') }}',
+            description: '{{ session('wireui:notification.options.description') }}',       
+            icon: '{{ session('wireui:notification.options.icon') }}',    
+            });          
+        });
+    </script>
+    @endif
     <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
         <livewire:layout.navigation />
 
