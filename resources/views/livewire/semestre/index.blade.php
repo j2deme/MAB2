@@ -21,7 +21,6 @@ state([
         <div class="sm:flex sm:items-center">
           <div class="sm:flex-auto">
             <h1 class="text-base font-semibold leading-6 text-gray-900">{{ __('Semestres') }}</h1>
-            <p class="mt-2 text-sm text-gray-700">A list of all the {{ __('Semestres') }}.</p>
           </div>
           <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
             <x-primary-button wire:navigate href="{{ route('semestres.create') }}" class="">
