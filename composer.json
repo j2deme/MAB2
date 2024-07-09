@@ -12,6 +12,7 @@
         "ibex/crud-generator": "^2.1",
         "laravel/folio": "^1.1",
         "laravel/framework": "^11.9",
+        "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.9",
         "livewire/livewire": "^3.4",
         "livewire/volt": "^1.6",
