@@ -32,6 +32,11 @@ $logout = function (Logout $logout) {
                         <x-icon name="calendar-dots" class="w-5 h-5 mr-1" />
                         Semestres
                     </x-nav-link>
+                    <x-nav-link :href="route('carreras.index')" :active="request()->routeIs('carreras.*')"
+                        title="Carreras" wire:navigate>
+                        <x-icon name="graduation-cap" class="w-5 h-5 mr-1" />
+                        Carreras
+                    </x-nav-link>
                 </div>
             </div>
 
