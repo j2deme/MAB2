@@ -25,7 +25,7 @@ state([
           <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
             <x-primary-button wire:navigate href="{{ route('semestres.create') }}" class="">
               <x-icon name="plus" class="w-4 h-4 mr-2" />
-              {{ __('Agregar semestre') }}
+              {{ __('Add') }} {{ __('semestre') }}
             </x-primary-button>
           </div>
         </div>
