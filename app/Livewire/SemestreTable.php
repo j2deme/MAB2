@@ -69,33 +69,27 @@ final class SemestreTable extends PowerGridComponent
     {
         return [
             Column::make('Clave', 'clave')
-                ->contentClasses('text-center')
                 ->sortable()
                 ->searchable(),
 
             Column::make('Nombre Corto', 'nombre')
-                ->contentClasses('text-center')
                 ->sortable()
                 ->searchable(),
 
             Column::make('Nombre completo', 'nombre_completo')
-                ->contentClasses('text-center')
                 ->sortable()
                 ->searchable(),
 
             Column::make('Periodo Altas', 'periodo_altas')
-                ->contentClasses('text-center')
                 ->searchable(),
 
             Column::make('Periodo Bajas', 'periodo_altas')
-                ->contentClasses('text-center')
                 ->searchable(),
 
             Column::make('Máx. altas', 'max_altas')
                 ->contentClasses('text-center'),
 
             Column::make('Activo', 'activo')
-                ->contentClasses('text-center')
                 ->visibleInExport(false)
                 ->toggleable(),
 
@@ -127,7 +121,7 @@ final class SemestreTable extends PowerGridComponent
         $this->notification()->send([
             'icon' => 'error',
             'title' => 'Registro eliminado',
-            'description' => 'Se eliminó el semestre correctamente.',
+            'description' => 'Semestre eliminado correctamente.',
         ]);
 
         $this->refresh();

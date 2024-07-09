@@ -14,6 +14,7 @@ Route::view('profile', 'profile')
     ->name('profile');
 
 Route::middleware(['auth'])->group(function () {
+    // MARK: Semestres
     Volt::route('/semestres', 'semestres.index')->name('semestres.index');
     Volt::route('/semestres/create', 'semestres.create')->name('semestres.create');
     Volt::route('/semestres/show/{semestre}', 'semestres.show')->name('semestres.show');
