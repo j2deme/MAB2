@@ -60,6 +60,9 @@ class SemestreForm extends Form
 
     public function update(): void
     {
+        if ($this->activo) {
+            Semestre::query()->update(['activo' => false]);
+        }
         $this->semestreModel->update($this->validate());
 
         $this->reset();
