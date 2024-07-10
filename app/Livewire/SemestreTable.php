@@ -142,9 +142,16 @@ final class SemestreTable extends PowerGridComponent
 
     public function onUpdatedToggleable(string|int $id, string $field, string $value): void
     {
+        Semestre::query()->each(function ($semestre) use ($field) {
+            $semestre->update([
+                $field => false,
+            ]);
+        });
+
         Semestre::query()->find($id)->update([
             $field => e($value),
         ]);
+        $this->refresh();
     }
 
     /*
