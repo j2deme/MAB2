@@ -16,6 +16,7 @@ use PowerComponents\LivewirePowerGrid\PowerGridFields;
 use PowerComponents\LivewirePowerGrid\PowerGridComponent;
 use PowerComponents\LivewirePowerGrid\Traits\WithExport;
 use WireUi\Traits\WireUiActions;
+use Illuminate\Support\Facades\Blade;
 
 final class SemestreTable extends PowerGridComponent
 {
@@ -62,6 +63,9 @@ final class SemestreTable extends PowerGridComponent
             ->add('periodo_bajas')
             ->add('max_altas')
             ->add('activo')
+            ->add('activo_icon', function (Semestre $model) {
+                return $model->activo ? Blade::render('<x-icon name="check" bold class="w-5 h-5 text-green-500" />') : Blade::render('<x-icon name="x" bold class="w-5 h-5 text-red-500" />');
+            })
             ->add('activo_formatted', fn(Semestre $model) => ($model->activo) ? 'Sí' : 'No');
     }
 
@@ -90,8 +94,12 @@ final class SemestreTable extends PowerGridComponent
                 ->contentClasses('text-center'),
 
             Column::make('Activo', 'activo')
-                ->visibleInExport(false)
-                ->toggleable(),
+                ->hidden(true)
+                ->visibleInExport(false),
+
+            Column::make('Estatus', 'activo_icon')
+                ->contentClasses('flex items-center justify-center')
+                ->visibleInExport(false),
 
             Column::make('Activo', 'activo_formatted')
                 ->hidden(true)
@@ -106,12 +114,6 @@ final class SemestreTable extends PowerGridComponent
         return [
         ];
     }
-
-    // #[\Livewire\Attributes\On('edit')]
-    // public function edit($rowId): void
-    // {
-    //     redirect()->route('semestres.edit', ['semestre' => $rowId]);
-    // }
 
     #[\Livewire\Attributes\On('delete')]
     public function delete($rowId): void
