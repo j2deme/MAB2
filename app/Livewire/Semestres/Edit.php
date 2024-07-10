@@ -22,11 +22,7 @@ class Edit extends Component
     {
         $this->form->update();
 
-        $this->notification()->session()->send([
-            'icon' => 'success',
-            'title' => 'Registro actualizado',
-            'description' => "Semestre actualizado correctamente.",
-        ]);
+        $this->notification()->session()->success('Registro actualizado', 'Semestre actualizado correctamente.');
 
         return $this->redirectRoute('semestres.index', navigate: true);
     }
