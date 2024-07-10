@@ -52,7 +52,7 @@
                 description="Cantidad máxima de altas permitidas" type="number" min="1" max="10" placeholder="5" />
         </div>
         <div>
-            <x-toggle wire.model.defer="form.activo" id="activo" name="activo" :label="__('Activo')" lg />
+            <x-toggle wire:model.defer="form.activo" id="activo" name="activo" :label="__('Activo')" lg />
         </div>
     </div>
 
