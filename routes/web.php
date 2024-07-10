@@ -15,15 +15,15 @@ Route::view('profile', 'profile')
 
 Route::middleware(['auth'])->group(function () {
     // MARK: Semestres
-    Volt::route('/semestres', 'semestres.index')->name('semestres.index');
-    Volt::route('/semestres/create', 'semestres.create')->name('semestres.create');
-    Volt::route('/semestres/show/{semestre}', 'semestres.show')->name('semestres.show');
-    Volt::route('/semestres/update/{semestre}', 'semestres.edit')->name('semestres.edit');
+    Route::get('/semestres', App\Livewire\Semestres\Index::class)->name('semestres.index');
+    Route::get('/semestres/create', App\Livewire\Semestres\Create::class)->name('semestres.create');
+    Route::get('/semestres/show/{semestre}', App\Livewire\Semestres\Show::class)->name('semestres.show');
+    Route::get('/semestres/update/{semestre}', App\Livewire\Semestres\Edit::class)->name('semestres.edit');
     // MARK: Carreras
-    Volt::route('/carreras', 'carreras.index')->name('carreras.index');
-    Volt::route('/carreras/create', 'carreras.create')->name('carreras.create');
-    Volt::route('/carreras/show/{carrera}', 'carreras.show')->name('carreras.show');
-    Volt::route('/carreras/update/{carrera}', 'carreras.edit')->name('carreras.edit');
+    Route::get('/carreras', App\Livewire\Carreras\Index::class)->name('carreras.index');
+    Route::get('/carreras/create', App\Livewire\Carreras\Create::class)->name('carreras.create');
+    Route::get('/carreras/show/{carrera}', App\Livewire\Carreras\Show::class)->name('carreras.show');
+    Route::get('/carreras/update/{carrera}', App\Livewire\Carreras\Edit::class)->name('carreras.edit');
 });
 
 
