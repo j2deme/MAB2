@@ -18,7 +18,7 @@ use PowerComponents\LivewirePowerGrid\Traits\WithExport;
 use WireUi\Traits\WireUiActions;
 use Illuminate\Support\Facades\Blade;
 
-final class SemestreTable extends PowerGridComponent
+final class SemestresTable extends PowerGridComponent
 {
     use WithExport;
     use WireUiActions;

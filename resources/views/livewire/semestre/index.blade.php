@@ -31,7 +31,7 @@ state([
         </div>
 
         <div class="flow-root mt-4">
-          <livewire:semestre-table />
+          <livewire:semestres-table />
         </div>
       </div>
     </div>
