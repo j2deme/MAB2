@@ -120,11 +120,7 @@ final class SemestreTable extends PowerGridComponent
     {
         Semestre::query()->find($rowId)->delete();
 
-        $this->notification()->send([
-            'icon' => 'error',
-            'title' => 'Registro eliminado',
-            'description' => 'Semestre eliminado correctamente.',
-        ]);
+        $this->notification()->error('Registro eliminado', 'Semestre eliminado correctamente.');
 
         $this->refresh();
     }

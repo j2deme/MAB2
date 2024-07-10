@@ -22,11 +22,7 @@ class Create extends Component
     {
         $this->form->store();
 
-        $this->notification()->session()->send([
-            'icon' => 'success',
-            'title' => 'Registro agregado',
-            'description' => '{{modelTitle}} agregado correctamente.',
-        ]);
+        $this->notification()->session()->success('Registro agregado', '{{modelTitle}} agregado correctamente.');
 
         return $this->redirectRoute('{{modelRoute}}.index', navigate: true);
     }
