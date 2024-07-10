@@ -24,6 +24,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/carreras/create', App\Livewire\Carreras\Create::class)->name('carreras.create');
     Route::get('/carreras/show/{carrera}', App\Livewire\Carreras\Show::class)->name('carreras.show');
     Route::get('/carreras/update/{carrera}', App\Livewire\Carreras\Edit::class)->name('carreras.edit');
+    // MARK: Materias
+    Route::get('/materias', App\Livewire\Materias\Index::class)->name('materias.index');
+    Route::get('/materias/create', App\Livewire\Materias\Create::class)->name('materias.create');
+    Route::get('/materias/show/{materia}', App\Livewire\Materias\Show::class)->name('materias.show');
+    Route::get('/materias/update/{materia}', App\Livewire\Materias\Edit::class)->name('materias.edit');
 });
 
 
