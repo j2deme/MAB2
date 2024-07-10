@@ -22,11 +22,7 @@ class Edit extends Component
     {
         $this->form->update();
 
-        $this->notification()->session()->send([
-            'icon' => 'success',
-            'title' => 'Registro actualizado',
-            'description' => "Carrera actualizada correctamente.",
-        ]);
+        $this->notification()->session()->success('Registro actualizado', 'Carrera actualizada correctamente.');
 
         return $this->redirectRoute('carreras.index', navigate: true);
     }
