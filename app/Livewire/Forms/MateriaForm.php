@@ -4,6 +4,7 @@ namespace App\Livewire\Forms;
 
 use App\Models\Materia;
 use Livewire\Form;
+use Illuminate\Validation\Rule;
 
 class MateriaForm extends Form
 {
@@ -22,7 +23,12 @@ class MateriaForm extends Form
     public function rules(): array
     {
         return [
-            'clave' => 'bail|required|string|unique:materias' . optional($this->materiaModel)->id,
+            'clave' => [
+                'bail',
+                'required',
+                'string',
+                Rule::unique('materias')->ignore($this->materiaModel->id),
+            ],
             'nombre' => 'bail|required|string|max:75',
             'nombre_completo' => 'bail|required|string',
             'carrera_id' => 'required',
