@@ -4,6 +4,7 @@ namespace App\Livewire\Forms;
 
 use App\Models\Carrera;
 use Livewire\Form;
+use Illuminate\Validation\Rule;
 
 class CarreraForm extends Form
 {
@@ -16,8 +17,16 @@ class CarreraForm extends Form
     public function rules(): array
     {
         return [
-            'siglas' => 'required|string|unique:carreras,siglas,' . optional($this->carreraModel)->id,
-            'clave_interna' => 'required|string|unique:carreras,clave_interna,' . optional($this->carreraModel)->id,
+            'siglas' => [
+                'required',
+                'string',
+                Rule::unique('carreras')->ignore($this->carreraModel->id)
+            ],
+            'clave_interna' => [
+                'required',
+                'string',
+                Rule::unique('carreras')->ignore($this->carreraModel->id)
+            ],
             'nombre' => 'required|string',
         ];
     }
