@@ -1,28 +1,3 @@
-<?php
-
-use function Livewire\Volt\{state};
-use function Livewire\Volt\{computed};
-
-$semestres = function(){
-    $option = [];
-    for ($i = 1; $i <= 9; $i++){
-        switch ($i) {
-            case 1:
-            case 3:
-                $option = ['value' => $i, 'label' => $i.'er semestre'];
-                break;
-            default:
-                $option = ['value' => $i, 'label' => $i.'o semestre'];
-                break;
-        }
-        $options[] = $option;
-    }
-
-    return $options;
-};
-
-?>
-
 <div class="space-y-6">
     <x-errors />
 
@@ -63,8 +38,8 @@ $semestres = function(){
             @enderror --}}
         </div>
         <div>
-            <x-select wire:model.defer="form.semestre" id="semestre" name="semestre" :label="__('Semestre')"
-                placeholder="Selecciona un semestre" :options="$semestres" option-value="value" option-label="label" />
+            <x-number wire:model.defer="form.semestre" id="semestre" name="semestre" label="Semestre"
+                placeholder="Semestre en retícula" min="1" max="9" />
 
             {{-- @error('form.semestre')
             <x-input-error class="mt-2" :messages="$message" />
