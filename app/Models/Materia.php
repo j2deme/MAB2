@@ -43,6 +43,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Eloquent\Builder|Materia whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Materia withTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder|Materia withoutTrashed()
+ * @property-read string $satca
  * @mixin \Eloquent
  */
 class Materia extends Model
