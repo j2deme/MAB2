@@ -15,6 +15,7 @@ class Create extends Component
 
     public function mount(Materia $materia)
     {
+        $materia->activo = true;
         $this->form->setMateriaModel($materia);
     }
 
