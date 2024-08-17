@@ -2,13 +2,11 @@
 'active',
 'label' => null,
 'icon' => null,
-'noLabel' => null
 ])
 
 @php
 $label = $label ?? false;
 $active = request()->routeIs($active) ?? null;
-
 $classes = ($active ?? false)
 ? 'inline-flex items-center px-1 pt-1 border-b-2 border-primary-400 dark:border-primary-600 text-sm font-medium
 leading-5
@@ -24,7 +22,7 @@ transition duration-150 ease-in-out';
     <x-icon name="{{ $icon }}" class="w-5 h-5 mr-1 {{ $active ? 'text-primary-500' : null }}" />
     @endif
 
-    @if(!$noLabel)
+    @if($label != false)
     {{ $label ? $label : $slot}}
     @endif
 </a>

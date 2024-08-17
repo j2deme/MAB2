@@ -24,29 +24,15 @@ $logout = function (Logout $logout) {
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-6 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" wire:navigate>
-                        <x-icon name="house" class="w-5 h-5" />
-                    </x-nav-link>
-                    <x-nav-link :href="route('semestres.index')" :active="request()->routeIs('semestres.*')"
-                        title="Semestres" wire:navigate>
-                        <x-icon name="calendar-dots" class="w-5 h-5 mr-1" />
-                        Semestres
-                    </x-nav-link>
-                    <x-nav-link :href="route('carreras.index')" :active="request()->routeIs('carreras.*')"
-                        title="Carreras" wire:navigate>
-                        <x-icon name="graduation-cap" class="w-5 h-5 mr-1" />
-                        Carreras
-                    </x-nav-link>
-                    <x-nav-link :href="route('materias.index')" :active="request()->routeIs('materias.*')"
-                        title="Materias" wire:navigate>
-                        <x-icon name="book" class="w-5 h-5 mr-1" />
-                        Materias
-                    </x-nav-link>
-                    <x-nav-link :href="route('grupos.index')" :active="request()->routeIs('grupos.*')" title="Grupos"
-                        wire:navigate>
-                        <x-icon name="shapes" class="w-5 h-5 mr-1" />
-                        Grupos
-                    </x-nav-link>
+                    <x-nav-link :href="route('dashboard')" active="dashboard" wire:navigate icon="house" />
+                    <x-nav-link :href="route('semestres.index')" active="semestres.*" title="Semestres" wire:navigate
+                        icon="calendar-dots" label="Semestres" />
+                    <x-nav-link :href="route('carreras.index')" active="carreras.*" title="Carreras" wire:navigate
+                        icon="graduation-cap" label="Carreras" />
+                    <x-nav-link :href="route('materias.index')" active="materias.*" title="Materias" wire:navigate
+                        icon="book" label="Materias" />
+                    <x-nav-link :href="route('grupos.index')" active="grupos.*" title="Grupos" wire:navigate
+                        icon="shapes" label="Grupos" />
                 </div>
             </div>
 
