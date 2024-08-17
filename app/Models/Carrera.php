@@ -26,6 +26,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Carrera whereUpdatedAt($value)
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Materia> $materias
  * @property-read int|null $materias_count
+ * @property string|null $color
+ * @method static \Illuminate\Database\Eloquent\Builder|Carrera whereColor($value)
  * @mixin \Eloquent
  */
 class Carrera extends Model
@@ -38,7 +40,7 @@ class Carrera extends Model
      *
      * @var array<int, string>
      */
-    protected $fillable = ['siglas', 'clave_interna', 'nombre'];
+    protected $fillable = ['siglas', 'clave_interna', 'nombre', 'color'];
 
     public function materias()
     {
