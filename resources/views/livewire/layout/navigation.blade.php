@@ -42,6 +42,10 @@ $logout = function (Logout $logout) {
                         <x-icon name="book" class="w-5 h-5 mr-1" />
                         Materias
                     </x-nav-link>
+                    <x-nav-link :href="route('grupos.index')" :active="request()->routeIs('grupos.*')" title="Grupos"
+                        wire:navigate>
+                        <x-icon name="shapes" class="w-5 h-5 mr-1" />
+                        Grupos
                 </div>
             </div>
 
@@ -100,6 +104,9 @@ $logout = function (Logout $logout) {
             <x-responsive-nav-link :href="route('materias.index')" :active="request()->routeIs('materias.*')"
                 wire:navigate>
                 {{ __('Materias') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('grupos.index')" :active="request()->routeIs('grupos.*')" wire:navigate>
+                {{ __('Grupos') }}
             </x-responsive-nav-link>
         </div>
 

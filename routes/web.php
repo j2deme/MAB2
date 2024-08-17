@@ -29,6 +29,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/materias/create', App\Livewire\Materias\Create::class)->name('materias.create');
     Route::get('/materias/show/{materia}', App\Livewire\Materias\Show::class)->name('materias.show');
     Route::get('/materias/update/{materia}', App\Livewire\Materias\Edit::class)->name('materias.edit');
+    // MARK: Grupos
+    Route::get('/grupos', App\Livewire\Grupos\Index::class)->name('grupos.index');
+    Route::get('/grupos/create', App\Livewire\Grupos\Create::class)->name('grupos.create');
+    Route::get('/grupos/show/{grupo}', App\Livewire\Grupos\Show::class)->name('grupos.show');
+    Route::get('/grupos/update/{grupo}', App\Livewire\Grupos\Edit::class)->name('grupos.edit');
 });
 
 
