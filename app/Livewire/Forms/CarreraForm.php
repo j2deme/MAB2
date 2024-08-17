@@ -13,6 +13,7 @@ class CarreraForm extends Form
     public $siglas = '';
     public $clave_interna = '';
     public $nombre = '';
+    public $color = '';
 
     public function rules(): array
     {
@@ -28,6 +29,7 @@ class CarreraForm extends Form
                 Rule::unique('carreras')->ignore($this->carreraModel->id)
             ],
             'nombre' => 'required|string',
+            'color' => 'bail|nullable|string',
         ];
     }
 
@@ -38,6 +40,7 @@ class CarreraForm extends Form
         $this->siglas        = $this->carreraModel->siglas;
         $this->clave_interna = $this->carreraModel->clave_interna;
         $this->nombre        = $this->carreraModel->nombre;
+        $this->color         = $this->carreraModel->color;
     }
 
     public function store(): void

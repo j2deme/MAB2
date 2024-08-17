@@ -16,6 +16,7 @@ use PowerComponents\LivewirePowerGrid\PowerGridFields;
 use PowerComponents\LivewirePowerGrid\PowerGridComponent;
 use PowerComponents\LivewirePowerGrid\Traits\WithExport;
 use WireUi\Traits\WireUiActions;
+use Illuminate\Support\Facades\Blade;
 
 final class CarrerasTable extends PowerGridComponent
 {
@@ -53,7 +54,9 @@ final class CarrerasTable extends PowerGridComponent
             ->add('id')
             ->add('siglas')
             ->add('clave_interna')
-            ->add('nombre');
+            ->add('nombre')
+            ->add('color')
+            ->add('color_icon', fn(Carrera $model) => Blade::render('<x-icon fill name="square" class="w-7 h-7 text-[' . $model->color . ']" />'));
     }
 
     public function columns(): array
@@ -70,6 +73,13 @@ final class CarrerasTable extends PowerGridComponent
             Column::make('Nombre', 'nombre')
                 ->sortable()
                 ->searchable(),
+
+            Column::make('Color', 'color')
+                ->hidden()
+                ->visibleInExport(true),
+
+            Column::make('Color', 'color_icon')
+                ->contentClasses('flex text-center justify-center'),
 
             Column::action('')
         ];

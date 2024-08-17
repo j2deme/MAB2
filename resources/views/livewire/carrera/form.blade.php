@@ -28,6 +28,15 @@
         @enderror
     </div>
 
+    <div>
+        <x-color-picker wire:model.defer="form.color" id="color" name="color" :label="__('Color')"
+            :placeholder="fake()->hexColor()" />
+
+        @error('form.color')
+        <x-input-error class="mt-2" :messages="$message" />
+        @enderror
+    </div>
+
     <div class="flex items-center gap-4">
         <x-primary-button>
             <x-icon name="floppy-disk" class="w-4 h-4 mr-2" />
