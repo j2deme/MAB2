@@ -3,6 +3,10 @@
     dark:bg-primary-200 border border-transparent rounded-md font-semibold text-xs text-white dark:text-primary-800
     uppercase tracking-widest hover:bg-primary-700 dark:hover:bg-white focus:bg-primary-600 dark:focus:bg-white
     active:bg-primary-700 dark:active:bg-primary-300 focus:outline-none focus:ring-2 focus:ring-primary-500
-    focus:ring-offset-2 dark:focus:ring-offset-primary-800 transition ease-in-out duration-150']) }}>
+    focus:ring-offset-2 dark:focus:ring-offset-primary-800 transition ease-in-out duration-150']) }}
+    wire:loading.attr="disabled">
     {{ $slot }}
+    <span wire:loading class="px-2">
+        <x-icon name="circle-notch" class="w-4 h-4 animate-spin" />
+    </span>
 </button>
