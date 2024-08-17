@@ -38,6 +38,7 @@ use Illuminate\Support\Str;
  * @method static \Illuminate\Database\Eloquent\Builder|Grupo whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Grupo withTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder|Grupo withoutTrashed()
+ * @property-read mixed $clave
  * @mixin \Eloquent
  */
 class Grupo extends Model
