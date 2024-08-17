@@ -4,7 +4,7 @@
     </h2>
 </x-slot>
 
-<div class="py-12">
+<div class="py-6">
     <div class="max-w-full mx-auto space-y-6 sm:px-6 lg:px-8">
         <div class="p-4 bg-white shadow sm:p-8 sm:rounded-lg">
             <div class="w-full">
