@@ -4,14 +4,13 @@
     </h2>
 </x-slot>
 
-<div class="py-12">
+<div class="py-6">
     <div class="max-w-full mx-auto space-y-6 sm:px-6 lg:px-8">
         <div class="p-4 bg-white shadow sm:p-8 sm:rounded-lg">
             <div class="w-full">
                 <div class="sm:flex sm:items-center">
                     <div class="sm:flex-auto">
                         <h1 class="text-base font-semibold leading-6 text-gray-900">{{ __('Create') }} Grupo</h1>
-                        <p class="mt-2 text-sm text-gray-700">Add a new {{ __('Grupo') }}.</p>
                     </div>
                     <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
                         @include('components.back-button', ['url' => route('grupos.index')])
