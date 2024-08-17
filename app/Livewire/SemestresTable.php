@@ -105,7 +105,8 @@ final class SemestresTable extends PowerGridComponent
                 ->hidden(true)
                 ->visibleInExport(true),
 
-            Column::action(''),
+            Column::action('')
+                ->title(Blade::render('<x-icon name="gear" class="w-5 h-5 text-gray-600" />')),
         ];
     }
 

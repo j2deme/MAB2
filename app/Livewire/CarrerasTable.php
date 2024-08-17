@@ -82,6 +82,7 @@ final class CarrerasTable extends PowerGridComponent
                 ->contentClasses('flex text-center justify-center'),
 
             Column::action('')
+                ->title(Blade::render('<x-icon name="gear" class="w-5 h-5 text-gray-600" />')),
         ];
     }
 
