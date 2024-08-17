@@ -46,6 +46,7 @@ $logout = function (Logout $logout) {
                         wire:navigate>
                         <x-icon name="shapes" class="w-5 h-5 mr-1" />
                         Grupos
+                    </x-nav-link>
                 </div>
             </div>
 
