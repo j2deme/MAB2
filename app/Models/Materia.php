@@ -44,6 +44,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Eloquent\Builder|Materia withTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder|Materia withoutTrashed()
  * @property-read string $satca
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Grupo> $grupos
+ * @property-read int|null $grupos_count
  * @mixin \Eloquent
  */
 class Materia extends Model
@@ -80,6 +82,11 @@ class Materia extends Model
     public function carrera()
     {
         return $this->belongsTo(\App\Models\Carrera::class, 'carrera_id', 'id');
+    }
+
+    public function grupos()
+    {
+        return $this->hasMany(\App\Models\Grupo::class, 'materia_id', 'id');
     }
 
 }
