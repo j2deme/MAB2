@@ -70,10 +70,12 @@ final class GruposTable extends PowerGridComponent
     {
         return PowerGrid::fields()
             ->add('id')
-            ->add('siglas')
+            ->add('grupo_siglas')
             ->add('semestre_id')
             ->add('materia_id')
             ->add('materia_nombre', fn(Grupo $model) => e($model->materia->nombre_completo . ' (' . $model->materia->clave . ')'))
+            ->add('carrera_id', fn(Grupo $model) => e($model->materia->carrera->id))
+            ->add('carrera_siglas', fn(Grupo $model) => e($model->materia->carrera->siglas))
             ->add('carrera_badge', fn(Grupo $model) => Blade::render("components.carrera-badge", ['carrera' => $model->materia->carrera]))
             ->add('is_disponible')
             ->add('disponible_icon', fn(Grupo $model) => Blade::render('components.disponible-icon', ['disponible' => $model->is_disponible]))
@@ -85,11 +87,11 @@ final class GruposTable extends PowerGridComponent
     public function columns(): array
     {
         return [
-            // Column::make('Materia id', 'materia_id'),
             Column::make('Materia', 'materia_nombre', 'materia_id')
+                ->sortable()
                 ->searchable(),
 
-            Column::make('Grupo', 'siglas')
+            Column::make('Grupo', 'grupo_siglas')
                 ->contentClasses('flex items-center justify-center')
                 ->sortable()
                 ->searchable(),
