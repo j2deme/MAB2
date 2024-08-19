@@ -30,7 +30,7 @@
 
     <div>
         <x-color-picker wire:model.defer="form.color" id="color" name="color" :label="__('Color')"
-            :placeholder="fake()->hexColor()" />
+            :placeholder="fake()->hexColor()" color-name-as-value />
 
         @error('form.color')
         <x-input-error class="mt-2" :messages="$message" />

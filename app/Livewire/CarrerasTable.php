@@ -56,7 +56,7 @@ final class CarrerasTable extends PowerGridComponent
             ->add('clave_interna')
             ->add('nombre')
             ->add('color')
-            ->add('color_icon', fn(Carrera $model) => Blade::render('<x-icon fill name="square" class="w-7 h-7 text-[' . $model->color . ']" />'));
+            ->add('color_icon', fn(Carrera $model) => Blade::render('<x-icon fill name="square" class="w-7 h-7 text-' . $model->color . '" />'));
     }
 
     public function columns(): array
