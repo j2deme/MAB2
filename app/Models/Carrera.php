@@ -28,6 +28,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read int|null $materias_count
  * @property string|null $color
  * @method static \Illuminate\Database\Eloquent\Builder|Carrera whereColor($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Grupo> $grupos
+ * @property-read int|null $grupos_count
  * @mixin \Eloquent
  */
 class Carrera extends Model
@@ -45,5 +47,10 @@ class Carrera extends Model
     public function materias()
     {
         return $this->hasMany(Materia::class);
+    }
+
+    public function grupos()
+    {
+        return $this->hasManyThrough(Grupo::class, Materia::class);
     }
 }
