@@ -74,10 +74,11 @@ final class GruposTable extends PowerGridComponent
             ->add('semestre_id')
             ->add('materia_id')
             ->add('materia_nombre', fn(Grupo $model) => e($model->materia->nombre_completo . ' (' . $model->materia->clave . ')'))
+            ->add('carrera_badge', fn(Grupo $model) => Blade::render("components.carrera-badge", ['carrera' => $model->materia->carrera]))
             ->add('is_disponible')
-            ->add('disponible_icon', fn(Grupo $model) => $model->is_disponible ? Blade::render('<x-icon bold name="check" class="w-5 h-5 text-green-500" />') : Blade::render('<x-icon bold name="x" class="w-5 h-5 text-red-500" />'))
+            ->add('disponible_icon', fn(Grupo $model) => Blade::render('components.disponible-icon', ['disponible' => $model->is_disponible]))
             ->add('is_paralelizable')
-            ->add('paralelizable_icon', fn(Grupo $model) => $model->is_paralelizable ? Blade::render('<x-icon bold name="letter-circle-p" class="w-5 h-5 text-blue-500" />') : Blade::render('<x-icon bold name="prohibit" class="w-5 h-5 text-gray-500" />'))
+            ->add('paralelizable_icon', fn(Grupo $model) => Blade::render('components.paralelo-icon', ['paralelo' => $model->is_paralelizable]))
             ->add('created_at');
     }
 
@@ -92,6 +93,10 @@ final class GruposTable extends PowerGridComponent
                 ->contentClasses('flex items-center justify-center')
                 ->sortable()
                 ->searchable(),
+
+            Column::make('Carrera', 'carrera_badge', 'carrera_id')
+                ->contentClasses('flex items-center justify-center')
+                ->sortable(),
 
             Column::make('Disponible', 'is_disponible')
                 ->hidden(),
