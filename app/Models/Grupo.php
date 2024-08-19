@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Support\Str;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Class Grupo
@@ -77,7 +78,7 @@ class Grupo extends Model
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
-    public function materia()
+    public function materia(): BelongsTo
     {
         return $this->belongsTo(\App\Models\Materia::class, 'materia_id', 'id');
     }
@@ -85,9 +86,13 @@ class Grupo extends Model
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
-    public function semestre()
+    public function semestre(): BelongsTo
     {
         return $this->belongsTo(\App\Models\Semestre::class, 'semestre_id', 'id');
     }
 
+    public function carrera()
+    {
+        return $this->belongsToThrough(Carrera::class, Materia::class);
+    }
 }
