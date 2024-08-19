@@ -38,7 +38,27 @@ final class GruposTable extends PowerGridComponent
 
     public function datasource(): Builder
     {
-        return Grupo::query()->with('materia');
+        return Grupo::query()
+            ->join('materias', function ($materias) {
+                $materias->on('grupos.materia_id', '=', 'materias.id');
+            })
+            ->join('carreras', function ($carreras) {
+                $carreras->on('materias.carrera_id', '=', 'carreras.id');
+            })
+            ->select([
+                'grupos.id',
+                'grupos.siglas as grupo_siglas',
+                'grupos.semestre_id',
+                'grupos.materia_id',
+                'materias.nombre_completo as materia_nombre',
+                'materias.clave',
+                'carreras.id as carrera_id',
+                'carreras.siglas as carrera_siglas',
+                'carreras.color as carrera_color',
+                'grupos.is_disponible',
+                'grupos.is_paralelizable',
+                'grupos.created_at',
+            ]);
     }
 
     public function relationSearch(): array
