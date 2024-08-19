@@ -134,13 +134,34 @@ final class GruposTable extends PowerGridComponent
             ];
         });
 
+        $carreras = Grupo::query()
+            ->join('materias', function ($materias) {
+                $materias->on('grupos.materia_id', '=', 'materias.id');
+            })
+            ->join('carreras', function ($carreras) {
+                $carreras->on('materias.carrera_id', '=', 'carreras.id');
+            })
+            ->groupBy('carreras.id')
+            ->select('carreras.id', 'carreras.nombre', 'carreras.siglas', 'carreras.color')
+            ->get()
+            ->map(function ($carrera) {
+                return [
+                    'label' => $carrera->nombre,
+                    'value' => $carrera->id,
+                ];
+            });
+
         return [
             Filter::select('materia_id')
                 ->dataSource($materias)
                 ->optionLabel('label')
                 ->optionValue('value'),
-            Filter::select('siglas')
-                ->dataSource($siglas)
+            // Filter::select('grupo_siglas')
+            //     ->dataSource($siglas)
+            //     ->optionLabel('label')
+            //     ->optionValue('value'),
+            Filter::select('carrera_badge', 'carrera_id')
+                ->dataSource($carreras)
                 ->optionLabel('label')
                 ->optionValue('value'),
             Filter::select('is_disponible')
