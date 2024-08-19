@@ -23,9 +23,10 @@ class GrupoForm extends Form
                 'required',
                 'string',
                 'max:5',
-                // Rule::unique('grupos', 'siglas')
-                //     ->ignore($this->grupoModel->id)
-                //     ->where('materia_id', $this->grupoModel->materia_id)
+                Rule::unique('grupos')->where(function ($query) {
+                    return $query->where('materia_id', $this->materia_id)
+                        ->where('semestre_id', $this->semestre_id);
+                })->ignore($this->grupoModel->id),
             ],
             'semestre_id' => 'required',
             'materia_id' => 'required',

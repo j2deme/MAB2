@@ -27,7 +27,9 @@ class MateriaForm extends Form
                 'bail',
                 'required',
                 'string',
-                Rule::unique('materias')->ignore($this->materiaModel->id),
+                Rule::unique('materias')->where(function ($query) {
+                    return $query->where('carrera_id', $this->carrera_id);
+                })->ignore($this->materiaModel->id),
             ],
             'nombre' => 'bail|required|string|max:75',
             'nombre_completo' => 'bail|required|string',
