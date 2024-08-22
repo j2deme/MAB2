@@ -7,6 +7,6 @@
     wire:loading.attr="disabled">
     {{ $slot }}
     <span wire:loading class="px-2">
-        <x-icon name="circle-notch" class="w-4 h-4 animate-spin" />
+        <x-icon name="spinner-gap" class="w-4 h-4 animate-spin" />
     </span>
 </button>
