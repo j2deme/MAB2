@@ -40,6 +40,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder|Grupo withTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder|Grupo withoutTrashed()
  * @property-read mixed $clave
+ * @property-read mixed $nombre
  * @mixin \Eloquent
  */
 class Grupo extends Model
@@ -75,6 +76,15 @@ class Grupo extends Model
         return "{$this->materia->clave} ({$this->siglas})";
     }
 
+    public function getNombreAttribute()
+    {
+        if ($this->materia) {
+            return "[{$this->materia->clave}] {$this->materia->nombre_completo} ({$this->siglas})";
+        } else {
+            return "[{$this->materia_id}] ({$this->siglas})";
+        }
+    }
+
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
@@ -89,10 +99,5 @@ class Grupo extends Model
     public function semestre(): BelongsTo
     {
         return $this->belongsTo(\App\Models\Semestre::class, 'semestre_id', 'id');
-    }
-
-    public function carrera()
-    {
-        return $this->belongsToThrough(Carrera::class, Materia::class);
     }
 }
