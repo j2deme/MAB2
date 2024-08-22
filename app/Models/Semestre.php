@@ -38,6 +38,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Semestre whereNombre($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Semestre whereNombreCompleto($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Semestre whereUpdatedAt($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Grupo> $grupos
+ * @property-read int|null $grupos_count
  * @mixin \Eloquent
  */
 class Semestre extends Model
@@ -69,4 +71,8 @@ class Semestre extends Model
         return $this->inicio_bajas->format('d/m/y') . ' - ' . $this->fin_bajas->format('d/m/y');
     }
 
+    public function grupos()
+    {
+        return $this->hasMany(Grupo::class);
+    }
 }
