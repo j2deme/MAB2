@@ -6,18 +6,26 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use App\Enums\UserRoles;
 
 /**
- * 
+ * Class User
  *
- * @property int $id
- * @property string $name
- * @property string $email
- * @property \Illuminate\Support\Carbon|null $email_verified_at
- * @property mixed $password
- * @property string|null $remember_token
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property $id
+ * @property $name
+ * @property $email
+ * @property $email_verified_at
+ * @property $password
+ * @property $remember_token
+ * @property $created_at
+ * @property $updated_at
+ * @property $rol
+ * @property string|null $username
+ * @property bool $inscrito
+ * @property Movimiento[] $movimientos
+ * @package App
+ * @mixin \Illuminate\Database\Eloquent\Builder
+ * @property-read int|null $movimientos_count
  * @property-read \Illuminate\Notifications\DatabaseNotificationCollection<int, \Illuminate\Notifications\DatabaseNotification> $notifications
  * @property-read int|null $notifications_count
  * @method static \Database\Factories\UserFactory factory($count = null, $state = [])
@@ -31,23 +39,24 @@ use Illuminate\Notifications\Notifiable;
  * @method static \Illuminate\Database\Eloquent\Builder|User whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User wherePassword($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereRememberToken($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereRol($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereInscrito($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereUsername($value)
  * @mixin \Eloquent
  */
 class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
+    protected $perPage = 20;
+
     /**
      * The attributes that are mass assignable.
      *
      * @var array<int, string>
      */
-    protected $fillable = [
-        'name',
-        'email',
-        'password',
-    ];
+    protected $fillable = ['name', 'email', 'password', 'rol', 'username', 'inscrito'];
 
     /**
      * The attributes that should be hidden for serialization.
@@ -69,6 +78,34 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'rol' => UserRoles::class,
+            'inscrito' => 'boolean',
         ];
+    }
+
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function movimientos()
+    {
+        return $this->hasMany(\App\Models\Movimiento::class, 'id', 'user_id');
+    }
+
+    public function is($rol): bool
+    {
+        if (is_string($rol)) {
+            return $this->rol === UserRoles::is($rol);
+        }
+
+        if (is_array($rol)) {
+            foreach ($rol as $r) {
+                if ($this->rol === UserRoles::is($r)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }
