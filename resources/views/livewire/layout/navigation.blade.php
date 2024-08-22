@@ -86,6 +86,7 @@ $logout = function (Logout $logout) {
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" wire:navigate>
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
+            @if (!auth()->user()->is('Estudiante'))
             <x-responsive-nav-link :href="route('semestres.index')" :active="request()->routeIs('semestres.*')"
                 wire:navigate>
                 {{ __('Semestres') }}
@@ -101,6 +102,10 @@ $logout = function (Logout $logout) {
             <x-responsive-nav-link :href="route('grupos.index')" :active="request()->routeIs('grupos.*')" wire:navigate>
                 {{ __('Grupos') }}
             </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('users.index')" :active="request()->routeIs('users.*')" wire:navigate>
+                {{ __('Usuarios') }}
+            </x-responsive-nav-link>
+            @endif
         </div>
 
         <!-- Responsive Settings Options -->
