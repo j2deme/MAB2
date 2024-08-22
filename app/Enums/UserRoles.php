@@ -8,4 +8,14 @@ enum UserRoles: string
     case JEFE = 'Jefe';
     case COORDINADOR = 'Coordinador';
     case ESTUDIANTE = 'Estudiante';
+
+    public static function is(string $value): self
+    {
+        return match ($value) {
+            'Administrador' => self::ADMIN,
+            'Jefe' => self::JEFE,
+            'Coordinador' => self::COORDINADOR,
+            'Estudiante' => self::ESTUDIANTE,
+        };
+    }
 }
