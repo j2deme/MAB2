@@ -25,14 +25,20 @@ $logout = function (Logout $logout) {
                 <!-- Navigation Links -->
                 <div class="hidden space-x-6 sm:-my-px sm:ms-10 sm:flex">
                     <x-nav-link :href="route('dashboard')" active="dashboard" wire:navigate icon="house" />
-                    <x-nav-link :href="route('semestres.index')" active="semestres.*" title="Semestres" wire:navigate
-                        icon="calendar-dots" label="Semestres" />
-                    <x-nav-link :href="route('carreras.index')" active="carreras.*" title="Carreras" wire:navigate
-                        icon="graduation-cap" label="Carreras" />
-                    <x-nav-link :href="route('materias.index')" active="materias.*" title="Materias" wire:navigate
-                        icon="book" label="Materias" />
-                    <x-nav-link :href="route('grupos.index')" active="grupos.*" title="Grupos" wire:navigate
-                        icon="shapes" label="Grupos" />
+                    @if (!auth()->user()->is('Estudiante'))
+                    <x-nav-link :href="route('semestres.index')" active="semestres.*" wire:navigate icon="calendar-dots"
+                        label="Semestres" />
+                    <x-nav-link :href="route('carreras.index')" active="carreras.*" wire:navigate icon="graduation-cap"
+                        label="Carreras" />
+                    <x-nav-link :href="route('materias.index')" active="materias.*" wire:navigate icon="book"
+                        label="Materias" />
+                    <x-nav-link :href="route('grupos.index')" active="grupos.*" wire:navigate icon="shapes"
+                        label="Grupos" />
+                    @endif
+                    @if (auth()->user()->is('Administrador'))
+                    <x-nav-link :href="route('users.index')" active="users.*" wire:navigate icon="users"
+                        label="Usuarios" />
+                    @endif
                 </div>
             </div>
 
