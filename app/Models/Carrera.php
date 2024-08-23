@@ -30,6 +30,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Carrera whereColor($value)
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Grupo> $grupos
  * @property-read int|null $grupos_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $usuarios
+ * @property-read int|null $usuarios_count
  * @mixin \Eloquent
  */
 class Carrera extends Model
@@ -44,13 +46,27 @@ class Carrera extends Model
      */
     protected $fillable = ['siglas', 'clave_interna', 'nombre', 'color'];
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
     public function materias()
     {
         return $this->hasMany(Materia::class);
     }
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasManyThrough
+     */
     public function grupos()
     {
         return $this->hasManyThrough(Grupo::class, Materia::class);
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function usuarios()
+    {
+        return $this->belongsToMany(User::class);
     }
 }

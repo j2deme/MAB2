@@ -43,6 +43,8 @@ use App\Enums\UserRoles;
  * @method static \Illuminate\Database\Eloquent\Builder|User whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereInscrito($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereUsername($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Carrera> $carreras
+ * @property-read int|null $carreras_count
  * @mixin \Eloquent
  */
 class User extends Authenticatable
@@ -92,6 +94,13 @@ class User extends Authenticatable
         return $this->hasMany(\App\Models\Movimiento::class, 'id', 'user_id');
     }
 
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    public function carreras()
+    {
+        return $this->belongsToMany(\App\Models\Carrera::class);
+    }
 
     /**
      * @param string|array $rol
