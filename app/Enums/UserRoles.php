@@ -18,4 +18,14 @@ enum UserRoles: string
             'Estudiante' => self::ESTUDIANTE,
         };
     }
+
+    public function color(): string
+    {
+        return match ($this) {
+            self::ADMIN => 'black',
+            self::JEFE => 'blue',
+            self::COORDINADOR => 'green',
+            self::ESTUDIANTE => 'sky',
+        };
+    }
 }
