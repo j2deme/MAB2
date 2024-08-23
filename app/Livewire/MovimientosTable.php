@@ -24,15 +24,20 @@ final class MovimientosTable extends PowerGridComponent
     {
         $this->showCheckBox();
 
-        return [
-            Exportable::make('export')
-                ->striped()
-                ->type(Exportable::TYPE_XLS, Exportable::TYPE_CSV),
+        $config = [
             Header::make()->showSearchInput(),
             Footer::make()
                 ->showPerPage()
                 ->showRecordCount(),
         ];
+
+        if (!Auth::user()->es('Estudiante')) {
+            $config[] = Exportable::make('solicitudes')
+                ->striped()
+                ->type(Exportable::TYPE_XLS);
+        }
+
+        return $config;
     }
 
     public function datasource(): Builder
