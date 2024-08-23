@@ -42,6 +42,10 @@ $logout = function (Logout $logout) {
                 </div>
             </div>
 
+            <div class="flex-grow p-4 text-right align-middle">
+                <x-badge :color="Auth()->user()->rol->color()" :label="Auth()->user()->rol" sm />
+            </div>
+
             <!-- Settings Dropdown -->
             <div class="hidden sm:flex sm:items-center sm:ms-6">
                 <x-dropdown icon="chevron-down">
