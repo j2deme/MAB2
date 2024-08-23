@@ -13,7 +13,7 @@
         <x-input wire:model.defer='form.carrera_id' id='carrera_id' name='carrera_id' class='' :label="__('Carrera Id')"
             placeholder='Carrera Id' />
     </div> --}}
-    @if(auth()->user()->is('Estudiante') and $form->tipo == 'alta')
+    @if(auth()->user()->es('Estudiante') and $form->tipo == 'alta')
     <div>
         <h2>Altas disponibles</h2>
         <div class="grid grid-cols-1 gap-4 md:grid-cols-5">
@@ -35,7 +35,7 @@
             placeholder='Selecciona un grupo' :options="$form->grupos" option-label="nombre" option-value="id"
             option-description="materia.carrera.nombre" :searchable="true" />
     </div>
-    @if (!auth()->user()->is('Estudiante'))
+    @if (!auth()->user()->es('Estudiante'))
     <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
         <div>
             <x-select wire:model.defer='form.tipo' id='tipo' name='tipo' :label="__('Tipo')"
@@ -67,7 +67,7 @@
         <x-textarea wire:model.defer='form.motivo_adicional' id='motivo_adicional' name='motivo_adicional' class=''
             :label="__('Motivo Adicional')" placeholder='Motivo Adicional' />
     </div>
-    @if (!auth()->user()->is('Estudiante'))
+    @if (!auth()->user()->es('Estudiante'))
     <div>
         <x-select wire:model.defer='form.respuesta' id='respuesta' name='respuesta' :label="__('Respuesta')"
             placeholder='Selecciona una respuesta rápida'>
@@ -90,7 +90,7 @@
         </x-select>
     </div>
     <div>
-        @if (!auth()->user()->is('Estudiante'))
+        @if (!auth()->user()->es('Estudiante'))
         <x-toggle wire:model.defer="form.is_paralelo" id="is_paralelo" name="is_paralelo" :label="__('¿Paralelo?')"
             lg />
         @endif

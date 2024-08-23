@@ -25,7 +25,7 @@ $logout = function (Logout $logout) {
                 <!-- Navigation Links -->
                 <div class="hidden space-x-6 sm:-my-px sm:ms-10 sm:flex">
                     <x-nav-link :href="route('dashboard')" active="dashboard" wire:navigate icon="house" />
-                    @if (!auth()->user()->is('Estudiante'))
+                    @if (!auth()->user()->es('Estudiante'))
                     <x-nav-link :href="route('semestres.index')" active="semestres.*" wire:navigate icon="calendar-dots"
                         label="Semestres" />
                     <x-nav-link :href="route('carreras.index')" active="carreras.*" wire:navigate icon="graduation-cap"
@@ -37,8 +37,8 @@ $logout = function (Logout $logout) {
                     @endif
                     <x-nav-link :href="route('movimientos.index')" active="movimientos.*" wire:navigate
                         icon="arrows-down-up"
-                        label="{{ auth()->user()->is('Estudiante') ? 'Mis solicitudes' : 'Solicitudes' }}" />
-                    @if (auth()->user()->is('Administrador'))
+                        label="{{ auth()->user()->es('Estudiante') ? 'Mis solicitudes' : 'Solicitudes' }}" />
+                    @if (auth()->user()->es('Administrador'))
                     <x-nav-link :href="route('users.index')" active="users.*" wire:navigate icon="users"
                         label="Usuarios" />
                     @endif
@@ -93,7 +93,7 @@ $logout = function (Logout $logout) {
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" wire:navigate>
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
-            @if (!auth()->user()->is('Estudiante'))
+            @if (!auth()->user()->es('Estudiante'))
             <x-responsive-nav-link :href="route('semestres.index')" :active="request()->routeIs('semestres.*')"
                 wire:navigate>
                 {{ __('Semestres') }}
@@ -115,7 +115,7 @@ $logout = function (Logout $logout) {
             @endif
             <x-responsive-nav-link :href="route('movimientos.index')" :active="request()->routeIs('movimientos.*')"
                 wire:navigate>
-                {{ auth()->user()->is('Estudiante') ? 'Mis solicitudes' : 'Solicitudes' }}
+                {{ auth()->user()->es('Estudiante') ? 'Mis solicitudes' : 'Solicitudes' }}
             </x-responsive-nav-link>
         </div>
 

@@ -92,7 +92,12 @@ class User extends Authenticatable
         return $this->hasMany(\App\Models\Movimiento::class, 'id', 'user_id');
     }
 
-    public function is($rol): bool
+
+    /**
+     * @param string|array $rol
+     * @return bool
+     */
+    public function es($rol): bool
     {
         if (is_string($rol)) {
             return $this->rol === UserRoles::is($rol);

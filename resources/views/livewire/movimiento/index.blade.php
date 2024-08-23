@@ -14,7 +14,7 @@
                         <p class="mt-2 text-sm text-gray-700">{{ $semestre->nombre_completo }}</p>
                     </div>
                     <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
-                        @if (auth()->user()->is('Estudiante'))
+                        @if (auth()->user()->es('Estudiante'))
                         <x-button blue label="Alta" icon="plus"
                             href="{{ route('movimientos.request', ['tipo' => 'alta']) }}"
                             class="text-xs font-semibold tracking-widest uppercase" />
