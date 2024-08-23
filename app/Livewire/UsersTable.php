@@ -100,6 +100,8 @@ final class UsersTable extends PowerGridComponent
     public function filters(): array
     {
         return [
+            Filter::boolean('inscrito')
+                ->label('Sí', 'No')
         ];
     }
 
