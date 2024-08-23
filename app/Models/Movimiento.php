@@ -58,6 +58,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Eloquent\Builder|Movimiento withTrashed()
  * @method static \Illuminate\Database\Eloquent\Builder|Movimiento withoutTrashed()
  * @property-read mixed $nombre
+ * @property-read Movimiento|null $asociado
  * @mixin \Eloquent
  */
 class Movimiento extends Model
