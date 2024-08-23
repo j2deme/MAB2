@@ -37,6 +37,12 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/grupos/show/{grupo}', App\Livewire\Grupos\Show::class)->name('grupos.show');
     Route::get('/grupos/update/{grupo}', App\Livewire\Grupos\Edit::class)->name('grupos.edit');
 
+    // MARK: Solicitudes
+    Route::get('/solicitudes', \App\Livewire\Movimientos\Index::class)->name('movimientos.index');
+    Route::get('/solicitudes/create', \App\Livewire\Movimientos\Create::class)->name('movimientos.create');
+    Route::get('/solicitudes/show/{movimiento}', \App\Livewire\Movimientos\Show::class)->name('movimientos.show');
+    Route::get('/solicitudes/update/{movimiento}', \App\Livewire\Movimientos\Edit::class)->name('movimientos.edit');
+
     // MARK: Usuarios
     Route::get('/usuarios', \App\Livewire\Users\Index::class)->name('users.index');
     Route::get('/usuarios/create', \App\Livewire\Users\Create::class)->name('users.create');

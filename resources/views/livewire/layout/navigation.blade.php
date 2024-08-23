@@ -35,6 +35,9 @@ $logout = function (Logout $logout) {
                     <x-nav-link :href="route('grupos.index')" active="grupos.*" wire:navigate icon="shapes"
                         label="Grupos" />
                     @endif
+                    <x-nav-link :href="route('movimientos.index')" active="movimientos.*" wire:navigate
+                        icon="arrows-down-up"
+                        label="{{ auth()->user()->is('Estudiante') ? 'Mis solicitudes' : 'Solicitudes' }}" />
                     @if (auth()->user()->is('Administrador'))
                     <x-nav-link :href="route('users.index')" active="users.*" wire:navigate icon="users"
                         label="Usuarios" />
@@ -110,6 +113,10 @@ $logout = function (Logout $logout) {
                 {{ __('Usuarios') }}
             </x-responsive-nav-link>
             @endif
+            <x-responsive-nav-link :href="route('movimientos.index')" :active="request()->routeIs('movimientos.*')"
+                wire:navigate>
+                {{ auth()->user()->is('Estudiante') ? 'Mis solicitudes' : 'Solicitudes' }}
+            </x-responsive-nav-link>
         </div>
 
         <!-- Responsive Settings Options -->
