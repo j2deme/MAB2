@@ -23,9 +23,9 @@ enum UserRoles: string
     {
         return match ($this) {
             self::ADMIN => 'black',
-            self::JEFE => 'blue',
+            self::JEFE => 'indigo',
             self::COORDINADOR => 'green',
-            self::ESTUDIANTE => 'sky',
+            self::ESTUDIANTE => 'cyan',
         };
     }
 }
