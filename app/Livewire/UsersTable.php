@@ -18,11 +18,13 @@ use PowerComponents\LivewirePowerGrid\PowerGridComponent;
 use PowerComponents\LivewirePowerGrid\Traits\WithExport;
 use Illuminate\Support\Facades\Blade;
 use App\Enums\UserRoles;
+use WireUi\Traits\WireUiActions;
 use Auth;
 
 final class UsersTable extends PowerGridComponent
 {
     use WithExport;
+    use WireUiActions;
 
     public function setUp(): array
     {
