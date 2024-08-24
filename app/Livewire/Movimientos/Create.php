@@ -20,21 +20,20 @@ class Create extends Component
 
     public function mount($tipo = null, Movimiento $movimiento)
     {
-        $semestre = Semestre::where('activo', true)->first();
-        $movimiento->user()->associate(Auth::user());
-        $movimiento->semestre()->associate($semestre);
+        $semestre                = Semestre::where('activo', true)->first();
+        $movimiento->user_id     = Auth::user()->id;
+        $movimiento->semestre_id = $semestre->id;
         $movimiento->estatus     = MovesStatus::REGISTRADO;
         $movimiento->is_paralelo = false;
 
-        if (!is_null($tipo)) {
+        if (!is_null($tipo) and in_array($tipo, ['alta', 'baja'])) {
             $movimiento->tipo = match ($tipo) {
                 'alta' => MovesType::ALTA,
                 'baja' => MovesType::BAJA,
             };
+        } else {
+            $movimiento->tipo = null;
         }
-
-        // Se debe establecer la carrera del usuario
-        // $movimiento->carrera()->associate(Auth::user()->carrera);
 
         $this->form->setMovimientoModel($movimiento, $tipo);
     }
