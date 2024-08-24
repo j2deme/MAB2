@@ -86,48 +86,47 @@ final class MovimientosTable extends PowerGridComponent
     public function columns(): array
     {
         return [
-            Column::make('Id', 'id'),
-            Column::make('User id', 'user_id'),
-            Column::make('Semestre id', 'semestre_id'),
-            Column::make('Carrera id', 'carrera_id'),
-            Column::make('Grupo id', 'grupo_id'),
-            Column::make('Tipo', 'tipo')
+            Column::make('Estudiante', 'usuario', 'user_id')
+                ->hidden(Auth::user()->es('Estudiante'))
                 ->sortable()
                 ->searchable(),
 
-            Column::make('Estatus', 'estatus')
+            Column::make('Materia', 'materia')
+                ->searchable(),
+
+            Column::make('Grupo', 'siglas')
+                ->contentClasses('text-center')
+                ->searchable(),
+
+            Column::make('Carrera', 'carrera', 'carrera_id')
+                ->contentClasses('justify-center text-center')
+                ->sortable()
+                ->searchable(),
+
+            Column::make('Tipo', 'tipo_icon', 'tipo')
+                ->sortable()
+                ->searchable(),
+
+            Column::make('Estatus', 'estatus_badge', 'estatus')
                 ->sortable()
                 ->searchable(),
 
             Column::make('Motivo', 'motivo')
-                ->sortable()
-                ->searchable(),
-
-            Column::make('Motivo adicional', 'motivo_adicional')
-                ->sortable()
-                ->searchable(),
+                ->hidden()
+                ->toggleable(),
 
             Column::make('Respuesta', 'respuesta')
+                ->hidden()
+                ->toggleable(),
+
+            // Column::make('Asociado id', 'asociado_id'),
+            Column::make('¿Paralelo?', 'paralelo_icon', 'is_paralelo')
+                ->contentClasses('flex justify-center text-center')
                 ->sortable()
                 ->searchable(),
 
-            Column::make('Respuesta adicional', 'respuesta_adicional')
-                ->sortable()
-                ->searchable(),
-
-            Column::make('Asociado id', 'asociado_id'),
-            Column::make('Is paralelo', 'is_paralelo')
-                ->sortable()
-                ->searchable(),
-
-            Column::make('Created at', 'created_at_formatted', 'created_at')
-                ->sortable(),
-
-            Column::make('Created at', 'created_at')
-                ->sortable()
-                ->searchable(),
-
-            Column::action('Action')
+            Column::action('')
+                ->title(Blade::render('<x-icon name="gear" class="w-5 h-5 text-gray-600" />')),
         ];
     }
 
@@ -153,16 +152,4 @@ final class MovimientosTable extends PowerGridComponent
                 ->dispatch('edit', ['rowId' => $row->id])
         ];
     }
-
-    /*
-    public function actionRules($row): array
-    {
-       return [
-            // Hide button edit for ID 1
-            Rule::button('edit')
-                ->when(fn($row) => $row->id === 1)
-                ->hide(),
-        ];
-    }
-    */
 }
