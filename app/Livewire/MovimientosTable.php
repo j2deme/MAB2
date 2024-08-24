@@ -38,6 +38,7 @@ final class MovimientosTable extends PowerGridComponent
         ];
 
         if (!Auth::user()->es('Estudiante')) {
+            $this->showCheckBox();
             $config[] = Exportable::make('solicitudes')
                 ->striped()
                 ->type(Exportable::TYPE_XLS);
