@@ -28,7 +28,6 @@ final class MovimientosTable extends PowerGridComponent
 
     public function setUp(): array
     {
-        $this->showCheckBox();
 
         $config = [
             Header::make()->showSearchInput(),
