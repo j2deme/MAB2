@@ -5,6 +5,7 @@ namespace App\Livewire\Forms;
 use App\Models\Movimiento;
 use App\Models\Semestre;
 use App\Models\Grupo;
+use App\Models\User;
 use Livewire\Form;
 use App\Enums\MovesStatus;
 use App\Enums\MovesType;
@@ -109,28 +110,26 @@ class MovimientoForm extends Form
 
     public function store(): void
     {
-        $materia = Grupo::find($this->grupo_id)->materia;
+        $movimiento = $this->movimientoModel->create($this->validate());
+        $this->revisaParalelo($movimiento);
 
-        // if (Auth::user()->carrera_id !== $materia->carrera_id) {
-        //     $this->addError('grupo_id', 'El grupo seleccionado no pertenece a tu carrera');
-        //     return;
-        // }
-
-
-        $this->movimientoModel->create($this->validate());
-
-        if ($this->asociado_id != -1) {
-            $asociado = Movimiento::find($this->asociado_id);
-            $this->movimientoModel->associate($asociado);
-            $asociado->associate($this->movimientoModel);
-        }
+        // $this->asociaMovimiento();
 
         $this->reset();
     }
 
     public function update(): void
     {
-        if ($this->asociado_id != -1) {
+        $this->movimientoModel->update($this->validate());
+        $this->revisaParalelo($this->movimientoModel);
+        // $this->asociaMovimiento();
+
+        $this->reset();
+    }
+
+    private function asociaMovimiento()
+    {
+        if ($this->asociado_id != -1 and $this->asociado_id != null) {
             // Revisa si hay un movimiento asociado previamente y lo desasocia
             if ($this->movimientoModel->asociado_id != $this->asociado_id and $this->movimientoModel->asociado_id != null) {
                 $asociado              = Movimiento::find($this->movimientoModel->asociado_id);
@@ -153,10 +152,31 @@ class MovimientoForm extends Form
             $this->movimientoModel->asociado_id = null;
             $this->movimientoModel->save();
         }
+    }
 
-        $this->movimientoModel->update($this->validate());
+    private function revisaParalelo(Movimiento $move)
+    {
+        // Si el usuario no es el dueño del movimiento, no se hace nada
+        if (Auth::user()->id !== $move->user_id) {
+            return;
+        }
 
-        $this->reset();
+        // Si no se ha seleccionado un grupo, no se hace nada
+        if ($move->grupo_id == null) {
+            return;
+        }
+
+        $grupo   = Grupo::find($move->grupo_id);
+        $materia = $grupo->materia;
+
+        $owner = User::find($move->user_id);
+
+        // Si la carrera del dueño del movimiento es diferente a la carrera de la materia, se marca como paralelo
+        $move->is_paralelo = $owner->carreras()->first()->id !== $materia->carrera_id;
+        // La carrera del movimiento se iguala a la carrera de la materia
+        $move->carrera_id = $materia->carrera_id;
+
+        $move->save();
     }
 
     private function cargaDesplegables($tipo = '')
