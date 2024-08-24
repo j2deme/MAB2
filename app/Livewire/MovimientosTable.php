@@ -15,10 +15,16 @@ use PowerComponents\LivewirePowerGrid\PowerGrid;
 use PowerComponents\LivewirePowerGrid\PowerGridFields;
 use PowerComponents\LivewirePowerGrid\PowerGridComponent;
 use PowerComponents\LivewirePowerGrid\Traits\WithExport;
+use Illuminate\Support\Facades\Blade;
+use WireUi\Traits\WireUiActions;
+use Auth;
 
 final class MovimientosTable extends PowerGridComponent
 {
     use WithExport;
+    use WireUiActions;
+
+    public string $tableName = 'MovimientosTable';
 
     public function setUp(): array
     {
