@@ -60,7 +60,7 @@ final class UsersTable extends PowerGridComponent
             ->add('email')
             ->add('rol')
             ->add('rol_string', fn(User $user) => $user->rol->value)
-            ->add('rol_badge', fn(USer $user) => Blade::render("<x-badge color='{$user->rol->color()}' label='{$user->rol->value}' sm />"))
+            ->add('rol_badge', fn(User $user) => Blade::render("<x-badge color='{$user->rol->color()}' label='{$user->rol->value}' sm />"))
             ->add('username', fn(User $user) => $user->username ?? 'N/A')
             ->add('inscrito')
             ->add('inscrito_icon', fn(User $user) => Blade::render('components.disponible-icon', ['disponible' => $user->inscrito]))
@@ -89,11 +89,13 @@ final class UsersTable extends PowerGridComponent
                 ->searchable(),
 
             Column::make('Rol', 'rol_badge', 'rol')
+                ->contentClasses('flex justify-center')
                 ->sortable()
                 ->searchable(),
 
             Column::make('Usuario', 'username')
                 ->contentClasses('flex justify-center')
+                ->hidden()
                 ->sortable()
                 ->searchable(),
 
