@@ -41,7 +41,8 @@ final class UsersTable extends PowerGridComponent
 
     public function datasource(): Builder
     {
-        return User::query();
+        return User::query()
+            ->with('carreras');
     }
 
     public function relationSearch(): array
@@ -55,12 +56,22 @@ final class UsersTable extends PowerGridComponent
             ->add('id')
             ->add('name')
             ->add('email')
-            ->add('rol', function (User $user) {
-                return $user->rol->value;
-            })
+            ->add('rol')
+            ->add('rol_string', fn(User $user) => $user->rol->value)
+            ->add('rol_badge', fn(USer $user) => Blade::render("<x-badge color='{$user->rol->color()}' label='{$user->rol->value}' sm />"))
             ->add('username', fn(User $user) => $user->username ?? 'N/A')
             ->add('inscrito')
             ->add('inscrito_icon', fn(User $user) => Blade::render('components.disponible-icon', ['disponible' => $user->inscrito]))
+            ->add('carreras', function (User $user) {
+                return $user->carreras->pluck('name')->join(', ');
+            })
+            ->add('carreras_badges', function (User $user) {
+                if ($user->carreras->count() > 1) {
+                    return Blade::render('components.carrera-badge', ['carreras' => $user->carreras]);
+                } else {
+                    return Blade::render('components.carrera-badge', ['carrera' => $user->carreras()->first()]);
+                }
+            })
             ->add('created_at');
     }
 
@@ -75,13 +86,17 @@ final class UsersTable extends PowerGridComponent
                 ->sortable()
                 ->searchable(),
 
-            // Column::make('Rol', 'rol')
-            //     ->sortable()
-            //     ->searchable(),
+            Column::make('Rol', 'rol_badge', 'rol')
+                ->sortable()
+                ->searchable(),
 
             Column::make('Usuario', 'username')
-                // ->contentClasses('text-center justify-center')
+                ->contentClasses('flex justify-center')
                 ->sortable()
+                ->searchable(),
+
+            Column::make('Carrera(s)', 'carreras_badges')
+                ->contentClasses('flex justify-center')
                 ->searchable(),
 
             Column::make('Inscrito', 'inscrito')

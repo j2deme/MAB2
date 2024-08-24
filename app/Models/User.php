@@ -109,12 +109,12 @@ class User extends Authenticatable
     public function es($rol): bool
     {
         if (is_string($rol)) {
-            return $this->rol === UserRoles::is($rol);
+            return $this->rol === UserRoles::es($rol);
         }
 
         if (is_array($rol)) {
             foreach ($rol as $r) {
-                if ($this->rol === UserRoles::is($r)) {
+                if ($this->rol === UserRoles::es($r)) {
                     return true;
                 }
             }
