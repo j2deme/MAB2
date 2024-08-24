@@ -45,17 +45,27 @@
     </div>
     @endif
     <div>
+        @if (auth()->user()->es('Estudiante'))
         <x-select wire:model.defer='form.motivo' id='motivo' name='motivo' :label="__('Motivo')"
             placeholder='Selecciona un motivo'>
             @foreach ($form->motivos as $motivo)
             <x-select.option label="{{ $motivo->value }}" value="{{ $motivo->value }}" />
             @endforeach
         </x-select>
+        @else
+        <h2 class="text-xl text-bold">Motivo</h2>
+        <p>{{ $form->motivo }}</p>
+        @if (!Str($form->motivo_adicional)->isEmpty())
+        <p>{{ $form->motivo_adicional }}</p>
+        @endif
+        @endif
     </div>
+    @if (auth()->user()->es('Estudiante'))
     <div>
         <x-textarea wire:model.defer='form.motivo_adicional' id='motivo_adicional' name='motivo_adicional' class=''
             :label="__('Motivo Adicional')" placeholder='Motivo Adicional' />
     </div>
+    @endif
     @if (!auth()->user()->es('Estudiante'))
     <div>
         <x-select wire:model.defer='form.respuesta' id='respuesta' name='respuesta' :label="__('Respuesta')"
@@ -70,18 +80,17 @@
             class='' :label="__('Respuesta Adicional')" placeholder='Respuesta Adicional' />
     </div>
     @endif
-    <div>
+    {{-- <div>
+        @if (!auth()->user()->es('Estudiante'))
         <x-select wire:model.defer='form.asociado_id' id='asociado_id' name='asociado_id'
-            :label="__('Movimiento asociado')" placeholder='Selecciona un movimiento para asociar'>
-            @foreach ($form->movimientos as $movimiento)
-            <x-select.option label="{{ $movimiento->nombre }}" value="{{ $movimiento->id }}" />
-            @endforeach
-        </x-select>
-    </div>
+            :label="__('Movimiento asociado')" placeholder='Selecciona un movimiento para asociar'
+            :options="$form->movimientos" option-label="nombre" option-value="id" />
+        @endif
+    </div> --}}
     <div>
         @if (!auth()->user()->es('Estudiante'))
-        <x-toggle wire:model.defer="form.is_paralelo" id="is_paralelo" name="is_paralelo" :label="__('¿Paralelo?')"
-            lg />
+        <x-toggle wire:model.defer="form.is_paralelo" id="is_paralelo" name="is_paralelo" :label="__('¿Paralelo?')" lg
+            readonly />
         @endif
     </div>
 

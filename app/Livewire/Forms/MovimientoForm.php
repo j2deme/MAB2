@@ -48,15 +48,23 @@ class MovimientoForm extends Form
         return [
             'user_id' => 'required',
             'semestre_id' => 'required',
-            'carrera_id' => '',
+            'carrera_id' => 'nullable',
             'grupo_id' => 'required',
             'tipo' => 'required',
             'estatus' => 'required',
-            'motivo' => 'bail|required|string',
+            'motivo' => 'required|string',
             'motivo_adicional' => 'nullable|string',
             'respuesta' => 'nullable|string',
             'respuesta_adicional' => 'nullable|string',
-            'is_paralelo' => 'bail|required|boolean',
+            'is_paralelo' => 'required|boolean',
+        ];
+    }
+
+    public function messages()
+    {
+        return [
+            'grupo_id.required' => 'El campo grupo es obligatorio.',
+            'motivo.required' => 'El campo motivo es obligatorio.',
         ];
     }
 
