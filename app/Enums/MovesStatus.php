@@ -15,13 +15,13 @@ enum MovesStatus: string
     public function color(): string
     {
         return match ($this) {
-            self::REGISTRADO => 'sky-400',
-            self::REVISION => 'amber-400',
-            self::AUTORIZADO => 'green-400',
-            self::AUTORIZADO_JEFE => 'green-500',
-            self::RECHAZADO => 'red-400',
-            self::RECHAZADO_JEFE => 'red-500',
-            self::CANCELADO => 'gray-400',
+            self::REGISTRADO => 'sky',
+            self::REVISION => 'amber',
+            self::AUTORIZADO => 'green',
+            self::AUTORIZADO_JEFE => 'emerald',
+            self::RECHAZADO => 'red',
+            self::RECHAZADO_JEFE => 'rose',
+            self::CANCELADO => 'gray',
         };
     }
 
