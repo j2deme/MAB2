@@ -58,22 +58,22 @@ class UserForm extends Form
     public function store(): void
     {
         $this->password = Hash::make($this->password);
-        $this->setCarreras();
-        $this->userModel->create($this->validate());
+        $user           = $this->userModel->create($this->validate());
+        $this->setCarreras($user);
 
         $this->reset();
     }
 
     public function update(): void
     {
-        $this->setCarreras();
         $this->userModel->update($this->validate());
+        $this->setCarreras($this->userModel);
 
         $this->reset();
     }
 
-    public function setCarreras()
+    public function setCarreras($user)
     {
-        $this->userModel->carreras()->sync($this->carreras_id);
+        $user->carreras()->sync($this->carreras_id);
     }
 }
