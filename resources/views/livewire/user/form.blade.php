@@ -10,16 +10,6 @@
                 :label="__('Nombre de usuario')" placeholder='Nombre de usuario'
                 description="Para estudiantes es el número de control" autocomplete="off" />
         </div>
-        @if ($form->mode === 'create')
-        <div>
-            <x-password wire:model.defer='form.password' id='password' name='password' class=''
-                :label="__('Contraseña')" placeholder='Contraseña' autocomplete="off" />
-        </div>
-        @endif
-        <div>
-            <x-input wire:model.defer=' form.email' id='email' name='email' class='' :label="__('Email')"
-                placeholder='Correo electrónico' />
-        </div>
         <div>
             <x-select wire:model.defer='form.rol' id='rol' name='rol' :label="__('Rol')" placeholder='Selecciona un rol'
                 :searchable="true">
@@ -29,9 +19,24 @@
             </x-select>
         </div>
         <div>
+            <x-input wire:model.defer=' form.email' id='email' name='email' class='' :label="__('Email')"
+                placeholder='Correo electrónico' />
+        </div>
+        @if ($form->mode === 'create')
+        <div>
+            <x-password wire:model.defer='form.password' id='password' name='password' class=''
+                :label="__('Contraseña')" placeholder='Contraseña' autocomplete="off" />
+        </div>
+        @endif
+        <div>
             <x-toggle wire:model.defer="form.inscrito" id="inscrito" name="inscrito" :label="__('¿Está inscrito?')"
                 lg />
         </div>
+    </div>
+    <div>
+        <x-select wire:model.defer='form.carreras_id' id='carreras_id' name='carreras_id' :label="__('Carrera')"
+            placeholder='Selecciona una carrera' :searchable="true" multiselect :options="$form->carreras"
+            option-label="nombre" option-value="id" />
     </div>
 
     <div class="flex items-center gap-4">
