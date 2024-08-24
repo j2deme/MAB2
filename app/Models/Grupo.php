@@ -87,7 +87,12 @@ class Grupo extends Model
 
     public function getNombreCortoAttribute()
     {
-        return "{$this->materia->nombre_completo} ({$this->siglas})";
+        return "{$this->materia->nombre} ({$this->siglas})";
+    }
+
+    public function getCarreraAttribute()
+    {
+        return $this->materia->carrera;
     }
 
     /**
