@@ -132,24 +132,25 @@ final class UsersTable extends PowerGridComponent
     #[\Livewire\Attributes\On('delete')]
     public function delete($rowId): void
     {
+        $row = User::query()->find($rowId);
         // Si es el usuario actual, no permitir eliminar
-        if ($rowId == Auth::user()->id) {
-            $this->notification()->error('No permitido', 'No puedes eliminar tu propio usuario.');
-            return;
-        }
+        // if ($rowId == Auth::user()->id) {
+        //     $this->notification()->error('No permitido', 'No puedes eliminar tu propio usuario.');
+        //     return;
+        // }
         // Si es el usuario administrador, no permitir eliminar
-        if (Auth::user()->rol->value == UserRoles::ADMIN) {
-            $this->notification()->error('No permitido', 'No puedes eliminar un usuario administrador.');
-            return;
-        }
+        // if ($row->rol->value == UserRoles::ADMIN) {
+        //     $this->notification()->error('No permitido', 'No puedes eliminar un usuario administrador.');
+        //     return;
+        // }
         // Si el usuario es estudiante y tiene movimientos asociados, no permitir eliminar
-        $movimientos = Movimiento::where('user_id', $rowId)->get();
-        if (Auth::user()->rol->value == UserRoles::ESTUDIANTE and count($movimientos) > 0) {
-            $this->notification()->error('No permitido', 'No puedes eliminar un usuario con movimientos asociados.');
-            return;
-        }
+        // $movimientos = Movimiento::where('user_id', $rowId)->get();
+        // if ($row->rol->value == UserRoles::ESTUDIANTE and count($movimientos) > 0) {
+        //     $this->notification()->error('No permitido', 'No puedes eliminar un usuario con movimientos asociados.');
+        //     return;
+        // }
 
-        // User::query()->find($rowId)->delete();
+        $row->delete();
         $this->notification()->error('Registro eliminado', 'Grupo eliminado correctamente.');
 
         $this->refresh();
