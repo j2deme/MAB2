@@ -20,7 +20,7 @@
 <body class="font-sans antialiased">
     <x-notifications />
     <x-dialog />
-    @if (session()->has('wireui:notification'))
+    @if (session()->has('wireui:notification') and false)
     <script>
         Wireui.hook('notifications:load', () => {
             $title = '{{ session('wireui:notification.options.title') }}';
