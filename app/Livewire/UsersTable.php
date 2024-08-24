@@ -156,17 +156,15 @@ final class UsersTable extends PowerGridComponent
         $this->refresh();
     }
 
-    public function actions(User $row): array
+    public function actionsFromView(User $row)
     {
-        return [
-            Button::add('actions')
-                ->bladeComponent('row-actions', [
-                    'model' => 'users',
-                    'id' => $row->id
-                ]),
-            // Agrega botón para reestablecer contraseña
-            // Agrega botón para inscribir si es estudiante
-        ];
+        return view('components.row-actions', [
+            'model' => 'users',
+            'id' => $row->id
+        ]);
+
+        // TODO: Agrega botón para reestablecer contraseña
+        // TODO: Agrega botón para inscribir si es estudiante
     }
 
     /*
