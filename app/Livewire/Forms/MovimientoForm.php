@@ -144,7 +144,7 @@ class MovimientoForm extends Form
         $this->reset();
     }
 
-    public function cargaDesplegables($tipo = '')
+    private function cargaDesplegables($tipo = '')
     {
         $semestre = Semestre::where('activo', true)->first();
 
