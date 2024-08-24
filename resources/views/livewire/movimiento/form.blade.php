@@ -1,6 +1,5 @@
 <div class="space-y-6">
     <x-errors />
-    {{-- @dump($form) --}}
     {{-- <div>
         <x-input wire:model.defer='form.user_id' id='user_id' name='user_id' class='' :label="__('User Id')"
             placeholder='User Id' />
@@ -13,33 +12,23 @@
         <x-input wire:model.defer='form.carrera_id' id='carrera_id' name='carrera_id' class='' :label="__('Carrera Id')"
             placeholder='Carrera Id' />
     </div> --}}
-    @if(auth()->user()->es('Estudiante') and $form->tipo == 'alta')
+    @includeWhen(auth()->user()->es('Estudiante') and $form->tipo->value == 'Alta', 'livewire.movimiento.slots')
     <div>
-        <h2>Altas disponibles</h2>
-        <div class="grid grid-cols-1 gap-4 md:grid-cols-5">
-            @for ($i = 0; $i < $form->max_altas; $i++)
-                <div
-                    class="block w-full max-w-sm p-6 py-5 text-center align-middle bg-gray-200 border border-gray-300 rounded-lg shadow hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
-                    <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">{{ $i + 1 }}</h5>
-                </div>
-                @endfor
-        </div>
-    </div>
-    @endif
-    <div>
-        {{--
-        <x-select wire:model.defer="form.grupo_id" id="grupo_id" name="grupo_id" label="Grupo"
-            placeholder="Selecciona un grupo" :async-data="route('api.grupos.index')" option-label="nombre_visual"
-            option-value="id" /> --}}
+        @if (auth()->user()->es('Estudiante'))
         <x-select wire:model.defer='form.grupo_id' id='grupo_id' name='grupo_id' :label="__('Grupo')"
             placeholder='Selecciona un grupo' :options="$form->grupos" option-label="nombre" option-value="id"
             option-description="materia.carrera.nombre" :searchable="true" />
+        @else
+        <x-select wire:model.defer='form.grupo_id' id='grupo_id' name='grupo_id' :label="__('Grupo')"
+            placeholder='Selecciona un grupo' :options="$form->grupos" option-label="nombre" option-value="id"
+            option-description="materia.carrera.nombre" readonly />
+        @endif
     </div>
     @if (!auth()->user()->es('Estudiante'))
     <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
         <div>
             <x-select wire:model.defer='form.tipo' id='tipo' name='tipo' :label="__('Tipo')"
-                placeholder='Selecciona un tipo de movimiento'>
+                placeholder='Selecciona un tipo de movimiento' readonly>
                 @foreach ($form->tipos as $tipo)
                 <x-select.option label="{{ $tipo->value }}" value="{{ $tipo->value }}" />
                 @endforeach

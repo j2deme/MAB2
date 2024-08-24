@@ -41,6 +41,7 @@ class MovimientoForm extends Form
     public $mode = 'create';
 
     public $max_altas = 3;
+    public $altas = [];
 
     public function rules(): array
     {
@@ -89,6 +90,12 @@ class MovimientoForm extends Form
         if ($tipo == 'alta') {
             $semestre        = Semestre::where('activo', true)->first();
             $this->max_altas = $semestre->max_altas;
+
+            $this->altas = Movimiento::where('user_id', Auth::user()->id)
+                ->where('semestre_id', $semestre->id)
+                ->where('deleted_at', null)
+                ->where('tipo', MovesType::ALTA)
+                ->get();
         }
     }
 
