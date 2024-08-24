@@ -79,10 +79,15 @@ class Grupo extends Model
     public function getNombreAttribute()
     {
         if ($this->materia) {
-            return "[{$this->materia->clave}] {$this->materia->nombre_completo} ({$this->siglas})";
+            return "[{$this->materia->clave}] {$this->materia->nombre_completo} ({$this->siglas}) - [{$this->materia->carrera->siglas}]";
         } else {
             return "[{$this->materia_id}] ({$this->siglas})";
         }
+    }
+
+    public function getNombreCortoAttribute()
+    {
+        return "{$this->materia->nombre_completo} ({$this->siglas})";
     }
 
     /**
