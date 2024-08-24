@@ -136,10 +136,14 @@ final class MovimientosTable extends PowerGridComponent
         ];
     }
 
-    #[\Livewire\Attributes\On('edit')]
-    public function edit($rowId): void
+    #[\Livewire\Attributes\On('delete')]
+    public function delete($rowId): void
     {
-        $this->js('alert('.$rowId.')');
+        Movimiento::query()->find($rowId)->delete();
+
+        $this->notification()->error('Registro eliminado', 'Grupo eliminado correctamente.');
+
+        $this->refresh();
     }
 
     public function actions(Movimiento $row): array
