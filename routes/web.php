@@ -40,6 +40,7 @@ Route::middleware(['auth'])->group(function () {
     // MARK: Solicitudes
     Route::get('/solicitudes', \App\Livewire\Movimientos\Index::class)->name('movimientos.index');
     Route::get('/solicitudes/create', \App\Livewire\Movimientos\Create::class)->name('movimientos.create');
+    Route::get('/solicitudes/create/{tipo}', \App\Livewire\Movimientos\Create::class)->name('movimientos.request');
     Route::get('/solicitudes/show/{movimiento}', \App\Livewire\Movimientos\Show::class)->name('movimientos.show');
     Route::get('/solicitudes/update/{movimiento}', \App\Livewire\Movimientos\Edit::class)->name('movimientos.edit');
 
