@@ -99,7 +99,7 @@ class User extends Authenticatable
      */
     public function carreras()
     {
-        return $this->belongsToMany(\App\Models\Carrera::class);
+        return $this->belongsToMany(\App\Models\Carrera::class)->withTimestamps();
     }
 
     /**
