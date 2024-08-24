@@ -2,12 +2,10 @@
 
 @if (isset($carreras) and $carreras->count() > 0)
 @foreach ($carreras as $carrera)
-<x-badge outline label="{{ $carrera->siglas }}" class="border-{{ $carrera->color }}
-  text-{{ $carrera->color }}" />
+<x-badge label="{{ $carrera->siglas }}" class="bg-{{ $carrera->color }}" />
 @endforeach
 @elseif (isset($carrera))
-<x-badge outline label="{{ $carrera->siglas }}" class="border-{{ $carrera->color }}
-    text-{{ $carrera->color }}" />
+<x-badge label="{{ $carrera->siglas }}" class="bg-{{ $carrera->color }}" />
 @else
 N/A
 @endif
