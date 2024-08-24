@@ -49,7 +49,9 @@ final class UsersTable extends PowerGridComponent
 
     public function relationSearch(): array
     {
-        return [];
+        return [
+            'carreras' => ['nombre', 'siglas']
+        ];
     }
 
     public function fields(): PowerGridFields
