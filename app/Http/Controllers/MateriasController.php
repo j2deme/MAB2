@@ -24,8 +24,9 @@ class MateriasController extends Controller
         $carrera = \App\Models\Carrera::find($request->carrera_id);
 
         $archivo  = $request->file('archivo');
-        $filetype = $archivo->getMimeType();
-        $path     = $archivo->store("materias-{$carrera->siglas}.{$filetype}", 'local');
+        $filetype = $archivo->getClientOriginalExtension();
+        $filename = "materias-{$carrera->siglas}.{$filetype}";
+        $path     = $archivo->storeAs("grupos", $filename);
 
         $reader      = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
         $spreadsheet = $reader->load(storage_path('app/' . $path));
@@ -50,8 +51,10 @@ class MateriasController extends Controller
                 'carrera_id' => $carrera->id,
             ];
 
-            $materia = Materia::where('clave', $data['clave'])->first() ?? new Materia();
-            $materia->fill($data);
+            $materia = Materia::updateOrCreate(
+                ['clave' => $data['clave'], 'carrera_id' => $carrera->id],
+                $data
+            );
             $materia->save();
         }
 
