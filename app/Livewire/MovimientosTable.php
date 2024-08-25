@@ -18,6 +18,7 @@ use PowerComponents\LivewirePowerGrid\Traits\WithExport;
 use Illuminate\Support\Facades\Blade;
 use WireUi\Traits\WireUiActions;
 use Auth;
+use App\Enums\MovesStatus;
 
 final class MovimientosTable extends PowerGridComponent
 {
@@ -48,7 +49,32 @@ final class MovimientosTable extends PowerGridComponent
 
     public function datasource(): Builder
     {
-        return Movimiento::query();
+        if (Auth::user()->es('Estudiante')) {
+            return Movimiento::query()
+                ->with('user', 'grupo.materia', 'carrera')
+                ->where('user_id', Auth::id());
+        }
+
+        if (request()->routeIs('movimientos.attended')) {
+            $tipos = [MovesStatus::AUTORIZADO, MovesStatus::AUTORIZADO_JEFE, MovesStatus::RECHAZADO, MovesStatus::RECHAZADO_JEFE];
+        } elseif (request()->routeIs('movimientos.pending')) {
+            $tipos = [MovesStatus::REGISTRADO, MovesStatus::REVISION];
+        } else {
+            $tipos = MovesStatus::cases();
+        }
+
+        if (Auth::user()->es(['Coordinador'])) {
+
+            return Movimiento::query()
+                ->with('user', 'grupo.materia', 'carrera')
+                ->where('is_paralelo', false)
+                ->whereIn('estatus', $tipos)
+                ->whereIn('carrera_id', Auth::user()->carreras->pluck('id'));
+        }
+
+        return Movimiento::query()
+            ->with('user', 'grupo.materia', 'carrera')
+            ->whereIn('estatus', $tipos);
     }
 
     public function relationSearch(): array
