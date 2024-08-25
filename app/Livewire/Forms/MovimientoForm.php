@@ -12,6 +12,7 @@ use App\Enums\MovesType;
 use App\Enums\Ups;
 use App\Enums\Downs;
 use App\Enums\MovesAnswers;
+use App\Enums\UserRoles;
 use Auth;
 
 class MovimientoForm extends Form
@@ -184,7 +185,6 @@ class MovimientoForm extends Form
         $semestre = Semestre::where('activo', true)->first();
 
         $this->tipos      = MovesType::cases();
-        $this->estatuses  = MovesStatus::cases();
         $this->respuestas = MovesAnswers::cases();
 
         $this->grupos = Grupo::with('materia')
@@ -203,5 +203,11 @@ class MovimientoForm extends Form
         } else {
             $this->motivos = Downs::cases();
         }
+
+        match (Auth::user()->rol) {
+            UserRoles::JEFE => $this->estatuses = [MovesStatus::REGISTRADO, MovesStatus::REVISION, MovesStatus::RECHAZADO_JEFE, MovesStatus::AUTORIZADO_JEFE],
+            UserRoles::COORDINADOR => $this->estatuses = [MovesStatus::REGISTRADO, MovesStatus::REVISION, MovesStatus::RECHAZADO, MovesStatus::AUTORIZADO],
+            default => $this->estatuses = MovesStatus::cases()
+        };
     }
 }
