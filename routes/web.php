@@ -43,6 +43,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/solicitudes/create/{tipo}', \App\Livewire\Movimientos\Create::class)->name('movimientos.request');
     Route::get('/solicitudes/show/{movimiento}', \App\Livewire\Movimientos\Show::class)->name('movimientos.show');
     Route::get('/solicitudes/update/{movimiento}', \App\Livewire\Movimientos\Edit::class)->name('movimientos.edit');
+    Route::get('/solicitudes/pendientes', \App\Livewire\Movimientos\Index::class)->name('movimientos.pending');
+    Route::get('/solicitudes/atendidas', \App\Livewire\Movimientos\Index::class)->name('movimientos.attended');
 
     // MARK: Usuarios
     Route::get('/usuarios', \App\Livewire\Users\Index::class)->name('users.index');
