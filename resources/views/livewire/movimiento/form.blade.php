@@ -11,61 +11,82 @@
     <div>
         <x-input wire:model.defer='form.carrera_id' id='carrera_id' name='carrera_id' class='' :label="__('Carrera Id')"
             placeholder='Carrera Id' />
-    </div> --}}
-    @includeWhen(auth()->user()->es('Estudiante') and $form->tipo->value == 'Alta', 'livewire.movimiento.slots')
+    </div>
     <div>
-        @if (auth()->user()->es('Estudiante'))
+        <x-select wire:model.defer='form.tipo' id='tipo' name='tipo' :label="__('Tipo')"
+            placeholder='Selecciona un tipo de movimiento'>
+            @foreach ($form->tipos as $tipo)
+            <x-select.option label="{{ $tipo->value }}" value="{{ $tipo->value }}" />
+            @endforeach
+        </x-select>
+    </div>
+    <div>
+        <x-toggle wire:model.defer="form.is_paralelo" id="is_paralelo" name="is_paralelo" :label="__('¿Paralelo?')"
+            lg />
+    </div> --}}
+
+    @includeWhen(auth()->user()->es('Estudiante') and $form->tipo->value == 'Alta', 'livewire.movimiento.slots')
+
+    @if (!auth()->user()->es('Estudiante'))
+    @php
+    $move = $form->movimientoModel;
+    @endphp
+    <x-card class="border-2 border-{{ $move->grupo->carrera->color }} text-sm">
+        <x-slot name="title" class="w-full">
+            <div class="grid grid-cols-2">
+                <div class="place-self-start">
+                    {{ $move->grupo->materia->clave }}
+                </div>
+                <div class="place-self-end">
+                    {{ $move->user->username }}
+                </div>
+            </div>
+        </x-slot>
+        {{ $move->grupo->materia->nombre_completo }} {{ $move->grupo->siglas }}
+
+        <x-slot name="footer" class="w-full">
+            <div class="grid grid-cols-3">
+                <div class="place-self-start">
+                    @include('components.carrera-badge', ['carrera' => $move->grupo->carrera])
+                </div>
+                <div class="place-self-center">
+                    @include('components.movimiento-tipo-icon', ['tipo' => $move->tipo->value])
+                </div>
+                <div class="place-self-end">
+                    @includeWhen($move->is_paralelo,'components.paralelo-icon', ['paralelo' =>
+                    $move->is_paralelo])
+                </div>
+            </div>
+        </x-slot>
+    </x-card>
+
+    <x-card title="{{ $form->motivo }}" shadow="md">
+        @if (!Str($form->motivo_adicional)->isEmpty())
+        <p class="text-sm">{{ $form->motivo_adicional }}</p>
+        @endif
+    </x-card>
+    @endif
+
+    @if (auth()->user()->es('Estudiante'))
+    <div>
         <x-select wire:model.defer='form.grupo_id' id='grupo_id' name='grupo_id' :label="__('Grupo')"
             placeholder='Selecciona un grupo' :options="$form->grupos" option-label="nombre" option-value="id"
             option-description="materia.carrera.nombre" :searchable="true" />
-        @else
-        <x-select wire:model.defer='form.grupo_id' id='grupo_id' name='grupo_id' :label="__('Grupo')"
-            placeholder='Selecciona un grupo' :options="$form->grupos" option-label="nombre" option-value="id"
-            option-description="materia.carrera.nombre" readonly />
-        @endif
     </div>
-    @if (!auth()->user()->es('Estudiante'))
-    <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-        <div>
-            <x-select wire:model.defer='form.tipo' id='tipo' name='tipo' :label="__('Tipo')"
-                placeholder='Selecciona un tipo de movimiento' readonly>
-                @foreach ($form->tipos as $tipo)
-                <x-select.option label="{{ $tipo->value }}" value="{{ $tipo->value }}" />
-                @endforeach
-            </x-select>
-        </div>
-        <div>
-            <x-select wire:model.defer='form.estatus' id='estatus' name='estatus' :label="__('Estatus')"
-                placeholder='Selecciona un estatus'>
-                @foreach ($form->estatuses as $est)
-                <x-select.option label="{{ $est->value }}" value="{{ $est->value }}" />
-                @endforeach
-            </x-select>
-        </div>
-    </div>
-    @endif
     <div>
-        @if (auth()->user()->es('Estudiante'))
         <x-select wire:model.defer='form.motivo' id='motivo' name='motivo' :label="__('Motivo')"
             placeholder='Selecciona un motivo'>
             @foreach ($form->motivos as $motivo)
             <x-select.option label="{{ $motivo->value }}" value="{{ $motivo->value }}" />
             @endforeach
         </x-select>
-        @else
-        <h2 class="text-xl text-bold">Motivo</h2>
-        <p>{{ $form->motivo }}</p>
-        @if (!Str($form->motivo_adicional)->isEmpty())
-        <p>{{ $form->motivo_adicional }}</p>
-        @endif
-        @endif
     </div>
-    @if (auth()->user()->es('Estudiante'))
     <div>
         <x-textarea wire:model.defer='form.motivo_adicional' id='motivo_adicional' name='motivo_adicional' class=''
             :label="__('Motivo Adicional')" placeholder='Motivo Adicional' />
     </div>
     @endif
+
     @if (!auth()->user()->es('Estudiante'))
     <div>
         <x-select wire:model.defer='form.respuesta' id='respuesta' name='respuesta' :label="__('Respuesta')"
@@ -79,20 +100,21 @@
         <x-textarea wire:model.defer='form.respuesta_adicional' id='respuesta_adicional' name='respuesta_adicional'
             class='' :label="__('Respuesta Adicional')" placeholder='Respuesta Adicional' />
     </div>
+    <div>
+        <x-select wire:model.defer='form.estatus' id='estatus' name='estatus' :label="__('Estatus')"
+            placeholder='Selecciona un estatus'>
+            @foreach ($form->estatuses as $est)
+            <x-select.option label="{{ $est->value }}" value="{{ $est->value }}" />
+            @endforeach
+        </x-select>
+    </div>
     @endif
+
     {{-- <div>
-        @if (!auth()->user()->es('Estudiante'))
         <x-select wire:model.defer='form.asociado_id' id='asociado_id' name='asociado_id'
             :label="__('Movimiento asociado')" placeholder='Selecciona un movimiento para asociar'
             :options="$form->movimientos" option-label="nombre" option-value="id" />
-        @endif
     </div> --}}
-    <div>
-        @if (!auth()->user()->es('Estudiante'))
-        <x-toggle wire:model.defer="form.is_paralelo" id="is_paralelo" name="is_paralelo" :label="__('¿Paralelo?')" lg
-            readonly />
-        @endif
-    </div>
 
     <div class="flex items-center gap-4">
         <x-primary-button>
