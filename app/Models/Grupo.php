@@ -41,6 +41,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @method static \Illuminate\Database\Eloquent\Builder|Grupo withoutTrashed()
  * @property-read mixed $clave
  * @property-read mixed $nombre
+ * @property-read mixed $carrera
+ * @property-read mixed $nombre_corto
  * @mixin \Eloquent
  */
 class Grupo extends Model
