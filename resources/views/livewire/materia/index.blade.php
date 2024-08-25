@@ -19,7 +19,7 @@
                         </x-button>
                         <x-button secondary :href="route('materias.batch')">
                             <x-icon name="upload" class="w-4 h-4 mr-2" />
-                            Subir en grupo
+                            Subir
                         </x-button>
                     </div>
                 </div>
