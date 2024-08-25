@@ -1,6 +1,6 @@
 <x-slot name="header">
     <h2 class="text-xl font-semibold leading-tight text-gray-800">
-        {{ __('Create') }} Movimiento
+        {{ __('Create') }} solicitud
     </h2>
 </x-slot>
 
@@ -10,7 +10,7 @@
             <div class="w-full">
                 <div class="sm:flex sm:items-center">
                     <div class="sm:flex-auto">
-                        <h1 class="text-base font-semibold leading-6 text-gray-900">{{ __('Create') }} Movimiento</h1>
+                        <h1 class="text-base font-semibold leading-6 text-gray-900">{{ __('Create') }} solicitud</h1>
                     </div>
                     <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
                         @include('components.back-button', ['url' => route('movimientos.index')])
