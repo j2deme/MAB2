@@ -41,7 +41,11 @@ final class MateriasTable extends PowerGridComponent
 
     public function datasource(): Builder
     {
-        return Materia::query()->with('carrera');
+        return Materia::query()
+            ->with('carrera')
+            ->orderBy('carrera_id')
+            ->orderBy('semestre')
+            ->orderBy('clave', 'asc');
     }
 
     public function relationSearch(): array
@@ -82,12 +86,12 @@ final class MateriasTable extends PowerGridComponent
                 ->visibleInExport(true),
 
             Column::make('Nombre completo', 'nombre_completo')
-                ->contentClasses('text-wrap text-justify')
+                ->contentClasses('text-wrap')
                 ->sortable()
                 ->searchable(),
 
             Column::make('Carrera', 'carrera_nombre', 'carrera_id')
-                ->contentClasses('text-wrap text-justify')
+                ->contentClasses('text-wrap')
                 ->sortable()
                 ->searchable(),
 
