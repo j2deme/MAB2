@@ -13,10 +13,14 @@
                         <h1 class="text-base font-semibold leading-6 text-gray-900">{{ __('Materias') }}</h1>
                     </div>
                     <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
-                        <x-primary-button wire:navigate href="{{ route('materias.create') }}" class="">
+                        <x-button primary :href="route('materias.create')">
                             <x-icon name="plus" class="w-4 h-4 mr-2" />
                             {{ __('Add') }} {{ __('materia') }}
-                        </x-primary-button>
+                        </x-button>
+                        <x-button secondary :href="route('materias.batch')">
+                            <x-icon name="upload" class="w-4 h-4 mr-2" />
+                            Subir en grupo
+                        </x-button>
                     </div>
                 </div>
 

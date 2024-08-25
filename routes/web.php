@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\MateriasController;
 
 Route::view('/', 'welcome');
 
@@ -30,6 +31,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/materias/create', App\Livewire\Materias\Create::class)->name('materias.create');
     Route::get('/materias/show/{materia}', App\Livewire\Materias\Show::class)->name('materias.show');
     Route::get('/materias/update/{materia}', App\Livewire\Materias\Edit::class)->name('materias.edit');
+    Route::get('/materias/upload', [MateriasController::class, 'batch'])->name('materias.batch');
+    Route::post('/materias/upload', [MateriasController::class, 'upload'])->name('materias.upload');
 
     // MARK: Grupos
     Route::get('/grupos', App\Livewire\Grupos\Index::class)->name('grupos.index');
