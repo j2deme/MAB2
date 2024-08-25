@@ -1,6 +1,16 @@
 <x-slot name="header">
     <h2 class="text-xl font-semibold leading-tight text-gray-800">
-        {{ __('Movimientos') }}
+        @if (auth()->user()->es('Estudiante'))
+        {{ __('Mis solicitudes') }}
+        @else
+        @if (request()->routeIs('movimientos.pending'))
+        {{ __('Solicitudes pendientes') }}
+        @elseif (request()->routeIs('movimientos.attended'))
+        {{ __('Solicitudes atendidas') }}
+        @else
+        {{ __('Solicitudes') }}
+        @endif
+        @endif
     </h2>
 </x-slot>
 
