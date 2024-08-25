@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MateriasController;
+use App\Http\Controllers\GruposController;
 
 Route::view('/', 'welcome');
 
@@ -39,6 +40,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/grupos/create', App\Livewire\Grupos\Create::class)->name('grupos.create');
     Route::get('/grupos/show/{grupo}', App\Livewire\Grupos\Show::class)->name('grupos.show');
     Route::get('/grupos/update/{grupo}', App\Livewire\Grupos\Edit::class)->name('grupos.edit');
+    Route::get('/grupos/upload', [GruposController::class, 'batch'])->name('grupos.batch');
+    Route::post('/grupos/upload', [GruposController::class, 'upload'])->name('grupos.upload');
 
     // MARK: Solicitudes
     Route::get('/solicitudes', \App\Livewire\Movimientos\Index::class)->name('movimientos.index');
