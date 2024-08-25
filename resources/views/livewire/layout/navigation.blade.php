@@ -37,10 +37,69 @@ $logout = function (Logout $logout) {
                     <x-nav-link :href="route('users.index')" active="users.*" wire:navigate icon="users"
                         label="Usuarios" />
                     @endif
+
+                    @if (auth()->user()->es('Estudiante'))
                     <x-nav-link :href="route('movimientos.index')" active="movimientos.*" wire:navigate
                         icon="arrows-down-up"
                         label="{{ auth()->user()->es('Estudiante') ? 'Mis solicitudes' : 'Solicitudes' }}" />
+                    @endif
                 </div>
+
+                @if(!auth()->user()->es('Estudiante'))
+                <div class="hidden h-full px-1 pt-1 sm:flex sm:items-center sm:ms-6">
+                    <x-dropdown icon="chevron-down" width="2xl">
+                        <x-slot name="trigger">
+                            @php
+                            $active = request()->routeIs('movimientos.*') ?? null;
+                            $classes = ($active ?? false)
+                            ? 'inline-flex items-center px-3 py-4 border-b-2 border-primary-400 dark:border-primary-600
+                            text-sm font-medium
+                            leading-5
+                            text-gray-900 dark:text-gray-100 focus:outline-none focus:border-primary-700 transition
+                            duration-150 ease-in-out'
+                            : 'inline-flex items-center px-3 py-4 border-b-2 border-transparent text-sm font-medium
+                            leading-5 text-gray-500
+                            dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300
+                            dark:hover:border-gray-700
+                            focus:outline-none focus:text-gray-700 dark:focus:text-gray-300 focus:border-gray-300
+                            dark:focus:border-gray-700
+                            transition duration-150 ease-in-out';
+                            @endphp
+                            <button class="{{ $classes }}}}">
+                                <x-icon name="arrows-down-up"
+                                    class="w-5 h-5 mr-1 {{ $active ? 'text-primary-500' : null }}" />
+                                <div>Solicitudes</div>
+
+                                <div class="ms-1">
+                                    <x-icon name="caret-down" bold class="w-3 h-3" />
+                                </div>
+                            </button>
+                        </x-slot>
+
+                        <x-dropdown.item :href="route('movimientos.index')" wire:navigate>
+                            <x-icon name="list" class="w-5 h-5 mr-1 text-gray-500" />
+                            Todas las solicitudes
+                        </x-dropdown.item>
+
+                        <x-dropdown.item :href="route('movimientos.pending')" wire:navigate>
+                            <x-icon name="clock-countdown" class="w-5 h-5 mr-1 text-gray-500" />
+                            Solicitudes pendientes
+                        </x-dropdown.item>
+                        <x-dropdown.item :href="route('movimientos.attended')" wire:navigate>
+                            <x-icon name="checks" class="w-5 h-5 mr-1 text-gray-500" />
+                            Solicitudes atendidas
+                        </x-dropdown.item>
+                        <x-dropdown.item separator :href="route('playground')" wire:navigate>
+                            <x-icon name="book" class="w-5 h-5 mr-1 text-gray-500" />
+                            Listado por materia
+                        </x-dropdown.item>
+                        <x-dropdown.item :href="route('playground')" wire:navigate>
+                            <x-icon name="list-numbers" class="w-5 h-5 mr-1 text-gray-500" />
+                            Listado por generación
+                        </x-dropdown.item>
+                    </x-dropdown>
+                </div>
+                @endif
             </div>
 
             <div class="flex-grow p-4 text-right align-middle">
