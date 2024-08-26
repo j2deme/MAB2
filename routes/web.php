@@ -4,6 +4,10 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MateriasController;
 use App\Http\Controllers\GruposController;
 use App\Http\Controllers\UserController;
+use Livewire\Volt\Volt;
+
+// Route::view('/', 'welcome');
+Volt::route('/', 'pages.auth.login');
 
 Route::view('/', 'welcome');
 
