@@ -51,6 +51,7 @@ RUN npm install && npm run build
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+RUN chown -R www-data bootstrap/ storage/ storage/logs/
 
 RUN php artisan optimize
 RUN php artisan config:cache
