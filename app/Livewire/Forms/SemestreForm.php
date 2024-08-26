@@ -61,9 +61,16 @@ class SemestreForm extends Form
     public function update(): void
     {
         if ($this->activo) {
-            Semestre::query()->update(['activo' => false]);
+            Semestre::query()
+                ->where('id', '!=', $this->semestreModel->id)
+                ->update(['activo' => false]);
         }
         $this->semestreModel->update($this->validate());
+
+        // Sino hay un semestre activo, se activa el actual
+        if (!Semestre::where('activo', true)->exists()) {
+            $this->semestreModel->update(['activo' => true]);
+        }
 
         $this->reset();
     }

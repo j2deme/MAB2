@@ -22,23 +22,23 @@
     <div class="grid grid-cols-2 gap-6">
         <div>
             <x-datetime-picker wire:model.defer="form.inicio_altas" id="inicio_altas" name="inicio_altas"
-                autocomplete="false" placeholder="Inicio altas" :label="__('Inicio Altas')" without-time
-                display-format="DD-MM-YYYY" />
+                autocomplete="false" placeholder="Inicio altas" :label="__('Inicio Altas')"
+                display-format="DD-MM-YYYY HH:mm" />
         </div>
         <div>
             <x-datetime-picker wire:model.defer="form.fin_altas" id="fin_altas" name="fin_altas" autocomplete="false"
-                placeholder="Fin altas" :label="__('Fin Altas')" without-time display-format="DD-MM-YYYY" />
+                placeholder="Fin altas" :label="__('Fin Altas')" display-format="DD-MM-YYYY HH:mm" />
         </div>
     </div>
     <div class="grid grid-cols-2 gap-6">
         <div>
             <x-datetime-picker wire:model.defer="form.inicio_bajas" id="inicio_bajas" name="inicio_bajas"
-                autocomplete="false" placeholder="Inicio bajas" :label="__('Inicio Bajas')" without-time
-                display-format="DD-MM-YYYY" />
+                autocomplete="false" placeholder="Inicio bajas" :label="__('Inicio Bajas')"
+                display-format="DD-MM-YYYY HH:mm" />
         </div>
         <div>
             <x-datetime-picker wire:model.defer="form.fin_bajas" id="fin_bajas" name="fin_bajas" autocomplete="false"
-                placeholder="Fin bajas" :label="__('Fin Bajas')" without-time display-format="DD-MM-YYYY" />
+                placeholder="Fin bajas" :label="__('Fin Bajas')" display-format="DD-MM-YYYY HH:mm" />
         </div>
     </div>
     <div class="flex items-center gap-4">
