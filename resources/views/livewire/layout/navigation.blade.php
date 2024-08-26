@@ -121,7 +121,9 @@ $logout = function (Logout $logout) {
                         </button>
                     </x-slot>
 
+                    @if (!auth()->user()->es('Estudiante'))
                     <x-dropdown.item :label="__('Profile')" :href="route('profile')" wire:navigate />
+                    @endif
 
                     <!-- Authentication -->
                     <x-dropdown.item :label="__('Logout')" wire:click='logout' />
@@ -186,9 +188,13 @@ $logout = function (Logout $logout) {
             </div>
 
             <div class="mt-3 space-y-1">
+                @if (!auth()->user()->es('Estudiante'))
                 <x-responsive-nav-link :href="route('profile')" wire:navigate>
                     {{ __('Profile') }}
                 </x-responsive-nav-link>
+                @else
+                {{ __('Profile') }}
+                @endif
 
                 <!-- Authentication -->
                 <button wire:click="logout" class="w-full text-start">
