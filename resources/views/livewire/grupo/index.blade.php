@@ -15,7 +15,7 @@
                     <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
                         <x-button primary :href="route('grupos.create')">
                             <x-icon name="plus" class="w-4 h-4 mr-2" />
-                            {{ __('Add') }} {{ __('materia') }}
+                            {{ __('Add') }} {{ __('grupo') }}
                         </x-button>
                         <x-button secondary :href="route('grupos.batch')">
                             <x-icon name="upload" class="w-4 h-4 mr-2" />
