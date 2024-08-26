@@ -27,9 +27,9 @@ class SemestreForm extends Form
             'nombre_completo' => 'bail|required|string',
             'activo' => 'nullable|boolean',
             'inicio_altas' => 'bail|required|date',
-            'fin_altas' => 'bail|required|date|after:inicio_altas',
+            'fin_altas' => 'bail|required|date|after_or_equal:inicio_altas',
             'inicio_bajas' => 'bail|required|date',
-            'fin_bajas' => 'bail|required|date|after:inicio_bajas',
+            'fin_bajas' => 'bail|required|date|after_or_equal:inicio_bajas',
             'max_altas' => 'bail|required|integer|min:1|max:10',
         ];
     }
