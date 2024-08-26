@@ -42,6 +42,8 @@ class MovimientoForm extends Form
 
     public $mode = 'create';
 
+    public Semestre $semestre;
+
     public $max_altas = 3;
     public $altas = [];
 
@@ -97,8 +99,10 @@ class MovimientoForm extends Form
 
         $this->cargaDesplegables($tipo);
 
+        $semestre       = Semestre::where('activo', true)->first();
+        $this->semestre = $semestre;
+
         if ($tipo == 'alta') {
-            $semestre        = Semestre::where('activo', true)->first();
             $this->max_altas = $semestre->max_altas;
 
             $this->altas = Movimiento::where('user_id', Auth::user()->id)
@@ -107,6 +111,7 @@ class MovimientoForm extends Form
                 ->where('tipo', MovesType::ALTA)
                 ->get();
         }
+
     }
 
     public function store(): void
