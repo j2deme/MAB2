@@ -9,7 +9,7 @@ use Livewire\Volt\Volt;
 // Route::view('/', 'welcome');
 Volt::route('/', 'pages.auth.login');
 
-Route::view('/', 'welcome');
+Route::view('/playground', 'playground')->name('playground');
 
 Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])
