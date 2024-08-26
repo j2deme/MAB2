@@ -115,8 +115,8 @@ class MovimientoForm extends Form
 
         if (Auth::user()->es('Estudiante')) {
             match ($tipo) {
-                'alta' => $this->outOfRange = !now()->between($semestre->inicio_altas, $semestre->fin_altas),
-                'baja' => $this->outOfRange = !now()->between($semestre->inicio_bajas, $semestre->fin_bajas),
+                'alta', 'Alta' => $this->outOfRange = !now()->between($semestre->inicio_altas, $semestre->fin_altas),
+                'baja', 'Baja' => $this->outOfRange = !now()->between($semestre->inicio_bajas, $semestre->fin_bajas),
             };
         }
 
