@@ -1,7 +1,7 @@
 <div class="space-y-6">
     @if ($form->outOfRange)
     <x-alert title="Fuera de rango" negative>
-        @if($form->tipo == 'alta')
+        @if($form->tipo->value == 'Alta')
         <p>Fuera de rango para solicitar alta de materias.</p>
         @else
         <p>Fuera de rango para solicitar baja de materias.</p>
