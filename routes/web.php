@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MateriasController;
 use App\Http\Controllers\GruposController;
+use App\Http\Controllers\UserController;
 
 Route::view('/', 'welcome');
 
@@ -57,6 +58,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/usuarios/create', \App\Livewire\Users\Create::class)->name('users.create');
     Route::get('/usuarios/show/{user}', \App\Livewire\Users\Show::class)->name('users.show');
     Route::get('/usuarios/update/{user}', \App\Livewire\Users\Edit::class)->name('users.edit');
+    Route::get('/usuarios/upload', [UserController::class, 'batch'])->name('users.batch');
+    Route::post('/usuarios/upload', [UserController::class, 'upload'])->name('users.upload');
 });
 
 
