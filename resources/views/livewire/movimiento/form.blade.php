@@ -1,4 +1,14 @@
 <div class="space-y-6">
+    @if ($form->outOfRange)
+    <x-alert title="Fuera de rango" negative>
+        @if($form->tipo == 'alta')
+        <p>Fuera de rango para solicitar alta de materias.</p>
+        @else
+        <p>Fuera de rango para solicitar baja de materias.</p>
+        @endif
+        <p>Contacta a tu coordinador(a) de carrera para mayor información.</p>
+    </x-alert>
+    @else
     <x-errors />
     {{-- <div>
         <x-input wire:model.defer='form.user_id' id='user_id' name='user_id' class='' :label="__('User Id')"
@@ -131,4 +141,5 @@
         </div>
         @endif
     </div>
+    @endif
 </div>

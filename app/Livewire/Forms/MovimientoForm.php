@@ -41,6 +41,7 @@ class MovimientoForm extends Form
     public $respuestas = [];
 
     public $mode = 'create';
+    public $outOfRange = false;
 
     public Semestre $semestre;
 
@@ -111,6 +112,14 @@ class MovimientoForm extends Form
                 ->where('tipo', MovesType::ALTA)
                 ->get();
         }
+
+        if (Auth::user()->es('Estudiante')) {
+            match ($tipo) {
+                'alta' => $this->outOfRange = !now()->between($semestre->inicio_altas, $semestre->fin_altas),
+                'baja' => $this->outOfRange = !now()->between($semestre->inicio_bajas, $semestre->fin_bajas),
+            };
+        }
+
 
     }
 
