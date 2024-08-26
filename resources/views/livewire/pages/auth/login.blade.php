@@ -37,7 +37,7 @@ $login = function () {
 
         <!-- Password -->
         <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
+            <x-input-label for="password" value="NIP (Mindbox)" />
 
             <x-text-input wire:model="form.password" id="password" class="block w-full mt-1" type="password"
                 name="password" required autocomplete="current-password" />
