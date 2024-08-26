@@ -129,7 +129,7 @@ class MovimientoForm extends Form
         if (!is_null($movimiento)) {
             $this->revisaParalelo($movimiento);
             // $this->asociaMovimientoo();
-            $this->reset();
+            //$this->reset();
         }
 
         redirect()->route('movimientos.index');

@@ -28,8 +28,8 @@ class Create extends Component
 
         if (!is_null($tipo) and in_array($tipo, ['alta', 'baja'])) {
             $movimiento->tipo = match ($tipo) {
-                'alta' => MovesType::ALTA,
-                'baja' => MovesType::BAJA,
+                'alta', 'Alta' => MovesType::ALTA,
+                'baja', 'Baja' => MovesType::BAJA,
             };
         } else {
             $movimiento->tipo = null;
