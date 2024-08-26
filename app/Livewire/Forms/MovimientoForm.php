@@ -126,11 +126,13 @@ class MovimientoForm extends Form
     public function store(): void
     {
         $movimiento = $this->movimientoModel->create($this->validate());
-        $this->revisaParalelo($movimiento);
+        if (!is_null($movimiento)) {
+            $this->revisaParalelo($movimiento);
+            // $this->asociaMovimientoo();
+            $this->reset();
+        }
 
-        // $this->asociaMovimiento();
-
-        $this->reset();
+        redirect()->route('movimientos.index');
     }
 
     public function update(): void
