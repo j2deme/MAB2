@@ -40,7 +40,8 @@ final class SemestresTable extends PowerGridComponent
 
     public function datasource(): Builder
     {
-        return Semestre::query();
+        return Semestre::query()
+            ->orderBy('clave');
     }
 
     public function relationSearch(): array
@@ -77,10 +78,12 @@ final class SemestresTable extends PowerGridComponent
                 ->searchable(),
 
             Column::make('Nombre Corto', 'nombre')
+                ->contentClasses('text-wrap')
                 ->sortable()
                 ->searchable(),
 
             Column::make('Nombre completo', 'nombre_completo')
+                ->contentClasses('text-wrap')
                 ->sortable()
                 ->searchable(),
 

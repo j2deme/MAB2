@@ -3,6 +3,8 @@
 namespace App\Livewire;
 
 use App\Models\Grupo;
+use App\Models\Carrera;
+use App\Models\Materia;
 use Illuminate\Support\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use PowerComponents\LivewirePowerGrid\Button;
@@ -120,46 +122,36 @@ final class GruposTable extends PowerGridComponent
 
     public function filters(): array
     {
-        $materias = Grupo::query()->with('materia')->groupBy('materia_id')->select('materia_id')->get()->map(function ($materia) {
+        $materias = Materia::query()->orderBy('nombre_completo')->get()->map(function ($materia) {
             return [
-                'label' => $materia->materia->nombre_completo . ' (' . $materia->materia->clave . ')',
-                'value' => $materia->materia_id,
+                'label' => $materia->nombre_completo . ' (' . $materia->clave . ')',
+                'value' => $materia->id,
             ];
         });
 
-        $siglas = Grupo::query()->groupBy('siglas')->select('siglas')->get()->map(function ($sigla) {
+        $siglas = Grupo::query()->groupBy('siglas')->orderBy('siglas')->select('siglas')->get()->map(function ($sigla) {
             return [
                 'label' => $sigla->siglas,
                 'value' => $sigla->siglas,
             ];
         });
 
-        $carreras = Grupo::query()
-            ->join('materias', function ($materias) {
-                $materias->on('grupos.materia_id', '=', 'materias.id');
-            })
-            ->join('carreras', function ($carreras) {
-                $carreras->on('materias.carrera_id', '=', 'carreras.id');
-            })
-            ->groupBy('carreras.id')
-            ->select('carreras.id', 'carreras.nombre', 'carreras.siglas', 'carreras.color')
-            ->get()
-            ->map(function ($carrera) {
-                return [
-                    'label' => $carrera->nombre,
-                    'value' => $carrera->id,
-                ];
-            });
+        $carreras = Carrera::query()->orderBy('nombre')->get()->map(function ($carrera) {
+            return [
+                'label' => $carrera->nombre,
+                'value' => $carrera->id,
+            ];
+        });
 
         return [
             Filter::select('materia_id')
                 ->dataSource($materias)
                 ->optionLabel('label')
                 ->optionValue('value'),
-            // Filter::select('grupo_siglas')
-            //     ->dataSource($siglas)
-            //     ->optionLabel('label')
-            //     ->optionValue('value'),
+            Filter::select('grupo_siglas')
+                ->dataSource($siglas)
+                ->optionLabel('label')
+                ->optionValue('value'),
             Filter::select('carrera_badge', 'carrera_id')
                 ->dataSource($carreras)
                 ->optionLabel('label')

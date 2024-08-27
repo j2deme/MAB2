@@ -40,7 +40,8 @@ final class CarrerasTable extends PowerGridComponent
 
     public function datasource(): Builder
     {
-        return Carrera::query();
+        return Carrera::query()
+            ->orderBy('nombre');
     }
 
     public function relationSearch(): array
@@ -56,7 +57,7 @@ final class CarrerasTable extends PowerGridComponent
             ->add('clave_interna')
             ->add('nombre')
             ->add('color')
-            ->add('color_icon', fn(Carrera $model) => Blade::render('<x-icon fill name="square" class="w-7 h-7 text-' . $model->color . '" />'));
+            ->add('color_icon', fn(Carrera $model) => Blade::render('<x-icon fill name="square" class="w-8 h-8 text-' . $model->color . '" />'));
     }
 
     public function columns(): array
@@ -67,10 +68,12 @@ final class CarrerasTable extends PowerGridComponent
                 ->searchable(),
 
             Column::make('Clave interna', 'clave_interna')
+                ->contentClasses('text-center')
                 ->sortable()
                 ->searchable(),
 
             Column::make('Nombre', 'nombre')
+                ->contentClasses('text-wrap')
                 ->sortable()
                 ->searchable(),
 

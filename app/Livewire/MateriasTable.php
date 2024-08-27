@@ -62,6 +62,7 @@ final class MateriasTable extends PowerGridComponent
             ->add('nombre_completo')
             ->add('carrera_id')
             ->add('carrera_nombre', fn(Materia $model) => e($model->carrera->nombre))
+            ->add('carrera_badge', fn(Materia $model) => Blade::render("components.carrera-badge", ['carrera' => $model->carrera]))
             ->add('semestre')
             ->add('ht')
             ->add('hp')
@@ -78,6 +79,7 @@ final class MateriasTable extends PowerGridComponent
     {
         return [
             Column::make('Clave', 'clave')
+                ->contentClasses('text-wrap')
                 ->sortable()
                 ->searchable(),
 
@@ -90,8 +92,8 @@ final class MateriasTable extends PowerGridComponent
                 ->sortable()
                 ->searchable(),
 
-            Column::make('Carrera', 'carrera_nombre', 'carrera_id')
-                ->contentClasses('text-wrap')
+            Column::make('Carrera', 'carrera_badge', 'carrera_id')
+                ->contentClasses('flex items-center justify-center')
                 ->sortable()
                 ->searchable(),
 
@@ -128,6 +130,16 @@ final class MateriasTable extends PowerGridComponent
     {
         $semestres = collect(range(1, 9))->map(fn($semestre) => ['value' => $semestre, 'label' => $semestre]);
 
+        $carreras = Carrera::query()
+            ->orderBy('nombre')
+            ->get()
+            ->map(function ($carrera) {
+                return [
+                    'label' => $carrera->nombre,
+                    'value' => $carrera->id,
+                ];
+            });
+
         return [
             Filter::select('carrera_nombre', 'carrera_id')
                 ->dataSource(Carrera::all())
@@ -135,6 +147,10 @@ final class MateriasTable extends PowerGridComponent
                 ->optionValue('id'),
             Filter::select('semestre')
                 ->dataSource($semestres)
+                ->optionLabel('label')
+                ->optionValue('value'),
+            Filter::select('carrera_badge', 'carrera_id')
+                ->dataSource($carreras)
                 ->optionLabel('label')
                 ->optionValue('value'),
         ];

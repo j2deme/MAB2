@@ -31,7 +31,8 @@ final class MovimientosTable extends PowerGridComponent
     {
 
         $config = [
-            Header::make()->showSearchInput(),
+            Header::make()
+                ->showSearchInput(),
             Footer::make()
                 ->showPerPage()
                 ->showRecordCount(),
@@ -52,7 +53,9 @@ final class MovimientosTable extends PowerGridComponent
         if (Auth::user()->es('Estudiante')) {
             return Movimiento::query()
                 ->with('user', 'grupo.materia', 'carrera')
-                ->where('user_id', Auth::id());
+                ->where('user_id', Auth::id())
+                ->orderBy('tipo')
+                ->orderBy('estatus');
         }
 
         if (request()->routeIs('movimientos.attended')) {
@@ -74,12 +77,19 @@ final class MovimientosTable extends PowerGridComponent
 
         return Movimiento::query()
             ->with('user', 'grupo.materia', 'carrera')
+            ->join('users', 'movimientos.user_id', '=', 'users.id')
+            ->select('movimientos.*', 'users.username')
+            ->orderBy('users.username')
             ->whereIn('estatus', $tipos);
     }
 
     public function relationSearch(): array
     {
-        return [];
+        return [
+            'user' => ['username'],
+            'grupo.materia' => ['nombre_completo'],
+            'carrera' => ['nombre'],
+        ];
     }
 
     public function fields(): PowerGridFields
@@ -118,6 +128,7 @@ final class MovimientosTable extends PowerGridComponent
                 ->searchable(),
 
             Column::make('Materia', 'materia')
+                ->contentClasses('text-wrap')
                 ->searchable(),
 
             Column::make('Grupo', 'siglas')
@@ -169,7 +180,8 @@ final class MovimientosTable extends PowerGridComponent
 
         $this->notification()->error('Registro eliminado', 'Grupo eliminado correctamente.');
 
-        $this->refresh();
+        // $this->refresh();
+        redirect()->route('movimientos.index');
     }
 
     public function actions(Movimiento $row): array

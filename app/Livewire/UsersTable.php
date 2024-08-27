@@ -44,7 +44,9 @@ final class UsersTable extends PowerGridComponent
     public function datasource(): Builder
     {
         return User::query()
-            ->with('carreras');
+            ->with('carreras')
+            ->orderBy('rol')
+            ->orderBy('username');
     }
 
     public function relationSearch(): array
