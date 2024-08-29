@@ -31,7 +31,8 @@
                         <x-button red label="Baja" icon="minus"
                             href="{{ route('movimientos.request', ['tipo' => 'baja']) }}"
                             class="text-xs font-semibold tracking-widest uppercase" />
-                        @else
+                        @endif
+                        @if (Auth::user()->es(['Administrador', 'Jefe']))
                         <x-primary-button wire:navigate href="{{ route('movimientos.create') }}" class="">
                             <x-icon name="plus" class="w-4 h-4 mr-2" />
                             {{ __('Add') }} {{ __('movimiento') }}
