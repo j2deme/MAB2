@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Movimiento;
+use App\Models\Semestre;
 use Illuminate\Support\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use PowerComponents\LivewirePowerGrid\Button;
@@ -19,6 +20,7 @@ use Illuminate\Support\Facades\Blade;
 use WireUi\Traits\WireUiActions;
 use Auth;
 use App\Enums\MovesStatus;
+use App\Enums\MovesType;
 
 final class MovimientosTable extends PowerGridComponent
 {
@@ -38,7 +40,7 @@ final class MovimientosTable extends PowerGridComponent
                 ->showRecordCount(),
         ];
 
-        if (!Auth::user()->es('Estudiante')) {
+        if (Auth::user()->es(['Administrador', 'Jefe'])) {
             $this->showCheckBox();
             $config[] = Exportable::make('solicitudes')
                 ->striped()
@@ -71,6 +73,9 @@ final class MovimientosTable extends PowerGridComponent
             return Movimiento::query()
                 ->with('user', 'grupo.materia', 'carrera')
                 ->where('is_paralelo', false)
+                ->join('users', 'movimientos.user_id', '=', 'users.id')
+                ->select('movimientos.*', 'users.username')
+                ->orderBy('users.username')
                 ->whereIn('estatus', $tipos)
                 ->whereIn('carrera_id', Auth::user()->carreras->pluck('id'));
         }
@@ -78,7 +83,9 @@ final class MovimientosTable extends PowerGridComponent
         return Movimiento::query()
             ->with('user', 'grupo.materia', 'carrera')
             ->join('users', 'movimientos.user_id', '=', 'users.id')
-            ->select('movimientos.*', 'users.username')
+            ->join('grupos', 'movimientos.grupo_id', '=', 'grupos.id')
+            ->join('materias', 'grupos.materia_id', '=', 'materias.id')
+            ->select('movimientos.*', 'users.username', 'materias.carrera_id', 'grupos.siglas')
             ->orderBy('users.username')
             ->whereIn('estatus', $tipos);
     }
@@ -123,16 +130,18 @@ final class MovimientosTable extends PowerGridComponent
     {
         return [
             Column::make('Estudiante', 'usuario', 'user_id')
-                ->hidden(Auth::user()->es('Estudiante'))
+                // ->hidden(Auth::user()->es('Estudiante'))
+                ->contentClasses('justify-center text-center text-wrap font-mono')
                 ->sortable()
                 ->searchable(),
 
             Column::make('Materia', 'materia')
-                ->contentClasses('text-wrap')
+                ->contentClasses('text-wrap text-sm')
                 ->searchable(),
 
             Column::make('Grupo', 'siglas')
                 ->contentClasses('text-center')
+                ->sortable()
                 ->searchable(),
 
             Column::make('Carrera', 'carrera', 'carrera_id')
@@ -141,24 +150,19 @@ final class MovimientosTable extends PowerGridComponent
                 ->searchable(),
 
             Column::make('Tipo', 'tipo_icon', 'tipo')
+                ->contentClasses('flex justify-center')
                 ->sortable()
                 ->searchable(),
 
             Column::make('Estatus', 'estatus_badge', 'estatus')
+                ->contentClasses('flex justify-center')
                 ->sortable()
                 ->searchable(),
 
-            Column::make('Motivo', 'motivo')
-                ->hidden()
-                ->toggleable(),
-
-            Column::make('Respuesta', 'respuesta')
-                ->hidden()
-                ->toggleable(),
-
             // Column::make('Asociado id', 'asociado_id'),
             Column::make('¿Paralelo?', 'paralelo_icon', 'is_paralelo')
-                ->contentClasses('flex justify-center text-center')
+                ->contentClasses('flex justify-center')
+                ->hidden(!Auth::user()->es(['Administrador', 'Jefe']))
                 ->sortable()
                 ->searchable(),
 
@@ -169,7 +173,69 @@ final class MovimientosTable extends PowerGridComponent
 
     public function filters(): array
     {
+        if (Auth::user()->es('Estudiante')) {
+            return [
+                Filter::select('tipo_icon', 'tipo')
+                    ->datasource(MovesType::cases())
+                    ->optionLabel('movimientos.tipo'),
+
+                Filter::enumSelect('estatus', 'estatus')
+                    ->datasource(MovesStatus::cases())
+                    ->optionLabel('movimientos.estatus'),
+            ];
+        }
+
+        if (Auth::user()->es('Coordinador')) {
+            $carreras = Auth::user()->carreras;
+            $siglas   = Semestre::where('activo', true)
+                ->first()
+                ->movimientos()
+                ->join('grupos', 'movimientos.grupo_id', '=', 'grupos.id')
+                ->whereIn('carrera_id', $carreras->pluck('id'))
+                ->groupBy('grupos.siglas')
+                ->orderBy('grupos.siglas')
+                ->select('grupos.siglas')
+                ->get();
+        } else {
+            $carreras = \App\Models\Carrera::query()
+                ->orderBy('siglas')
+                ->get();
+            $siglas   = Movimiento::query()
+                ->join('grupos', 'movimientos.grupo_id', '=', 'grupos.id')
+                ->groupBy('grupos.siglas')
+                ->orderBy('grupos.siglas')
+                ->select('grupos.siglas')
+                ->get();
+        }
+
+        $estudiantes = \App\Models\User::query()
+            ->whereIn('id', $this->datasource()->pluck('user_id')->unique())
+            ->orderBy('username')
+            ->get();
+
         return [
+            Filter::select('usuario', 'user_id')
+                ->datasource($estudiantes)
+                ->optionLabel('username')
+                ->optionValue('id'),
+
+            Filter::select('siglas')
+                ->datasource($siglas)
+                ->optionLabel('siglas')
+                ->optionValue('siglas'),
+
+            Filter::select('carrera', 'materias.carrera_id')
+                ->datasource($carreras)
+                ->optionLabel('siglas')
+                ->optionValue('id'),
+
+            Filter::enumSelect('tipo_icon', 'tipo')
+                ->datasource(MovesType::cases())
+                ->optionLabel('movimientos.tipo'),
+
+            Filter::enumSelect('estatus', 'estatus')
+                ->datasource(MovesStatus::cases())
+                ->optionLabel('movimientos.estatus'),
         ];
     }
 
