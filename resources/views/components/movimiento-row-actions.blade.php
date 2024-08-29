@@ -10,7 +10,8 @@
   </x-button>
   @endif
 
-  @if ($model->estatus == \App\Enums\MovesStatus::REGISTRADO)
+  @if ($model->estatus == \App\Enums\MovesStatus::REGISTRADO and
+  auth()->user()->es(['Estudiante','Jefe','Administrador']))
   <x-mini-button flat red interaction:solid x-on:confirm="{
       title: 'Eliminar registro',
       description: 'Después de eliminar un registro no se puede recuperar. ¿Estás seguro de continuar?',
