@@ -175,7 +175,7 @@ final class MovimientosTable extends PowerGridComponent
     {
         if (Auth::user()->es('Estudiante')) {
             return [
-                Filter::select('tipo_icon', 'tipo')
+                Filter::enumSelect('tipo_icon', 'tipo')
                     ->datasource(MovesType::cases())
                     ->optionLabel('movimientos.tipo'),
 
