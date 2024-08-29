@@ -32,6 +32,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read int|null $grupos_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\User> $usuarios
  * @property-read int|null $usuarios_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Movimiento> $movimientos
+ * @property-read int|null $movimientos_count
  * @mixin \Eloquent
  */
 class Carrera extends Model
@@ -68,5 +70,13 @@ class Carrera extends Model
     public function usuarios()
     {
         return $this->belongsToMany(User::class)->withTimestamps();
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function movimientos()
+    {
+        return $this->hasMany(Movimiento::class);
     }
 }
