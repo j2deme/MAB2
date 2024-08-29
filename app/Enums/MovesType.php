@@ -22,4 +22,13 @@ enum MovesType: string
             self::BAJA => 'red',
         };
     }
+
+    public static function asArray(): array
+    {
+        $array = [];
+        foreach (self::cases() as $case) {
+            $array[] = ['label' => $case->value, 'value' => $case->value];
+        }
+        return $array;
+    }
 }
