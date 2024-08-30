@@ -37,7 +37,7 @@
 
     @includeWhen(auth()->user()->es('Estudiante') and $form->tipo->value == 'Alta', 'livewire.movimiento.slots')
 
-    @if (!auth()->user()->es('Estudiante'))
+    @if (!auth()->user()->es('Estudiante') and isset($form->movimientoModel->grupo->carrera))
     @php
     $move = $form->movimientoModel;
     @endphp
@@ -77,7 +77,7 @@
     </x-card>
     @endif
 
-    @if (auth()->user()->es('Estudiante'))
+    @if (!auth()->user()->es('Estudiante'))
     <div>
         <x-select wire:model.defer='form.grupo_id' id='grupo_id' name='grupo_id' :label="__('Grupo')"
             placeholder='Selecciona un grupo' :options="$form->grupos" option-label="nombre" option-value="id"
