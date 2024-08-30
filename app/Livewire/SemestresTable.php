@@ -90,7 +90,7 @@ final class SemestresTable extends PowerGridComponent
             Column::make('Periodo Altas', 'periodo_altas')
                 ->searchable(),
 
-            Column::make('Periodo Bajas', 'periodo_altas')
+            Column::make('Periodo Bajas', 'periodo_bajas')
                 ->searchable(),
 
             Column::make('Máx. altas', 'max_altas')
