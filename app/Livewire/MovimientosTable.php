@@ -4,6 +4,8 @@ namespace App\Livewire;
 
 use App\Models\Movimiento;
 use App\Models\Semestre;
+use App\Models\Carrera;
+use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use PowerComponents\LivewirePowerGrid\Button;
@@ -68,19 +70,7 @@ final class MovimientosTable extends PowerGridComponent
             $tipos = MovesStatus::cases();
         }
 
-        if (Auth::user()->es(['Coordinador'])) {
-
-            return Movimiento::query()
-                ->with('user', 'grupo.materia', 'carrera')
-                ->where('is_paralelo', false)
-                ->join('users', 'movimientos.user_id', '=', 'users.id')
-                ->select('movimientos.*', 'users.username')
-                ->orderBy('users.username')
-                ->whereIn('estatus', $tipos)
-                ->whereIn('carrera_id', Auth::user()->carreras->pluck('id'));
-        }
-
-        return Movimiento::query()
+        $query = Movimiento::query()
             ->with('user', 'grupo.materia', 'carrera')
             ->join('users', 'movimientos.user_id', '=', 'users.id')
             ->join('grupos', 'movimientos.grupo_id', '=', 'grupos.id')
@@ -88,6 +78,14 @@ final class MovimientosTable extends PowerGridComponent
             ->select('movimientos.*', 'users.username', 'materias.carrera_id', 'grupos.siglas')
             ->orderBy('users.username')
             ->whereIn('estatus', $tipos);
+
+        if (Auth::user()->es(['Coordinador'])) {
+            $query = $query
+                ->where('is_paralelo', false)
+                ->whereIn('materias.carrera_id', Auth::user()->carreras->pluck('id'));
+        }
+
+        return $query;
     }
 
     public function relationSearch(): array
@@ -132,7 +130,7 @@ final class MovimientosTable extends PowerGridComponent
             Column::make('Estudiante', 'usuario', 'user_id')
                 // ->hidden(Auth::user()->es('Estudiante'))
                 ->contentClasses('justify-center text-center text-wrap font-mono')
-                ->sortable()
+                // ->sortable()
                 ->searchable(),
 
             Column::make('Materia', 'materia')
@@ -141,17 +139,17 @@ final class MovimientosTable extends PowerGridComponent
 
             Column::make('Grupo', 'siglas')
                 ->contentClasses('text-center')
-                ->sortable()
+                // ->sortable()
                 ->searchable(),
 
             Column::make('Carrera', 'carrera', 'carrera_id')
                 ->contentClasses('justify-center text-center')
-                ->sortable()
+                // ->sortable()
                 ->searchable(),
 
             Column::make('Tipo', 'tipo_icon', 'tipo')
                 ->contentClasses('flex justify-center')
-                ->sortable()
+                // ->sortable()
                 ->searchable(),
 
             Column::make('Estatus', 'estatus_badge', 'estatus')
@@ -173,6 +171,7 @@ final class MovimientosTable extends PowerGridComponent
 
     public function filters(): array
     {
+        // Filtros para estudiantes
         if (Auth::user()->es('Estudiante')) {
             return [
                 Filter::enumSelect('tipo_icon', 'tipo')
@@ -185,6 +184,7 @@ final class MovimientosTable extends PowerGridComponent
             ];
         }
 
+        // Filtros para coordinadores
         if (Auth::user()->es('Coordinador')) {
             $carreras = Auth::user()->carreras;
             $siglas   = Semestre::where('activo', true)
@@ -197,7 +197,8 @@ final class MovimientosTable extends PowerGridComponent
                 ->select('grupos.siglas')
                 ->get();
         } else {
-            $carreras = \App\Models\Carrera::query()
+            // Filtros para administradores y jefes
+            $carreras = Carrera::query()
                 ->orderBy('siglas')
                 ->get();
             $siglas   = Movimiento::query()
@@ -208,7 +209,7 @@ final class MovimientosTable extends PowerGridComponent
                 ->get();
         }
 
-        $estudiantes = \App\Models\User::query()
+        $estudiantes = User::query()
             ->whereIn('id', $this->datasource()->pluck('user_id')->unique())
             ->orderBy('username')
             ->get();
