@@ -140,8 +140,8 @@ class MovimientoForm extends Form
         $this->movimientoModel->update($this->validate());
         $this->revisaParalelo($this->movimientoModel);
         // $this->asociaMovimiento();
-
-        $this->reset();
+        //$this->reset();
+        redirect()->route('movimientos.index');
     }
 
     private function asociaMovimiento()
