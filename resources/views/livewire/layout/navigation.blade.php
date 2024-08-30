@@ -23,7 +23,7 @@ $logout = function (Logout $logout) {
                 </div>
 
                 <!-- Navigation Links -->
-                <div class="hidden space-x-6 sm:-my-px sm:ms-10 sm:flex">
+                <div class="hidden space-x-4 sm:-my-px sm:ms-10 sm:flex">
                     <x-nav-link :href="route('dashboard')" active="dashboard" wire:navigate icon="house" />
                     @if (auth()->user()->es(['Administrador', 'Jefe']))
                     <x-nav-link :href="route('semestres.index')" active="semestres.*" wire:navigate icon="calendar-dots"
@@ -89,11 +89,11 @@ $logout = function (Logout $logout) {
                             <x-icon name="checks" class="w-5 h-5 mr-1 text-gray-500" />
                             Solicitudes atendidas
                         </x-dropdown.item>
-                        <x-dropdown.item separator :href="route('playground')" wire:navigate>
+                        <x-dropdown.item separator :href="route('movimientos.materias')">
                             <x-icon name="book" class="w-5 h-5 mr-1 text-gray-500" />
                             Listado por materia
                         </x-dropdown.item>
-                        <x-dropdown.item :href="route('playground')" wire:navigate>
+                        <x-dropdown.item href="#" wire:navigate class="line-through">
                             <x-icon name="list-numbers" class="w-5 h-5 mr-1 text-gray-500" />
                             Listado por generación
                         </x-dropdown.item>

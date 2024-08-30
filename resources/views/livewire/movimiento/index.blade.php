@@ -38,6 +38,9 @@
                             {{ __('Add') }} {{ __('movimiento') }}
                         </x-primary-button>
                         @endif
+                        @if (request()->routeIs('movimientos.materias.clave'))
+                        @include('components.back-button', ['url' => route('movimientos.materias')])
+                        @endif
                     </div>
                 </div>
 
@@ -47,3 +50,4 @@
             </div>
         </div>
     </div>
+</div>

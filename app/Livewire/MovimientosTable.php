@@ -54,10 +54,13 @@ final class MovimientosTable extends PowerGridComponent
 
     public function datasource(): Builder
     {
+        $semestre = Semestre::where('activo', true)->first();
+
         if (Auth::user()->es('Estudiante')) {
             return Movimiento::query()
                 ->with('user', 'grupo.materia', 'carrera')
                 ->where('user_id', Auth::id())
+                ->where('movimientos.semestre_id', $semestre->id)
                 ->orderBy('tipo')
                 ->orderBy('estatus');
         }
@@ -77,6 +80,10 @@ final class MovimientosTable extends PowerGridComponent
             ->join('materias', 'grupos.materia_id', '=', 'materias.id')
             ->select('movimientos.*', 'users.username', 'materias.carrera_id', 'grupos.siglas')
             ->orderBy('users.username')
+            ->when(request()->routeIs('movimientos.materias.clave'), function ($query) {
+                return $query->where('materias.clave', request()->clave);
+            })
+            ->where('movimientos.semestre_id', $semestre->id)
             ->whereIn('estatus', $tipos);
 
         if (Auth::user()->es(['Coordinador'])) {
