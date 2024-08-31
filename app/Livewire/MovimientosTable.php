@@ -83,6 +83,9 @@ final class MovimientosTable extends PowerGridComponent
             ->when(request()->routeIs('movimientos.materias.clave'), function ($query) {
                 return $query->where('materias.clave', request()->clave);
             })
+            ->when(request()->routeIs('movimientos.generacion.estudiante'), function ($query) {
+                return $query->where('users.username', request()->estudiante);
+            })
             ->where('movimientos.semestre_id', $semestre->id)
             ->whereIn('estatus', $tipos);
 

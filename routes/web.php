@@ -58,6 +58,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/solicitudes/atendidas', \App\Livewire\Movimientos\Index::class)->name('movimientos.attended');
     Route::get('/solicitudes/materias', \App\Livewire\Movimientos\ListaMaterias::class)->name('movimientos.materias');
     Route::get('/solicitudes/materias/{clave}', \App\Livewire\Movimientos\Index::class)->name('movimientos.materias.clave');
+    Route::get('/solicitudes/generacion', \App\Livewire\Movimientos\ListaGeneracion::class)->name('movimientos.generacion');
+    Route::get('/solicitudes/generacion/{estudiante}', \App\Livewire\Movimientos\Index::class)->name('movimientos.generacion.estudiante');
 
     // MARK: Usuarios
     Route::get('/usuarios', \App\Livewire\Users\Index::class)->name('users.index');

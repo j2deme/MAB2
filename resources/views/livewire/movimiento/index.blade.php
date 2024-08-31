@@ -41,6 +41,9 @@
                         @if (request()->routeIs('movimientos.materias.clave'))
                         @include('components.back-button', ['url' => route('movimientos.materias')])
                         @endif
+                        @if (request()->routeIs('movimientos.generacion.estudiante'))
+                        @include('components.back-button', ['url' => route('movimientos.generacion')])
+                        @endif
                     </div>
                 </div>
 

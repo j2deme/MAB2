@@ -93,7 +93,7 @@ $logout = function (Logout $logout) {
                             <x-icon name="book" class="w-5 h-5 mr-1 text-gray-500" />
                             Listado por materia
                         </x-dropdown.item>
-                        <x-dropdown.item href="#" wire:navigate class="line-through">
+                        <x-dropdown.item :href="route('movimientos.generacion')">
                             <x-icon name="list-numbers" class="w-5 h-5 mr-1 text-gray-500" />
                             Listado por generación
                         </x-dropdown.item>
