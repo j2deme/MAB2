@@ -91,7 +91,7 @@ class User extends Authenticatable
      */
     public function movimientos()
     {
-        return $this->hasMany(\App\Models\Movimiento::class, 'id', 'user_id');
+        return $this->hasMany(\App\Models\Movimiento::class);
     }
 
     /**
