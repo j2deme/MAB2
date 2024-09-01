@@ -42,7 +42,7 @@ class ListaGeneracion extends Component
             $estudiante->total = $estudiante
                 ->movimientos()
                 ->where('semestre_id', $this->semestre->id)
-                ->when(!$paralelos, function ($query) use ($move) {
+                ->when(!$paralelos, function ($query) {
                     return $query->where('is_paralelo', false);
                 })
                 ->whereIn('estatus', [\App\Enums\MovesStatus::REGISTRADO, \App\Enums\MovesStatus::REVISION])
