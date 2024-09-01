@@ -13,7 +13,7 @@
                         <h1 class="text-base font-semibold leading-6 text-gray-900">Atender solicitud</h1>
                     </div>
                     <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
-                        @include('components.back-button', ['url' => route('movimientos.index')])
+                        @include('components.back-button', ['url' => route($this->form->backRoute)])
                     </div>
                 </div>
 

@@ -14,6 +14,7 @@ use App\Enums\Downs;
 use App\Enums\MovesAnswers;
 use App\Enums\UserRoles;
 use Auth;
+use Illuminate\Support\Str;
 
 class MovimientoForm extends Form
 {
@@ -47,6 +48,8 @@ class MovimientoForm extends Form
 
     public $max_altas = 3;
     public $altas = [];
+
+    public $backRoute = 'movimientos.index';
 
     public function rules(): array
     {
@@ -120,7 +123,7 @@ class MovimientoForm extends Form
             };
         }
 
-
+        $this->setBackRoute(request()->headers->get('referer'));
     }
 
     public function store(): void
@@ -131,8 +134,6 @@ class MovimientoForm extends Form
             // $this->asociaMovimientoo();
             //$this->reset();
         }
-
-        redirect()->route('movimientos.index');
     }
 
     public function update(): void
@@ -141,7 +142,6 @@ class MovimientoForm extends Form
         $this->revisaParalelo($this->movimientoModel);
         // $this->asociaMovimiento();
         //$this->reset();
-        redirect()->route('movimientos.index');
     }
 
     private function asociaMovimiento()
@@ -225,5 +225,24 @@ class MovimientoForm extends Form
             UserRoles::COORDINADOR => $this->estatuses = [MovesStatus::REGISTRADO, MovesStatus::REVISION, MovesStatus::RECHAZADO, MovesStatus::AUTORIZADO],
             default => $this->estatuses = MovesStatus::cases()
         };
+    }
+
+    private function setBackRoute($previous)
+    {
+        if (Str::contains($previous, 'solicitudes/materias')) {
+            $this->backRoute = 'movimientos.materias';
+        }
+
+        if (Str::contains($previous, 'solicitudes/generacion')) {
+            $this->backRoute = 'movimientos.generacion';
+        }
+
+        if (Str::contains($previous, 'solicitudes/pendientes')) {
+            $this->backRoute = 'movimientos.pending';
+        }
+
+        if (Str::contains($previous, 'solicitudes/atendidas')) {
+            $this->backRoute = 'movimientos.attended';
+        }
     }
 }

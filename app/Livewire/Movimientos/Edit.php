@@ -24,7 +24,26 @@ class Edit extends Component
 
         $this->notification()->session()->success('Registro actualizado', 'Movimiento actualizado correctamente.');
 
-        return $this->redirectRoute('movimientos.index', navigate: true);
+        $this->dynamicRedirect();
+    }
+
+    private function dynamicRedirect()
+    {
+        switch ($this->form->backRoute) {
+            case 'movimientos.index':
+                return $this->redirectRoute('movimientos.index', navigate: true);
+            case 'movimientos.pending':
+                return $this->redirectRoute('movimientos.pending', navigate: true);
+            case 'movimientos.attended':
+                return $this->redirectRoute('movimientos.attended', navigate: true);
+            case 'movimientos.materias':
+                $materia = $this->form->movimientoModel->grupo->materia;
+                return $this->redirectRoute('movimientos.materias.clave', $materia->clave, navigate: true);
+            case 'movimientos.generacion':
+                return $this->redirectRoute('movimientos.generacion.estudiante', $this->form->movimientoModel->user->username, navigate: true);
+            default:
+                return $this->redirectRoute('movimientos.index', navigate: true);
+        }
     }
 
     #[Layout('layouts.app')]
