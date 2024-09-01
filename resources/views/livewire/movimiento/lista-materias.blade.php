@@ -49,8 +49,11 @@
                       --}}
                       <div
                         class="inline-flex items-center justify-center text-sm bg-white border border-gray-300 rounded-full w-7 h-7">
-                        {{
-                        count($materia) }}
+                        @if ($move->total > 0)
+                        {{ $move->total }}
+                        @else
+                        <x-icon bold name="check" class="w-5 h-5 text-green-500" />
+                        @endif
                       </div>
                     </div>
                   </div>

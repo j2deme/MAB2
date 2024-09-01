@@ -26,16 +26,27 @@ class ListaMaterias extends Component
         $movimientos = $this->semestre->movimientos()->get();
 
         $movimientos->each(function ($move) {
-            $materia = $move->grupo->materia;
-            $pos     = $materia->semestre;
-            $clave   = $materia->clave;
+            $paralelos = true;
+            $materia   = $move->grupo->materia;
+            $pos       = $materia->semestre;
+            $clave     = $materia->clave;
 
             if (Auth::user()->es('Coordinador')) {
                 // Si la carrera de la materia no esta entre las que coordina el usuario, se omite
                 if (!Auth::user()->carreras->contains($materia->carrera)) {
                     return;
                 }
+                $paralelos = false;
             }
+
+            $move->total = $materia
+                ->movimientos()
+                ->where('grupos.semestre_id', $this->semestre->id)
+                ->when(!$paralelos, function ($query) {
+                    return $query->where('is_paralelo', false);
+                })
+                ->whereIn('estatus', [\App\Enums\MovesStatus::REGISTRADO, \App\Enums\MovesStatus::REVISION])
+                ->count();
 
             if (isset($this->semestres[$pos][$clave])) {
                 $this->semestres[$pos][$clave]->push($move);
