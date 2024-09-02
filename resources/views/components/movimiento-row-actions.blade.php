@@ -1,7 +1,26 @@
 @props(['model'])
 
+@php
+use App\Enums\MovesStatus;
+@endphp
+
 <div class="flex items-center justify-center space-x-1">
-  <x-button wire:navigate flat secondary interaction:solid href="{{ route('movimientos.show', $model->id) }}">
+  <x-button wire:navigate flat secondary interaction:solid href="{{ route('movimientos.show', $model->id) }}"
+    class="relative">
+    @if(auth()->user()->es(['Estudiante','Coordinador']) and $model->respuesta_adicional != null)
+    @php
+    $color = match($model->estatus) {
+    MovesStatus::AUTORIZADO, MovesStatus::AUTORIZADO_JEFE => 'green',
+    MovesStatus::RECHAZADO, MovesStatus::RECHAZADO_JEFE => 'red',
+    default => 'amber',
+    };
+    @endphp
+    <span class="absolute top-0 right-0 flex w-3 h-3">
+      <span
+        class="absolute inline-flex w-full h-full rounded-full opacity-75 animate-ping bg-{{ $color }}-400 align-middle"></span>
+      <span class="relative inline-flex w-3 h-3 rounded-full bg-{{ $color }}-500"></span>
+    </span>
+    @endif
     <x-icon name="eye" class="w-5 h-5 -mx-2" />
   </x-button>
 
