@@ -80,7 +80,7 @@
                 </x-slot>
 
                 @if (!Str($movimiento->respuesta_adicional)->isEmpty())
-                <p class="text-sm">{{ $movimiento->respuesta_adicional }}</p>
+                <p class="text-sm">{!! Str::markdown($movimiento->respuesta_adicional) !!}</p>
                 @endif
               </x-card>
             </div>
