@@ -113,7 +113,7 @@
     </div>
     <div>
         <x-textarea wire:model.defer='form.respuesta_adicional' id='respuesta_adicional' name='respuesta_adicional'
-            class='' :label="__('Respuesta Adicional')" placeholder='Respuesta Adicional' />
+            class='' :label="__('Respuesta Adicional')" placeholder='Respuesta Adicional' rows="6" />
     </div>
     <div>
         <x-select wire:model.defer='form.estatus' id='estatus' name='estatus' :label="__('Estatus')"
