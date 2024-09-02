@@ -14,5 +14,7 @@ enum MovesAnswers: string
     case NO_AUTORIZADO = 'No autorizado por situación académica';
     case NO_EQUIVALENTE = 'La materia no es equivalente para la carrera';
     case SEMESTRE_1 = 'No se autorizan bajas para 1er semestre';
+    case GRAVE = 'Presenta grave problema académico';
     case OK = 'Sin problemas';
+    case OTRO = 'Otro';
 }
