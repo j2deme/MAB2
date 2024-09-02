@@ -37,9 +37,8 @@ final class MovimientosTable extends PowerGridComponent
         $config = [
             Header::make()
                 ->showSearchInput(),
-            Footer::make()
-                ->showPerPage()
-                ->showRecordCount(),
+            (Auth::user()->es('Estudiante')) ? Footer::make()->showRecordCount() : Footer::make()->showPerPage()
+                ->showRecordCount()
         ];
 
         if (Auth::user()->es(['Administrador', 'Jefe'])) {
