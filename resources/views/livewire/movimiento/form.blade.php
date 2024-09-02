@@ -52,7 +52,7 @@
                 </div>
             </div>
         </x-slot>
-        {{ $move->grupo->materia->nombre_completo }} {{ $move->grupo->siglas }}
+        {{ $move->grupo->materia->nombre_completo }} ({{ $move->grupo->siglas }})
 
         <x-slot name="footer" class="w-full">
             <div class="grid grid-cols-3">
