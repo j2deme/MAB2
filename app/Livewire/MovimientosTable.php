@@ -247,6 +247,9 @@ final class MovimientosTable extends PowerGridComponent
             Filter::enumSelect('estatus', 'estatus')
                 ->datasource(MovesStatus::cases())
                 ->optionLabel('movimientos.estatus'),
+
+            Filter::boolean('is_paralelo', 'is_paralelo')
+                ->label('Sí', 'No'),
         ];
     }
 
