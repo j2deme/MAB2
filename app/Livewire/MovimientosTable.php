@@ -122,7 +122,13 @@ final class MovimientosTable extends PowerGridComponent
             ->add('usuario', fn(Movimiento $move) => $move->user->username)
             ->add('semestre_id')
             ->add('carrera_id')
-            ->add('carrera', fn(Movimiento $move) => Blade::render('components.carrera-badge', ['carrera' => $move->user->carreras->first()]))
+            ->add('carrera', function (Movimiento $move) {
+                if ($move->is_paralelo) {
+                    return Blade::render('components.carrera-badge', ['carrera' => $move->user->carreras->first(), 'paralelo' => $move->carrera]);
+                } else {
+                    return Blade::render('components.carrera-badge', ['carrera' => $move->user->carreras->first()]);
+                }
+            })
             ->add('grupo_id')
             ->add('materia', fn(Movimiento $move) => $move->grupo->materia->nombre_completo)
             ->add('siglas', fn(Movimiento $move) => $move->grupo->siglas)
