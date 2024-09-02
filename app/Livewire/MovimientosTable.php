@@ -30,9 +30,28 @@ final class MovimientosTable extends PowerGridComponent
     use WireUiActions;
 
     public string $tableName = 'MovimientosTable';
+    public string $clave = '';
+    public string $estudiante = '';
+
+    public $tipos = [];
 
     public function setUp(): array
     {
+        if (request()->routeIs('movimientos.materias.clave')) {
+            $this->clave = request()->clave;
+        }
+
+        if (request()->routeIs('movimientos.generacion.estudiante')) {
+            $this->estudiante = request()->estudiante;
+        }
+
+        if (request()->routeIs('movimientos.attended')) {
+            $this->tipos = [MovesStatus::AUTORIZADO, MovesStatus::AUTORIZADO_JEFE, MovesStatus::RECHAZADO, MovesStatus::RECHAZADO_JEFE];
+        } elseif (request()->routeIs('movimientos.pending')) {
+            $this->tipos = [MovesStatus::REGISTRADO, MovesStatus::REVISION];
+        } else {
+            $this->tipos = MovesStatus::cases();
+        }
 
         $config = [
             Header::make()
@@ -64,14 +83,6 @@ final class MovimientosTable extends PowerGridComponent
                 ->orderBy('estatus');
         }
 
-        if (request()->routeIs('movimientos.attended')) {
-            $tipos = [MovesStatus::AUTORIZADO, MovesStatus::AUTORIZADO_JEFE, MovesStatus::RECHAZADO, MovesStatus::RECHAZADO_JEFE];
-        } elseif (request()->routeIs('movimientos.pending')) {
-            $tipos = [MovesStatus::REGISTRADO, MovesStatus::REVISION];
-        } else {
-            $tipos = MovesStatus::cases();
-        }
-
         $query = Movimiento::query()
             ->with('user', 'grupo.materia', 'carrera')
             ->join('users', 'movimientos.user_id', '=', 'users.id')
@@ -79,20 +90,17 @@ final class MovimientosTable extends PowerGridComponent
             ->join('materias', 'grupos.materia_id', '=', 'materias.id')
             ->select('movimientos.*', 'users.username', 'materias.carrera_id', 'grupos.siglas')
             ->orderBy('users.username')
-            ->when(request()->routeIs('movimientos.materias.clave'), function ($query) {
-                return $query->where('materias.clave', request()->clave);
-            })
-            ->when(request()->routeIs('movimientos.generacion.estudiante'), function ($query) {
-                return $query->where('users.username', request()->estudiante);
-            })
             ->where('movimientos.semestre_id', $semestre->id)
-            ->whereIn('estatus', $tipos);
-
-        if (Auth::user()->es(['Coordinador'])) {
-            $query = $query
-                ->where('is_paralelo', false)
-                ->whereIn('materias.carrera_id', Auth::user()->carreras->pluck('id'));
-        }
+            ->whereIn('estatus', $this->tipos)
+            ->when($this->clave != '', function ($query) {
+                return $query->where('materias.clave', $this->clave);
+            })
+            ->when($this->estudiante != '', function ($query) {
+                return $query->where('users.username', $this->estudiante);
+            })
+            ->when(Auth::user()->es('Coordinador'), function ($query) {
+                return $query->whereIn('materias.carrera_id', Auth::user()->carreras->pluck('id'));
+            });
 
         return $query;
     }
