@@ -57,7 +57,12 @@
         <x-slot name="footer" class="w-full">
             <div class="grid grid-cols-3">
                 <div class="place-self-start">
-                    @include('components.carrera-badge', ['carrera' => $move->grupo->carrera])
+                    @if ($move->is_paralelo)
+                    @include('components.carrera-badge', ['carrera' => $move->user->carreras->first(), 'paralelo' =>
+                    $move->carrera])
+                    @else
+                    @include('components.carrera-badge', ['carrera' => $move->user->carreras->first()])
+                    @endif
                 </div>
                 <div class="place-self-center">
                     @include('components.movimiento-tipo-icon', ['tipo' => $move->tipo->value])
