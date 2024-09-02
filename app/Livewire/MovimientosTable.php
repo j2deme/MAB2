@@ -170,7 +170,6 @@ final class MovimientosTable extends PowerGridComponent
             // Column::make('Asociado id', 'asociado_id'),
             Column::make('¿Paralelo?', 'paralelo_icon', 'is_paralelo')
                 ->contentClasses('flex justify-center')
-                ->hidden(!Auth::user()->es(['Administrador', 'Jefe']))
                 ->sortable()
                 ->searchable(),
 
