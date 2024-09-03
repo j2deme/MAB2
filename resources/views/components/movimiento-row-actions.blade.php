@@ -32,15 +32,17 @@ use App\Enums\MovesStatus;
 
   @if ($model->estatus == \App\Enums\MovesStatus::REGISTRADO and
   auth()->user()->es(['Estudiante','Jefe','Administrador']))
-  <x-mini-button flat red interaction:solid x-on:confirm="{
-      title: 'Eliminar registro',
-      description: 'Después de eliminar un registro no se puede recuperar. ¿Estás seguro de continuar?',
-      icon: 'error',
-      acceptLabel: 'Sí',
-      rejectLabel: 'No',
-      method: 'delete',
-      params: '{{ $model->id }}',
-  }">
+  {{-- x-on:confirm="{
+  title: 'Eliminar registro',
+  description: 'Después de eliminar un registro no se puede recuperar. ¿Estás seguro de continuar?',
+  icon: 'error',
+  acceptLabel: 'Sí',
+  rejectLabel: 'No',
+  method: 'delete',
+  params: '{{ $model->id }}',
+  }" --}}
+  <x-mini-button flat red interaction:solid wire:click='delete({{ $model->id }})'
+    wire:confirm='¿Estas seguro de eliminar esta solicitud?' wire:key='{{ $model->id }}'>
     <x-icon name="trash" class="w-5 h-5" />
   </x-mini-button>
   @endif

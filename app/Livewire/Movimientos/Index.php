@@ -25,6 +25,7 @@ class Index extends Component
             ->with('i', $this->getPage() * $movimientos->perPage());
     }
 
+    // NOTE: Método no funcional, se activa el método delete del PowerGrid
     public function delete(Movimiento $movimiento)
     {
         $movimiento->delete();

@@ -270,10 +270,9 @@ final class MovimientosTable extends PowerGridComponent
     {
         Movimiento::query()->find($rowId)->delete();
 
-        $this->notification()->error('Registro eliminado', 'Grupo eliminado correctamente.');
+        $this->notification()->success('Registro eliminado', 'Solicitud eliminada correctamente.');
 
-        // $this->refresh();
-        redirect()->route('movimientos.index');
+        $this->refresh();
     }
 
     public function actions(Movimiento $row): array
