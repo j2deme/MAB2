@@ -99,7 +99,11 @@ final class MovimientosTable extends PowerGridComponent
                 return $query->where('users.username', $this->estudiante);
             })
             ->when(Auth::user()->es('Coordinador'), function ($query) {
-                return $query->whereIn('materias.carrera_id', Auth::user()->carreras->pluck('id'));
+                return $query->whereIn('movimientos.carrera_id', Auth::user()->carreras->pluck('id'));
+                // ->orWhere(function ($query) {
+                //     $query->where('movimientos.is_paralelo', true)
+                //         ->whereIn('movimientos.carrera_id', Auth::user()->carreras->pluck('id'));
+                // });
             });
 
         return $query;
