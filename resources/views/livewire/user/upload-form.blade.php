@@ -40,7 +40,7 @@
             {{ __('Guardar') }}
         </x-primary-button>
 
-        <x-link label="Cancelar" :href="route('materias.index')" />
+        <x-link label="Cancelar" :href="route('users.index')" />
 
         @if ($errors->any())
         <div class="flex text-sm text-red-800 flex-items">
