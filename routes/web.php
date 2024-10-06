@@ -68,7 +68,27 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/usuarios/update/{user}', \App\Livewire\Users\Edit::class)->name('users.edit');
     Route::get('/usuarios/upload', [UserController::class, 'batch'])->name('users.batch');
     Route::post('/usuarios/upload', [UserController::class, 'upload'])->name('users.upload');
+
+    // MARK: Eventos
+    Route::get('/eventos', \App\Livewire\Eventos\Index::class)->name('eventos.index');
+    Route::get('/eventos/create', \App\Livewire\Eventos\Create::class)->name('eventos.create');
+    Route::get('/eventos/show/{evento}', \App\Livewire\Eventos\Show::class)->name('eventos.show');
+    Route::get('/eventos/update/{evento}', \App\Livewire\Eventos\Edit::class)->name('eventos.edit');
+
+    // MARK: Actividades
+    Route::get('/actividades', \App\Livewire\Actividades\Index::class)->name('actividades.index');
+    Route::get('/actividades/create', \App\Livewire\Actividades\Create::class)->name('actividades.create');
+    Route::get('/actividades/show/{actividad}', \App\Livewire\Actividades\Show::class)->name('actividades.show');
+    Route::get('/actividades/update/{actividad}', \App\Livewire\Actividades\Edit::class)->name('actividades.edit');
+
+    // MARK: Asistencias
+    Route::get('/asistencias', \App\Livewire\Asistencias\Index::class)->name('asistencias.index');
+    Route::get('/asistencias/create', \App\Livewire\Asistencias\Create::class)->name('asistencias.create');
+    Route::get('/asistencias/show/{asistencia}', \App\Livewire\Asistencias\Show::class)->name('asistencias.show');
+    Route::get('/asistencias/update/{asistencia}', \App\Livewire\Asistencias\Edit::class)->name('asistencias.edit');
 });
+
+Route::get('/asistencias/magistral', \App\Livewire\Asistencias\Magistral::class)->name('asistencias.magistral');
 
 
 
