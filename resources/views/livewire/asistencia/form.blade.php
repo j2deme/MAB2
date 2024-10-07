@@ -3,16 +3,16 @@
     <div>
         <x-select wire:model.defer='form.actividad_id' id='actividad_id' name='actividad_id' :label="__('Actividad')"
             placeholder='Selecciona un actividad' :options="$actividades" option-label="nombre" option-value="id"
-            :searchable="true" />
+            option-description="tipo" :searchable="true" />
 
         @error('form.actividad_id')
         <x-input-error class="mt-2" :messages="$message" />
         @enderror
     </div>
     <div>
-        <x-select wire:model.defer='form.user_id' id='user_id' name='user_id' :label="__('Estudiante')"
-            placeholder='Selecciona un estudiante' :options="$users" option-label="username" option-value="id"
-            option-description="name" :searchable="true" />
+        <x-select wire:model.defer="form.user_id" id="user_id" name="user_id" label="Estudiante"
+            placeholder="Selecciona un estudiante" :async-data="route('api.estudiantes.index')" option-label="username"
+            option-description="name" option-value="id" />
 
         @error('form.user_id')
         <x-input-error class="mt-2" :messages="$message" />

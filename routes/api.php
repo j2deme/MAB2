@@ -4,6 +4,7 @@ use App\Models\Carrera;
 use App\Models\Materia;
 use App\Models\Grupo;
 use App\Models\Semestre;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Contracts\Database\Eloquent\Builder;
@@ -89,5 +90,25 @@ Route::name('api.')->group(function () {
                 return $grupo;
             });
     })->name('grupos.index');
+
+    Route::get('/estudiantes', function (Request $request) {
+        $request->headers->set('Content-Type', 'application/json');
+
+        return User::query()
+            ->where('rol', \App\Enums\UserRoles::ESTUDIANTE)
+            ->select('id', 'name', 'username')
+            ->when(
+                $request->search,
+                fn(Builder $query) => $query
+                    ->where('username', 'like', "%{$request->search}%")
+            )
+            ->when(
+                $request->exists('selected'),
+                fn(Builder $query) => $query->whereIn('id', $request->input('selected', [])),
+                fn(Builder $query) => $query->limit(10)
+            )
+            ->orderBy('username')
+            ->get();
+    })->name('estudiantes.index');
 });
 
