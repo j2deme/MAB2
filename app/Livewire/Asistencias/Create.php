@@ -23,7 +23,7 @@ class Create extends Component
         $this->form->setAsistenciaModel($asistencia);
 
         $evento_activo     = Evento::where('is_activo', true)->first();
-        $this->actividades = $evento_activo->actividades()->get();
+        $this->actividades = $evento_activo->actividades()->where('is_activo', true)->get();
 
         $this->users = User::where('rol', '=', \App\Enums\UserRoles::ESTUDIANTE)->get();
     }

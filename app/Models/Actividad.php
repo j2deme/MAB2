@@ -41,6 +41,13 @@ class Actividad extends Model
      */
     protected $fillable = ['clave', 'nombre', 'descripcion', 'fecha_inicio', 'fecha_fin', 'is_activo', 'tipo', 'lugar', 'modalidad', 'is_magistral', 'duracion', 'evento_id'];
 
+    protected $casts = [
+        'fecha_inicio' => 'datetime',
+        'fecha_fin' => 'datetime',
+        'is_activo' => 'boolean',
+        'is_magistral' => 'boolean',
+    ];
+
 
     /**
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
