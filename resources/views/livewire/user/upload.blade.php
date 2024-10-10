@@ -11,7 +11,7 @@
                 <div class="w-full">
                     <div class="sm:flex sm:items-center">
                         <div class="sm:flex-auto">
-                            <h1 class="text-base font-semibold leading-6 text-gray-900">Subida de Masiva Estudiantes
+                            <h1 class="text-base font-semibold leading-6 text-gray-900">Subida Masiva de Estudiantes
                             </h1>
                         </div>
                         <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
