@@ -19,6 +19,6 @@ class Show extends Component
     #[Layout('layouts.app')]
     public function render()
     {
-        return view('livewire.actividade.show', ['actividad' => $this->form->actividadModel]);
+        return view('livewire.actividad.show', ['actividad' => $this->form->actividadModel]);
     }
 }
