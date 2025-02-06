@@ -31,7 +31,7 @@
                       class="py-3 pl-4 pr-3 text-xs font-semibold tracking-wide text-left text-gray-500 uppercase">
                       Nombre</th>
                     <th scope="col"
-                      class="py-3 pl-4 pr-3 text-xs font-semibold tracking-wide text-left text-gray-500 uppercase">
+                      class="py-3 pl-4 pr-3 text-xs font-semibold tracking-wide text-left text-gray-500 uppercase text-wrap">
                       Descripción</th>
                     <th scope="col"
                       class="py-3 pl-4 pr-3 text-xs font-semibold tracking-wide text-left text-gray-500 uppercase">
@@ -53,26 +53,33 @@
                   <tr class="even:bg-gray-50" wire:key="{{ $evento->id }}">
                     <td class="px-3 py-4 text-sm text-gray-500 whitespace-nowrap">{{ $evento->nombre
                       }}</td>
-                    <td class="px-3 py-4 text-sm text-gray-500 whitespace-nowrap">{{
+                    <td class="px-3 py-4 text-sm text-gray-500">{{
                       $evento->descripcion }}</td>
                     <td class="px-3 py-4 text-sm text-gray-500 whitespace-nowrap">{{
-                      $evento->fecha_inicio }}</td>
+                      $evento->fecha_inicio->format("d/m/Y") }}</td>
                     <td class="px-3 py-4 text-sm text-gray-500 whitespace-nowrap">{{
-                      $evento->fecha_fin }}</td>
-                    <td class="px-3 py-4 text-sm text-gray-500 whitespace-nowrap">{{
-                      $evento->is_activo }}</td>
+                      $evento->fecha_fin->format("d/m/Y") }}</td>
+                    <td class="items-center justify-center px-3 py-4 text-sm text-gray-500 flex-inline">
+                      @if ($evento->is_activo)
+                      <x-icon bold name="check" class="w-5 h-5 text-green-500" />
+                      @else
+                      <x-icon bold name="x" class="w-5 h-5 text-red-500" />
+                      @endif
+                    </td>
 
-                    <td class="py-4 pl-4 pr-3 text-sm font-medium text-gray-900 whitespace-nowrap">
+                    <td class="flex py-4 pl-4 pr-3 text-sm font-medium text-gray-900">
                       <a wire:navigate href="{{ route('eventos.show', $evento->id) }}"
-                        class="mr-2 font-bold text-gray-600 hover:text-gray-900">{{ __('Show')
-                        }}</a>
+                        class="mr-2 font-bold text-gray-600 hover:text-gray-900">
+                        <x-icon bold name="eye" class="w-5 h-5" />
+                      </a>
                       <a wire:navigate href="{{ route('eventos.edit', $evento->id) }}"
-                        class="mr-2 font-bold text-indigo-600 hover:text-indigo-900">{{
-                        __('Edit') }}</a>
+                        class="mr-2 font-bold text-indigo-600 hover:text-indigo-900">
+                        <x-icon bold name="pencil" class="w-5 h-5" />
+                      </a>
                       <button class="font-bold text-red-600 hover:text-red-900" type="button"
                         wire:click="delete({{ $evento->id }})"
-                        wire:confirm="¿Estás seguro de eliminar este evento? No podrás recuperarlo">
-                        {{ __('Delete') }}
+                        wire:confirm="¿Está seguro de borrar el evento? No podrá recuperarlo">
+                        <x-icon bold name="trash" class="w-5 h-5" />
                       </button>
                     </td>
                   </tr>

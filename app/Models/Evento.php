@@ -31,6 +31,12 @@ class Evento extends Model
      */
     protected $fillable = ['nombre', 'descripcion', 'fecha_inicio', 'fecha_fin', 'is_activo'];
 
+    protected $casts = [
+        'fecha_inicio' => 'datetime',
+        'fecha_fin' => 'datetime',
+        'is_activo' => 'boolean',
+    ];
+
     public function actividades()
     {
         return $this->hasMany(\App\Models\Actividad::class, 'evento_id', 'id');
