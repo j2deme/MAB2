@@ -35,16 +35,10 @@
                       Nombre</th>
                     <th scope="col"
                       class="py-3 pl-4 pr-3 text-xs font-semibold tracking-wide text-left text-gray-500 uppercase">
-                      Fecha Inicio</th>
-                    <th scope="col"
-                      class="py-3 pl-4 pr-3 text-xs font-semibold tracking-wide text-left text-gray-500 uppercase">
-                      Fecha Fin</th>
+                      Fechas</th>
                     <th scope="col"
                       class="py-3 pl-4 pr-3 text-xs font-semibold tracking-wide text-left text-gray-500 uppercase">
                       Activo</th>
-                    <th scope="col"
-                      class="py-3 pl-4 pr-3 text-xs font-semibold tracking-wide text-left text-gray-500 uppercase">
-                      Tipo</th>
                     <th scope="col"
                       class="py-3 pl-4 pr-3 text-xs font-semibold tracking-wide text-left text-gray-500 uppercase">
                       Modalidad</th>
@@ -66,38 +60,55 @@
                 <tbody class="bg-white divide-y divide-gray-200">
                   @foreach ($actividades as $actividad)
                   <tr class="even:bg-gray-50" wire:key="{{ $actividad->id }}">
-                    <td class="px-3 py-4 text-sm text-gray-500 whitespace-nowrap">{{
+                    <td class="p-3 text-sm text-gray-600 whitespace-nowrap">{{
                       $actividad->clave }}</td>
-                    <td class="px-3 py-4 text-sm text-gray-500 text-wrap">{{
+                    <td class="p-3 text-sm text-justify text-gray-600 text-wrap">{{
+                      $actividad->tipo }}: {{
                       $actividad->nombre }}</td>
-                    <td class="px-3 py-4 text-sm text-gray-500 whitespace-nowrap">{{
-                      $actividad->fecha_inicio }}</td>
-                    <td class="px-3 py-4 text-sm text-gray-500 whitespace-nowrap">{{
-                      $actividad->fecha_fin }}</td>
-                    <td class="px-3 py-4 text-sm text-gray-500 whitespace-nowrap">{{
-                      $actividad->is_activo ? 'Sí' : 'No' }}</td>
-                    <td class="px-3 py-4 text-sm text-gray-500 whitespace-nowrap">{{
-                      $actividad->tipo }}</td>
-                    <td class="px-3 py-4 text-sm text-gray-500 whitespace-nowrap">{{
+                    <td class="p-3 text-sm text-gray-600 whitespace-nowrap">
+                      @if ($actividad->fecha_inicio->format("d/m") === $actividad->fecha_fin->format("d/m"))
+                      {{ $actividad->fecha_inicio->format("d/M") }}
+                      <small class="text-gray-500">({{ $actividad->fecha_inicio->format("H:i") }} - {{
+                        $actividad->fecha_fin->format("H:i") }})</small>
+                      @else
+                      {{ $actividad->fecha_inicio->format("d/M") }} - {{ $actividad->fecha_fin->format("d/M") }}
+                      <small class="text-gray-500">({{ $actividad->fecha_inicio->format("H:i") }} - {{
+                        $actividad->fecha_fin->format("H:i") }})</small>
+                      @endif
+                    </td>
+                    <td class="flex items-center justify-center p-3 text-sm text-gray-600">
+                      @if ($actividad->is_activo)
+                      <x-icon bold name="check" class="w-5 h-5 text-green-500" />
+                      @else
+                      <x-icon bold name="x" class="w-5 h-5 text-red-500" />
+                      @endif
+                    </td>
+                    <td class="p-3 text-sm text-gray-600 whitespace-nowrap">{{
                       $actividad->modalidad }}</td>
-                    <td class="px-3 py-4 text-sm text-gray-500 whitespace-nowrap">{{
-                      $actividad->is_magistral ? 'Sí' : 'No' }}</td>
-                    <td class="px-3 py-4 text-sm text-gray-500 whitespace-nowrap">{{
+                    <td class="flex items-center justify-center p-3 text-sm text-gray-600">
+                      @if ($actividad->is_magistral)
+                      <x-icon bold name="check" class="w-5 h-5 text-green-500" />
+                      @else
+                      <x-icon bold name="x" class="w-5 h-5 text-red-500" />
+                      @endif
+                    </td>
+                    <td class="p-3 text-sm text-center text-gray-600">{{
                       $actividad->duracion }}</td>
-                    <td class="px-3 py-4 text-sm text-gray-500 whitespace-nowrap">{{
+                    <td class="p-3 text-sm text-gray-600 whitespace-nowrap">{{
                       $actividad->evento->nombre }}</td>
-
-                    <td class="py-4 pl-4 pr-3 text-sm font-medium text-gray-900 whitespace-nowrap">
+                    <td class="flex py-4 pl-4 pr-3 text-sm font-medium text-gray-900">
                       <a wire:navigate href="{{ route('actividades.show', $actividad->id) }}"
-                        class="mr-2 font-bold text-gray-600 hover:text-gray-900">{{ __('Show')
-                        }}</a>
+                        class="mr-2 font-bold text-gray-600 hover:text-gray-900">
+                        <x-icon bold name="eye" class="w-5 h-5" />
+                      </a>
                       <a wire:navigate href="{{ route('actividades.edit', $actividad->id) }}"
-                        class="mr-2 font-bold text-indigo-600 hover:text-indigo-900">{{
-                        __('Edit') }}</a>
+                        class="mr-2 font-bold text-indigo-600 hover:text-indigo-900">
+                        <x-icon bold name="pencil" class="w-5 h-5" />
+                      </a>
                       <button class="font-bold text-red-600 hover:text-red-900" type="button"
                         wire:click="delete({{ $actividad->id }})"
                         wire:confirm="¿Está seguro de borrar la actividad? No podrá recuperarla">
-                        {{ __('Delete') }}
+                        <x-icon bold name="trash" class="w-5 h-5" />
                       </button>
                     </td>
                   </tr>
