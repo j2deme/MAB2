@@ -31,7 +31,7 @@ class UserForm extends Form
             'name' => 'required|string',
             'email' => 'required|string',
             'rol' => 'required',
-            'password' => ['required', 'string', Rules\Password::defaults()],
+            'password' => [$this->mode === 'create' ? 'required' : 'nullable', 'string', Rules\Password::defaults()],
             'username' => 'nullable|string',
             'inscrito' => 'boolean',
             'carreras_id' => ['nullable', 'array'],
@@ -44,7 +44,7 @@ class UserForm extends Form
 
         $this->name        = $this->userModel->name;
         $this->email       = $this->userModel->email;
-        $this->password    = $this->userModel->password;
+        $this->password    = ''; #$this->userModel->password;
         $this->rol         = $this->userModel->rol;
         $this->username    = $this->userModel->username;
         $this->inscrito    = $this->userModel->inscrito;
@@ -57,8 +57,9 @@ class UserForm extends Form
 
     public function store(): void
     {
-        $this->password = Hash::make($this->password);
-        $user           = $this->userModel->create($this->validate());
+        $data             = $this->validate();
+        $data['password'] = Hash::make($data['password']);
+        $user             = $this->userModel->create($data);
         $this->setCarreras($user);
 
         $this->reset();
@@ -66,7 +67,13 @@ class UserForm extends Form
 
     public function update(): void
     {
-        $this->userModel->update($this->validate());
+        $data = $this->validate();
+        if (!empty($data['password'])) {
+            $data['password'] = Hash::make($data['password']);
+        } else {
+            unset($data['password']);
+        }
+        $this->userModel->update($data);
         $this->setCarreras($this->userModel);
 
         $this->reset();

@@ -28,6 +28,15 @@
                 :label="__('Contraseña')" placeholder='Contraseña' autocomplete="off" />
         </div>
         @endif
+        @if (
+        (auth()->user()->es('Administrador')) ||
+        (auth()->user()->es('Jefe') && in_array($form->rol->value, ['Coordinador', 'Estudiante']))
+        )
+        <div>
+            <x-password wire:model.defer='form.password' id='password' name='password' :label="__('Contraseña')"
+                placeholder='Contraseña' autocomplete="off" />
+        </div>
+        @endif
         <div>
             <x-toggle wire:model.defer="form.inscrito" id="inscrito" name="inscrito" :label="__('¿Está inscrito?')"
                 lg />
