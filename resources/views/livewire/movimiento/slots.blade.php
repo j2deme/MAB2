@@ -2,8 +2,10 @@
   <h2 class="text-lg font-bold dark:text-white text-primary-500">Espacios disponibles para altas</h2>
   <p class="py-2">Recuerda que tienes un máximo de solicitudes de alta de materia</p>
   <div class="grid grid-cols-1 gap-2 md:grid-cols-5">
-    @for ($i = 0; $i < $form->max_altas; $i++)
-      @if (isset($form->altas[$i]))
+    @php
+    $tope = max($form->max_altas, count($form->altas));
+    @endphp
+    @for ($i = 0; $i < $tope; $i++) @if (isset($form->altas[$i]))
       @php
       $move = $form->altas[$i];
       @endphp
@@ -11,10 +13,10 @@
         <x-slot name="title">
           {{ $move->grupo->materia->clave }}
         </x-slot>
-        <span class="visible md:hidden">
-          {{ $move->grupo->materia->nombre_completo }} {{ $move->grupo->siglas }}
+        <span class="visible md:hidden text-xs">
+          {{ $move->grupo->materia->nombre_corto }} {{ $move->grupo->siglas }}
         </span>
-        <span class="invisible md:visible">
+        <span class="invisible md:visible text-xs">
           {{ $move->grupo->nombre_corto }}
         </span>
 
