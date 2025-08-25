@@ -84,8 +84,19 @@
             </x-select>
         </div>
         <div>
-            <x-textarea wire:model.defer='form.motivo_adicional' id='motivo_adicional' name='motivo_adicional' class=''
-                :label="__('Motivo Adicional')" placeholder='Motivo Adicional' />
+            <x-textarea wire:model.live.debounce.150ms='form.motivo_adicional' class='' id="motivo_adicional"
+                :label="__('Motivo Adicional')" placeholder='Motivo Adicional' maxlength="200" />
+            @php
+            $motivoLen = strlen($form->motivo_adicional ?? '');
+            $color = match(true) {
+            $motivoLen >= 190 => 'text-red-600 font-bold',
+            $motivoLen >= 150 => 'text-yellow-600 font-semibold',
+            default => 'text-gray-500',
+            };
+            @endphp
+            <div id="motivo_adicional_counter" class="text-xs mt-1 {{ $color }}">
+                <span>{{ $motivoLen }}</span> / 200 caracteres
+            </div>
         </div>
         @endif
 
