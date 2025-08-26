@@ -68,10 +68,10 @@
 
           <div class="mb-8">
             <h3 class="mb-4 text-lg font-semibold">Análisis de movimientos</h3>
-            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-              <div class="p-6 bg-white shadow rounded-xl">
+            <div class="flex flex-row gap-6">
+              <div class="flex flex-col flex-1 p-6 bg-white shadow rounded-xl">
                 <h4 class="mb-4 font-medium text-center text-gray-700">Tipo de Movimientos</h4>
-                <div class="flex justify-center">
+                <div class="flex items-center justify-center flex-1">
                   <canvas id="chart-tipo-movimientos" width="180" height="180"></canvas>
                 </div>
                 <div class="mt-4 text-sm text-center text-gray-600">
@@ -79,15 +79,60 @@
                 </div>
               </div>
 
-              <div class="p-6 bg-white shadow rounded-xl">
+              <div class="flex flex-col flex-1 p-6 bg-white shadow rounded-xl">
                 <h4 class="mb-4 font-medium text-center text-gray-700">Estatus de Solicitudes</h4>
-                <div class="flex justify-center">
+                <div class="flex items-center justify-center flex-1">
                   <canvas id="chart-estatus-solicitudes" width="180" height="180"></canvas>
                 </div>
                 <div class="mt-4 text-sm text-center text-gray-600">
                   Atendidas vs Pendientes
                 </div>
               </div>
+            </div>
+          </div>
+
+          {{-- TABLA DE RESUMEN POR CARRERA --}}
+          <div class="mb-8">
+            <h3 class="mb-4 text-lg font-semibold">Resumen por carrera</h3>
+            <div class="overflow-x-auto">
+              <table class="min-w-full bg-white shadow rounded-xl">
+                <thead>
+                  <tr class="bg-gray-100">
+                    <th class="px-4 py-2 text-sm font-semibold text-left text-gray-700">Carrera</th>
+                    <th class="px-4 py-2 text-sm font-semibold text-center text-blue-700">Altas</th>
+                    <th class="px-4 py-2 text-sm font-semibold text-center text-red-700">Bajas</th>
+                    <th class="px-4 py-2 text-sm font-semibold text-center text-yellow-700">Pendientes</th>
+                    <th class="px-4 py-2 text-sm font-semibold text-center text-green-700">Autorizados</th>
+                    <th class="px-4 py-2 text-sm font-semibold text-center text-pink-700">Rechazados</th>
+                    <th class="px-4 py-2 text-sm font-semibold text-center text-gray-700">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @foreach($carrerasResumen as $carrera)
+                  <tr class="border-b hover:bg-gray-50">
+                    <td class="px-4 py-2 text-sm text-gray-700">{{ $carrera->nombre }}</td>
+                    <td class="px-4 py-2 font-bold text-center text-blue-800">{{ $carrera->resumen['altas'] }}</td>
+                    <td class="px-4 py-2 font-bold text-center text-red-800">{{ $carrera->resumen['bajas'] }}</td>
+                    <td class="px-4 py-2 font-bold text-center text-yellow-800">{{ $carrera->resumen['pendientes'] }}
+                    </td>
+                    <td class="px-4 py-2 font-bold text-center text-green-800">{{ $carrera->resumen['autorizados'] }}
+                    </td>
+                    <td class="px-4 py-2 font-bold text-center text-pink-800">{{ $carrera->resumen['rechazados'] }}</td>
+                    <td class="px-4 py-2 font-bold text-center text-gray-800">{{ $carrera->resumen['total'] }}</td>
+                  </tr>
+                  @endforeach
+                  <!-- Fila de totales -->
+                  <tr class="font-bold bg-gray-200">
+                    <td class="px-4 py-2 text-sm text-gray-800">TOTALES</td>
+                    <td class="px-4 py-2 text-center text-blue-800">{{ $totalesResumen['altas'] }}</td>
+                    <td class="px-4 py-2 text-center text-red-800">{{ $totalesResumen['bajas'] }}</td>
+                    <td class="px-4 py-2 text-center text-yellow-800">{{ $totalesResumen['pendientes'] }}</td>
+                    <td class="px-4 py-2 text-center text-green-800">{{ $totalesResumen['autorizados'] }}</td>
+                    <td class="px-4 py-2 text-center text-pink-800">{{ $totalesResumen['rechazados'] }}</td>
+                    <td class="px-4 py-2 text-center text-gray-800">{{ $totalesResumen['total'] }}</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
 
@@ -146,7 +191,7 @@
                   datasets: [{
                     label: 'Estatus de solicitudes',
                     data: [
-                      {{ $atendidasTotales ?? 0 }},
+                      {{ $autorizadosTotales + $rechazadosTotales ?? 0 }},
                       {{ $pendientesTotales ?? 0 }}
                     ],
                     backgroundColor: [
@@ -182,6 +227,7 @@
               });
             });
           </script>
+
           @endif
 
           {{-- DASHBOARD PARA COORDINADOR --}}
