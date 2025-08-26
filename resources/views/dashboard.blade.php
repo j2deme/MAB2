@@ -27,14 +27,302 @@
                 el
                 estatus final de la misma.</li>
               <li>El estatus de las solicitudes se verá reflejado en de 5 a 10 días hábiles.</li>
-              <p class="mt-1">Al utilizar la plataforma, el estudiante acepta las condiciones de uso.</p>
-
-              <p class="mt-1">Para continuar, ingresa al menú <strong>Mis solicitudes</strong>.</p>
+            </ul>
+            <p class="mt-1">Al utilizar la plataforma, el estudiante acepta las condiciones de uso.</p>
+            <p class="mt-1">Para continuar, ingresa al menú <strong>Mis solicitudes</strong>.</p>
           </div>
           @else
-          Bienvenido {{ auth()->user()->rol->value }}.
+          <div class="mb-4 text-lg font-bold">Bienvenido {{ auth()->user()->rol->value }}.</div>
+
+          {{-- DASHBOARD PARA ADMINISTRADOR Y JEFE --}}
+          @if(auth()->user()->es(['Administrador', 'Jefe']))
+          <div class="mb-8">
+            <h2 class="mb-6 text-2xl font-bold text-gray-800">Resumen de movimientos del semestre activo</h2>
+            <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+              <div class="flex flex-col p-6 bg-white shadow rounded-xl">
+                <div class="flex items-center mb-4">
+                  <x-icon name="arrow-up" class="w-8 h-8 mr-2 text-blue-600" />
+                  <span class="text-lg font-semibold text-gray-700">Altas</span>
+                </div>
+                <div class="mb-2 text-4xl font-bold text-blue-800">{{ $altasTotales ?? '---' }}</div>
+                <div class="text-sm text-gray-500">Solicitudes de alta</div>
+              </div>
+              <div class="flex flex-col p-6 bg-white shadow rounded-xl">
+                <div class="flex items-center mb-4">
+                  <x-icon name="arrow-down" class="w-8 h-8 mr-2 text-red-600" />
+                  <span class="text-lg font-semibold text-gray-700">Bajas</span>
+                </div>
+                <div class="mb-2 text-4xl font-bold text-red-800">{{ $bajasTotales ?? '---' }}</div>
+                <div class="text-sm text-gray-500">Solicitudes de baja</div>
+              </div>
+              <div class="flex flex-col p-6 bg-white shadow rounded-xl">
+                <div class="flex items-center mb-4">
+                  <x-icon name="clock" class="w-8 h-8 mr-2 text-yellow-600" />
+                  <span class="text-lg font-semibold text-gray-700">Pendientes</span>
+                </div>
+                <div class="mb-2 text-4xl font-bold text-yellow-800">{{ $pendientesTotales ?? '---' }}</div>
+                <div class="text-sm text-gray-500">Solicitudes sin procesar</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mb-8">
+            <h3 class="mb-4 text-lg font-semibold">Análisis de movimientos</h3>
+            <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <div class="p-6 bg-white shadow rounded-xl">
+                <h4 class="mb-4 font-medium text-center text-gray-700">Tipo de Movimientos</h4>
+                <div class="flex justify-center">
+                  <canvas id="chart-tipo-movimientos" width="180" height="180"></canvas>
+                </div>
+                <div class="mt-4 text-sm text-center text-gray-600">
+                  Altas vs Bajas
+                </div>
+              </div>
+
+              <div class="p-6 bg-white shadow rounded-xl">
+                <h4 class="mb-4 font-medium text-center text-gray-700">Estatus de Solicitudes</h4>
+                <div class="flex justify-center">
+                  <canvas id="chart-estatus-solicitudes" width="180" height="180"></canvas>
+                </div>
+                <div class="mt-4 text-sm text-center text-gray-600">
+                  Atendidas vs Pendientes
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <script>
+            document.addEventListener('DOMContentLoaded', function () {
+              // Gráfica de tipo de movimientos (Altas vs Bajas)
+              const ctxTipo = document.getElementById('chart-tipo-movimientos').getContext('2d');
+              new Chart(ctxTipo, {
+                type: 'doughnut',
+                data: {
+                  labels: ['Altas', 'Bajas'],
+                  datasets: [{
+                    label: 'Tipo de movimientos',
+                    data: [
+                      {{ $altasTotales ?? 0 }},
+                      {{ $bajasTotales ?? 0 }}
+                    ],
+                    backgroundColor: [
+                      '#3b82f6', // azul - Altas
+                      '#ef4444'  // rojo - Bajas
+                    ],
+                    borderWidth: 2,
+                    borderColor: '#ffffff'
+                  }]
+                },
+                options: {
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                    legend: {
+                      position: 'bottom',
+                      labels: {
+                        padding: 15,
+                        usePointStyle: true
+                      }
+                    },
+                    tooltip: {
+                      callbacks: {
+                        label: function(context) {
+                          const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                          const percentage = Math.round((context.raw / total) * 100);
+                          return `${context.label}: ${context.raw} (${percentage}%)`;
+                        }
+                      }
+                    }
+                  }
+                }
+              });
+
+              // Gráfica de estatus de solicitudes (Atendidas vs Pendientes)
+              const ctxEstatus = document.getElementById('chart-estatus-solicitudes').getContext('2d');
+              new Chart(ctxEstatus, {
+                type: 'doughnut',
+                data: {
+                  labels: ['Atendidas', 'Pendientes'],
+                  datasets: [{
+                    label: 'Estatus de solicitudes',
+                    data: [
+                      {{ $atendidasTotales ?? 0 }},
+                      {{ $pendientesTotales ?? 0 }}
+                    ],
+                    backgroundColor: [
+                      '#10b981', // verde - Atendidas
+                      '#fbbf24'  // amarillo - Pendientes
+                    ],
+                    borderWidth: 2,
+                    borderColor: '#ffffff'
+                  }]
+                },
+                options: {
+                  responsive: true,
+                  maintainAspectRatio: false,
+                  plugins: {
+                    legend: {
+                      position: 'bottom',
+                      labels: {
+                        padding: 15,
+                        usePointStyle: true
+                      }
+                    },
+                    tooltip: {
+                      callbacks: {
+                        label: function(context) {
+                          const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                          const percentage = Math.round((context.raw / total) * 100);
+                          return `${context.label}: ${context.raw} (${percentage}%)`;
+                        }
+                      }
+                    }
+                  }
+                }
+              });
+            });
+          </script>
+          @endif
+
+          {{-- DASHBOARD PARA COORDINADOR --}}
+          @if(auth()->user()->es('Coordinador'))
+          <div class="mb-8">
+            <h2 class="mb-6 text-2xl font-bold text-gray-800">Tus carreras</h2>
+            <div class="grid grid-cols-1 gap-6">
+              @foreach($carreras as $index => $carrera)
+              <div class="p-6 bg-white shadow rounded-xl">
+                <h4 class="mb-4 font-bold text-center text-primary-700">{{ $carrera->nombre }}</h4>
+
+                <div class="grid grid-cols-1 gap-6 mb-6 md:grid-cols-3">
+                  <div class="flex flex-col items-center p-4 rounded-lg bg-blue-50">
+                    <x-icon name="arrow-up" class="w-8 h-8 mb-2 text-blue-600" />
+                    <div class="text-lg font-semibold text-gray-700">Altas</div>
+                    <div class="text-2xl font-bold text-blue-800">{{ $carrera->altas ?? '---' }}</div>
+                  </div>
+                  <div class="flex flex-col items-center p-4 rounded-lg bg-red-50">
+                    <x-icon name="arrow-down" class="w-8 h-8 mb-2 text-red-600" />
+                    <div class="text-lg font-semibold text-gray-700">Bajas</div>
+                    <div class="text-2xl font-bold text-red-800">{{ $carrera->bajas ?? '---' }}</div>
+                  </div>
+                  <div class="flex flex-col items-center p-4 rounded-lg bg-yellow-50">
+                    <x-icon name="clock" class="w-8 h-8 mb-2 text-yellow-600" />
+                    <div class="text-lg font-semibold text-gray-700">Pendientes</div>
+                    <div class="text-2xl font-bold text-yellow-800">{{ $carrera->pendientes ?? '---' }}</div>
+                  </div>
+                </div>
+
+                <div class="flex flex-row gap-6">
+                  <div class="flex-1 p-4 rounded-lg bg-gray-50">
+                    <h5 class="mb-3 text-sm font-medium text-center text-gray-700">Tipo de Movimientos</h5>
+                    <div class="flex justify-center">
+                      <canvas id="chart-tipo-{{ $carrera->id }}" width="120" height="120"></canvas>
+                    </div>
+                  </div>
+
+                  <div class="flex-1 p-4 rounded-lg bg-gray-50">
+                    <h5 class="mb-3 text-sm font-medium text-center text-gray-700">Estatus de Solicitudes</h5>
+                    <div class="flex justify-center">
+                      <canvas id="chart-estatus-{{ $carrera->id }}" width="120" height="120"></canvas>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              @endforeach
+            </div>
+          </div>
+
+          <script>
+            document.addEventListener('DOMContentLoaded', function () {
+              @foreach($carreras as $index => $carrera)
+                // Gráfica de tipo de movimientos por carrera
+                const ctxTipo{{ $index }} = document.getElementById('chart-tipo-{{ $carrera->id }}').getContext('2d');
+                new Chart(ctxTipo{{ $index }}, {
+                  type: 'doughnut',
+                  data: {
+                    labels: ['Altas', 'Bajas'],
+                    datasets: [{
+                      label: 'Tipo de movimientos',
+                      data: [
+                        {{ $carrera->altas ?? 0 }},
+                        {{ $carrera->bajas ?? 0 }}
+                      ],
+                      backgroundColor: [
+                        '#3b82f6', // azul - Altas
+                        '#ef4444'  // rojo - Bajas
+                      ],
+                      borderWidth: 2,
+                      borderColor: '#ffffff'
+                    }]
+                  },
+                  options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                      legend: {
+                        display: false
+                      },
+                      tooltip: {
+                        callbacks: {
+                          label: function(context) {
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = Math.round((context.raw / total) * 100);
+                            return `${context.label}: ${context.raw} (${percentage}%)`;
+                          }
+                        }
+                      }
+                    }
+                  }
+                });
+
+                // Gráfica de estatus por carrera
+                const ctxEstatus{{ $index }} = document.getElementById('chart-estatus-{{ $carrera->id }}').getContext('2d');
+                const atendidasCarrera{{ $index }} = ({{ $carrera->altas ?? 0 }} + {{ $carrera->bajas ?? 0 }}) - ({{ $carrera->pendientes ?? 0 }});
+                const pendientesCarrera{{ $index }} = {{ $carrera->pendientes ?? 0 }};
+                
+                new Chart(ctxEstatus{{ $index }}, {
+                  type: 'doughnut',
+                  data: {
+                    labels: ['Atendidas', 'Pendientes'],
+                    datasets: [{
+                      label: 'Estatus de solicitudes',
+                      data: [
+                        atendidasCarrera{{ $index }},
+                        pendientesCarrera{{ $index }}
+                      ],
+                      backgroundColor: [
+                        '#10b981', // verde - Atendidas
+                        '#fbbf24'  // amarillo - Pendientes
+                      ],
+                      borderWidth: 2,
+                      borderColor: '#ffffff'
+                    }]
+                  },
+                  options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                      legend: {
+                        display: false
+                      },
+                      tooltip: {
+                        callbacks: {
+                          label: function(context) {
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = Math.round((context.raw / total) * 100);
+                            return `${context.label}: ${context.raw} (${percentage}%)`;
+                          }
+                        }
+                      }
+                    }
+                  }
+                });
+              @endforeach
+            });
+          </script>
+          @endif
+
+          {{-- Mini apps para administrador --}}
           @if (auth()->user()->es('Administrador'))
-          {{-- Add a set row of cards to access additional sub apps --}}
           <div class="grid grid-cols-1 gap-4 mt-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             <x-mini-app-card title="Eventos" description="Gestiona los eventos del Tec Valles" route="eventos.index"
               icon='calendar-star' color="blue" />

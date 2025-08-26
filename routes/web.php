@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MateriasController;
 use App\Http\Controllers\GruposController;
 use App\Http\Controllers\UserController;
@@ -11,7 +12,11 @@ Volt::route('/', 'pages.auth.login');
 
 Route::view('/playground', 'playground')->name('playground');
 
-Route::view('dashboard', 'dashboard')
+// Route::view('dashboard', 'dashboard')
+//     ->middleware(['auth', 'verified'])
+//     ->name('dashboard');
+
+Route::get('dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
