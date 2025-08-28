@@ -61,7 +61,7 @@ class MovimientoForm extends Form
             'tipo' => 'required',
             'estatus' => 'required',
             'motivo' => 'required|string',
-            'motivo_adicional' => 'nullable|string|max:200',
+            'motivo_adicional' => 'nullable|string|max:250',
             'respuesta' => 'nullable|string',
             'respuesta_adicional' => 'nullable|string',
             'is_paralelo' => 'required|boolean',
