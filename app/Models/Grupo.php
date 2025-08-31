@@ -112,4 +112,14 @@ class Grupo extends Model
     {
         return $this->belongsTo(\App\Models\Semestre::class, 'semestre_id', 'id');
     }
+
+    /**
+     * Obtiene los movimientos asociados al grupo.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function movimientos()
+    {
+        return $this->hasMany(\App\Models\Movimiento::class, 'grupo_id', 'id');
+    }
 }
