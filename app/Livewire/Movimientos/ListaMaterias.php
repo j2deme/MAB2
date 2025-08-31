@@ -32,7 +32,7 @@ class ListaMaterias extends Component
         FROM materias m
         INNER JOIN grupos g ON g.materia_id = m.id AND g.semestre_id = ?
         INNER JOIN carreras c ON c.id = m.carrera_id
-        LEFT JOIN movimientos mo ON mo.grupo_id = g.id AND mo.semestre_id = ?
+        LEFT JOIN movimientos mo ON mo.grupo_id = g.id AND mo.semestre_id = ? AND (mo.deleted_at IS NULL)
         ", [$this->semestre->id, $this->semestre->id]);
 
         $semestres = [];
