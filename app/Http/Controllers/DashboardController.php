@@ -23,7 +23,9 @@ class DashboardController extends Controller
     $totalesResumen  = null;
 
     if ($user->es(['Administrador', 'Jefe'])) {
-      $movimientos        = Movimiento::where('semestre_id', $semestre->id)->get();
+      $movimientos        = Movimiento::where('semestre_id', $semestre->id)
+        ->whereNull('deleted_at')
+        ->get();
       $movimientosTotales = $movimientos->count();
       $altasTotales       = $movimientos->where('tipo', MovesType::ALTA)->count();
       $bajasTotales       = $movimientos->where('tipo', MovesType::BAJA)->count();
@@ -34,7 +36,8 @@ class DashboardController extends Controller
       // Obtener datos para la tabla de resumen por carrera
       $carrerasResumen = Carrera::with([
         'movimientos' => function ($q) use ($semestre) {
-          $q->where('semestre_id', $semestre->id);
+          $q->where('semestre_id', $semestre->id)
+            ->whereNull('deleted_at');
         }
       ])->get();
 
