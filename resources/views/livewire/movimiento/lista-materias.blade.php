@@ -51,12 +51,19 @@
                       ])
                     </div>
                     <div class="place-self-end">
+                      @php
+                      // Contar movimientos pendientes (estatus REGISTRADO)
+                      $pendientes = $coleccionGrupos->filter(function($grupo) {
+                      return in_array($grupo->estatus, ['Registrado', 'En revisión']);
+                      })->count();
+                      $bg = ($pendientes > 0) ? 'bg-white' : "bg-{$primerGrupo->carrera_color}";
+                      @endphp
                       <div
-                        class="inline-flex items-center justify-center text-sm bg-white border border-gray-300 rounded-full w-7 h-7">
-                        @if ($coleccionGrupos->sum('total') > 0)
-                        {{ $coleccionGrupos->sum('total') }}
+                        class="inline-flex items-center justify-center text-sm border border-gray-300 rounded-full w-7 h-7 {{ $bg }} font-semibold">
+                        @if ($pendientes > 0)
+                        {{ $pendientes }}
                         @else
-                        <x-icon bold name="check" class="w-5 h-5 text-green-500" />
+                        <x-icon bold name="check" class="w-5 h-5 text-white" />
                         @endif
                       </div>
                     </div>
