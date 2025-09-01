@@ -137,95 +137,112 @@
           </div>
 
           <script>
-            document.addEventListener('DOMContentLoaded', function () {
+            function renderDashboardCharts() {
               // Gráfica de tipo de movimientos (Altas vs Bajas)
-              const ctxTipo = document.getElementById('chart-tipo-movimientos').getContext('2d');
-              new Chart(ctxTipo, {
-                type: 'doughnut',
-                data: {
-                  labels: ['Altas', 'Bajas'],
-                  datasets: [{
-                    label: 'Tipo de movimientos',
-                    data: [
-                      {{ $altasTotales ?? 0 }},
-                      {{ $bajasTotales ?? 0 }}
-                    ],
-                    backgroundColor: [
-                      '#3b82f6', // azul - Altas
-                      '#ef4444'  // rojo - Bajas
-                    ],
-                    borderWidth: 2,
-                    borderColor: '#ffffff'
-                  }]
-                },
-                options: {
-                  responsive: true,
-                  maintainAspectRatio: false,
-                  plugins: {
-                    legend: {
-                      position: 'bottom',
-                      labels: {
-                        padding: 15,
-                        usePointStyle: true
-                      }
+              const tipoCanvas = document.getElementById('chart-tipo-movimientos');
+              if (tipoCanvas) {
+                const ctxTipo = tipoCanvas.getContext('2d');
+                if (ctxTipo) {
+                  if (tipoCanvas.chartInstance) tipoCanvas.chartInstance.destroy();
+                  tipoCanvas.chartInstance = new Chart(ctxTipo, {
+                    type: 'doughnut',
+                    data: {
+                      labels: ['Altas', 'Bajas'],
+                      datasets: [{
+                        label: 'Tipo de movimientos',
+                        data: [
+                          {{ $altasTotales ?? 0 }},
+                          {{ $bajasTotales ?? 0 }}
+                        ],
+                        backgroundColor: [
+                          '#3b82f6', // azul - Altas
+                          '#ef4444'  // rojo - Bajas
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                      }]
                     },
-                    tooltip: {
-                      callbacks: {
-                        label: function(context) {
-                          const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                          const percentage = Math.round((context.raw / total) * 100);
-                          return `${context.label}: ${context.raw} (${percentage}%)`;
+                    options: {
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: {
+                        legend: {
+                          position: 'bottom',
+                          labels: {
+                            padding: 15,
+                            usePointStyle: true
+                          }
+                        },
+                        tooltip: {
+                          callbacks: {
+                            label: function(context) {
+                              const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                              const percentage = Math.round((context.raw / total) * 100);
+                              return `${context.label}: ${context.raw} (${percentage}%)`;
+                            }
+                          }
                         }
                       }
                     }
-                  }
+                  });
                 }
-              });
+              }
 
               // Gráfica de estatus de solicitudes (Atendidas vs Pendientes)
-              const ctxEstatus = document.getElementById('chart-estatus-solicitudes').getContext('2d');
-              new Chart(ctxEstatus, {
-                type: 'doughnut',
-                data: {
-                  labels: ['Atendidas', 'Pendientes'],
-                  datasets: [{
-                    label: 'Estatus de solicitudes',
-                    data: [
-                      {{ $autorizadosTotales + $rechazadosTotales ?? 0 }},
-                      {{ $pendientesTotales ?? 0 }}
-                    ],
-                    backgroundColor: [
-                      '#10b981', // verde - Atendidas
-                      '#fbbf24'  // amarillo - Pendientes
-                    ],
-                    borderWidth: 2,
-                    borderColor: '#ffffff'
-                  }]
-                },
-                options: {
-                  responsive: true,
-                  maintainAspectRatio: false,
-                  plugins: {
-                    legend: {
-                      position: 'bottom',
-                      labels: {
-                        padding: 15,
-                        usePointStyle: true
-                      }
+              const estatusCanvas = document.getElementById('chart-estatus-solicitudes');
+              if (estatusCanvas) {
+                const ctxEstatus = estatusCanvas.getContext('2d');
+                if (ctxEstatus) {
+                  if (estatusCanvas.chartInstance) estatusCanvas.chartInstance.destroy();
+                  estatusCanvas.chartInstance = new Chart(ctxEstatus, {
+                    type: 'doughnut',
+                    data: {
+                      labels: ['Atendidas', 'Pendientes'],
+                      datasets: [{
+                        label: 'Estatus de solicitudes',
+                        data: [
+                          {{ $autorizadosTotales + $rechazadosTotales ?? 0 }},
+                          {{ $pendientesTotales ?? 0 }}
+                        ],
+                        backgroundColor: [
+                          '#10b981', // verde - Atendidas
+                          '#fbbf24'  // amarillo - Pendientes
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                      }]
                     },
-                    tooltip: {
-                      callbacks: {
-                        label: function(context) {
-                          const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                          const percentage = Math.round((context.raw / total) * 100);
-                          return `${context.label}: ${context.raw} (${percentage}%)`;
+                    options: {
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: {
+                        legend: {
+                          position: 'bottom',
+                          labels: {
+                            padding: 15,
+                            usePointStyle: true
+                          }
+                        },
+                        tooltip: {
+                          callbacks: {
+                            label: function(context) {
+                              const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                              const percentage = Math.round((context.raw / total) * 100);
+                              return `${context.label}: ${context.raw} (${percentage}%)`;
+                            }
+                          }
                         }
                       }
                     }
-                  }
+                  });
                 }
-              });
-            });
+              }
+            }
+
+            document.addEventListener('DOMContentLoaded', renderDashboardCharts);
+            if (window.Livewire) {
+              window.Livewire.on('message.processed', renderDashboardCharts);
+            }
           </script>
 
           @endif
