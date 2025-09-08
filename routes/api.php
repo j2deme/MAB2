@@ -110,5 +110,75 @@ Route::name('api.')->group(function () {
             ->orderBy('username')
             ->get();
     })->name('estudiantes.index');
+
+    Route::post('/validate/student', function (Request $request) {
+        try {
+            // Validate request
+            $validated = $request->validate([
+                'username' => 'required|string',
+                'password' => 'required|string'
+            ]);
+
+            // Set JSON response type
+            $request->headers->set('Content-Type', 'application/json');
+
+            // Find the student
+            $student = User::query()
+                ->where('rol', \App\Enums\UserRoles::ESTUDIANTE)
+                ->where('username', $validated['username'])
+                ->with([
+                    'carreras' => function ($query) {
+                        $query->select('carreras.id', 'nombre', 'siglas')->first();
+                    }
+                ])
+                ->select('id', 'name', 'username', 'email', 'password')
+                ->first();
+
+            // Student not found
+            if (!$student) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Credenciales invalidas',
+                    'message' => 'No se encontró ningún estudiante con los datos proporcionados.'
+                ], 401);
+            }
+
+            // Verify password
+            if (!Hash::check($validated['password'], $student->password)) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Credenciales invalidas',
+                    'message' => 'La contraseña proporcionado es incorrecto'
+                ], 401);
+            }
+
+            // Format career information
+            $career = $student->carreras->first();
+
+            // Return success response (excluding password)
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'id' => $student->id,
+                    'username' => $student->username,
+                    'name' => $student->name,
+                    'email' => $student->email,
+                    'career' => $career ? [
+                        'id' => $career->id,
+                        'name' => $career->nombre,
+                        'siglas' => $career->siglas,
+                        'clave_interna' => $career->clave_interna
+                    ] : null
+                ]
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Error inesperado',
+                'message' => 'Se produjo un error inesperado al procesar su solicitud'
+            ], 500);
+        }
+    })->name('estudiantes.validate');
 });
 
