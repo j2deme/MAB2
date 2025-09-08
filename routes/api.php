@@ -180,5 +180,13 @@ Route::name('api.')->group(function () {
             ], 500);
         }
     })->name('estudiantes.validate');
+
+    Route::fallback(function () {
+        return response()->json([
+            'success' => false,
+            'error' => 'Endpoint no encontrado',
+            'message' => 'La ruta solicitada no existe o requiere un método diferente.'
+        ], 404);
+    });
 });
 
