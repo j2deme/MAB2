@@ -127,6 +127,11 @@ Route::name('api.')->group(function () {
             $validated = $request->validate($rules);
 
             // Buscar estudiante
+            $select = ['id', 'name', 'username', 'email'];
+            if ($isPost) {
+                $select[] = 'password';
+            }
+
             $student = User::query()
                 ->where('rol', \App\Enums\UserRoles::ESTUDIANTE)
                 ->where('username', $validated['username'])
@@ -135,7 +140,7 @@ Route::name('api.')->group(function () {
                         $query->select('carreras.id', 'nombre', 'siglas', 'clave_interna');
                     }
                 ])
-                ->select('id', 'name', 'username', 'email', $isPost ? 'password' : null)
+                ->select($select)
                 ->first();
 
             if (!$student) {
