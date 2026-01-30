@@ -68,8 +68,18 @@
     </x-card>
     @endif
 
-    {{-- Estudiante: mostrar campos para registrar movimiento --}}
-    @if (auth()->user()->es('Estudiante') and (count($form->altas) < $form->max_altas))
+    @if(!auth()->user()->es('Estudiante'))
+    <div>
+        <x-select wire:model.defer="form.user_id" id="user_id" name="user_id" label="Estudiante"
+            placeholder="Selecciona un estudiante" :async-data="route('api.estudiantes.index')" option-label="username"
+            option-description="name" option-value="id" />
+
+        @error('form.user_id')
+        <x-input-error class="mt-2" :messages="$message" />
+        @enderror
+    </div @endif {{-- Estudiante: mostrar campos para registrar movimiento --}} @if ((auth()->user()->es('Estudiante')
+    and (count($form->altas) < $form->max_altas)) or
+        auth()->user()->es(['Administrador', 'Jefe', 'Coordinador']))
         <div>
             <x-select wire:model.defer='form.grupo_id' id='grupo_id' name='grupo_id' :label="__('Grupo')"
                 placeholder='Selecciona un grupo' :options="$form->grupos" option-label="nombre" option-value="id"
