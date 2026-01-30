@@ -12,11 +12,14 @@ use Livewire\Attributes\Layout;
 use Livewire\Component;
 use WireUi\Traits\WireUiActions;
 use Illuminate\Http\Request;
+use App\Models\User;
+use App\Enums\UserRoles;
 
 class Create extends Component
 {
     use WireUiActions;
     public MovimientoForm $form;
+    public $estudiantes = [];
 
     public function mount($tipo = null, Movimiento $movimiento)
     {
@@ -36,6 +39,29 @@ class Create extends Component
         }
 
         $this->form->setMovimientoModel($movimiento, $tipo);
+
+        // Si el usuario activo es estudiante, NO carga la lista de estudiantes
+        if (Auth::user()->es('Estudiante')) {
+            $this->estudiantes = [];
+        }
+        // Si el usuario es Administrador o Jefe, carga la lista de los estudiantes activos
+        if (Auth::user()->es(['Administrador', 'Jefe'])) {
+            $this->estudiantes = User::where('rol', UserRoles::ESTUDIANTE)
+                ->orderBy('username')
+                ->get();
+        }
+        // Si el usuario es Coordinador, carga la lista de los estudiantes activos, en la carreras asociadas al coordinador
+        if (Auth::user()->es('Coordinador')) {
+            $carrerasIds       = Auth::user()->carreras()->pluck('id');
+            $this->estudiantes = User::where('rol', UserRoles::ESTUDIANTE)
+                ->whereHas(
+                    'carreras',
+                    fn($query) =>
+                    $query->whereIn('id', $carrerasIds)
+                )
+                ->orderBy('username')
+                ->get();
+        }
     }
 
     public function save()
