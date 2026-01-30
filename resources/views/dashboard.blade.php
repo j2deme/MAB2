@@ -384,17 +384,6 @@
           </script>
           @endif
 
-          {{-- Mini apps para administrador --}}
-          @if (auth()->user()->es('Administrador'))
-          <div class="grid grid-cols-1 gap-4 mt-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            <x-mini-app-card title="Eventos" description="Gestiona los eventos del Tec Valles" route="eventos.index"
-              icon='calendar-star' color="blue" />
-            <x-mini-app-card title="Actividades" description="Gestiona las actividades de cada evento"
-              route="actividades.index" icon="ticket" color="blue" />
-            <x-mini-app-card title="Asistencias" description="Gestiona la asistencia a cada actividad"
-              route="asistencias.index" icon="calendar-check" color="blue" />
-          </div>
-          @endif
           @endif
         </div>
       </div>
