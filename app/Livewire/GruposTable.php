@@ -43,29 +43,10 @@ final class GruposTable extends PowerGridComponent
     public function datasource(): Builder
     {
         $semestreActivoId = $this->getSemestreActivoId();
-
+        // Use Eloquent relationships to ensure an Eloquent Builder is returned
         return Grupo::query()
-            ->join('materias', function ($materias) {
-                $materias->on('grupos.materia_id', '=', 'materias.id');
-            })
-            ->join('carreras', function ($carreras) {
-                $carreras->on('materias.carrera_id', '=', 'carreras.id');
-            })
-            ->where('grupos.semestre_id', $semestreActivoId)
-            ->select([
-                'grupos.id',
-                'grupos.siglas as grupo_siglas',
-                'grupos.semestre_id',
-                'grupos.materia_id',
-                'materias.nombre_completo as materia_nombre',
-                'materias.clave',
-                'carreras.id as carrera_id',
-                'carreras.siglas as carrera_siglas',
-                'carreras.color as carrera_color',
-                'grupos.is_disponible',
-                'grupos.is_paralelizable',
-                'grupos.created_at',
-            ]);
+            ->with(['materia', 'materia.carrera'])
+            ->where('semestre_id', $semestreActivoId);
     }
 
     public function relationSearch(): array

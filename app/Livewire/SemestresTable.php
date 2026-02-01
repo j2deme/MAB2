@@ -5,7 +5,7 @@ namespace App\Livewire;
 use App\Models\Semestre;
 use App\Traits\UsesSemestreActivo;
 use Illuminate\Support\Carbon;
-use Illuminate\Database\Eloquent\Builder;
+// Use fully-qualified return type for datasource to avoid import mismatch
 use PowerComponents\LivewirePowerGrid\Button;
 use PowerComponents\LivewirePowerGrid\Column;
 use PowerComponents\LivewirePowerGrid\Exportable;
@@ -40,10 +40,12 @@ final class SemestresTable extends PowerGridComponent
         ];
     }
 
-    public function datasource(): Builder
+    public function datasource()
     {
-        return Semestre::query()
+        $query = Semestre::query()
             ->orderBy('clave');
+
+        return $query;
     }
 
     public function relationSearch(): array

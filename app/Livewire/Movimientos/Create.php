@@ -36,8 +36,6 @@ class Create extends Component
                 'alta', 'Alta' => MovesType::ALTA,
                 'baja', 'Baja' => MovesType::BAJA,
             };
-        } else {
-            $movimiento->tipo = null;
         }
 
         $this->form->setMovimientoModel($movimiento, $tipo);
