@@ -31,7 +31,9 @@ class UserForm extends Form
             'name' => 'required|string',
             'email' => 'required|string',
             'rol' => 'required',
-            'password' => [$this->mode === 'create' ? 'required' : 'nullable', 'string', Rules\Password::defaults()],
+            'password' => $this->mode === 'create'
+                ? ['required', 'string', Rules\Password::defaults()]
+                : ['nullable', 'string', 'min:6'],
             'username' => 'nullable|string',
             'inscrito' => 'boolean',
             'carreras_id' => ['nullable', 'array'],
