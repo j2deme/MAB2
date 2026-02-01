@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Models\Grupo;
 use App\Models\Carrera;
 use App\Models\Materia;
+use App\Traits\UsesSemestreActivo;
 use Illuminate\Support\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use PowerComponents\LivewirePowerGrid\Button;
@@ -22,6 +23,7 @@ use Illuminate\Support\Facades\Blade;
 final class GruposTable extends PowerGridComponent
 {
     use WithExport;
+    use UsesSemestreActivo;
 
     public function setUp(): array
     {
@@ -40,6 +42,8 @@ final class GruposTable extends PowerGridComponent
 
     public function datasource(): Builder
     {
+        $semestreActivoId = $this->getSemestreActivoId();
+
         return Grupo::query()
             ->join('materias', function ($materias) {
                 $materias->on('grupos.materia_id', '=', 'materias.id');
@@ -47,6 +51,7 @@ final class GruposTable extends PowerGridComponent
             ->join('carreras', function ($carreras) {
                 $carreras->on('materias.carrera_id', '=', 'carreras.id');
             })
+            ->where('grupos.semestre_id', $semestreActivoId)
             ->select([
                 'grupos.id',
                 'grupos.siglas as grupo_siglas',

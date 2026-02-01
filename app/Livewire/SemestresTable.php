@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Semestre;
+use App\Traits\UsesSemestreActivo;
 use Illuminate\Support\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use PowerComponents\LivewirePowerGrid\Button;
@@ -22,6 +23,7 @@ final class SemestresTable extends PowerGridComponent
 {
     use WithExport;
     use WireUiActions;
+    use UsesSemestreActivo;
 
     public function setUp(): array
     {
@@ -151,6 +153,10 @@ final class SemestresTable extends PowerGridComponent
         Semestre::query()->find($id)->update([
             $field => e($value),
         ]);
+
+        // Invalidar caché del semestre activo
+        $this->invalidarCacheSemestre();
+
         $this->refresh();
     }
 

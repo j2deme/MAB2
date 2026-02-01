@@ -43,6 +43,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property-read mixed $nombre
  * @property-read mixed $carrera
  * @property-read mixed $nombre_corto
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Movimiento> $movimientos
+ * @property-read int|null $movimientos_count
  * @mixin \Eloquent
  */
 class Grupo extends Model
