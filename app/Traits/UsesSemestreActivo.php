@@ -36,14 +36,48 @@ trait UsesSemestreActivo
   }
 
   /**
-   * Invalida el caché del semestre activo
-   * Útil cuando se cambia el semestre activo
+   * Invalida el caché del semestre activo y stats relacionados
+   * Útil cuando se cambia el semestre activo o se actualizan movimientos
    * 
+   * @param int|null $semestreId ID del semestre a invalidar (si null, invalida todos)
    * @return void
    */
-  protected function invalidarCacheSemestre(): void
+  protected function invalidarCacheSemestre(?int $semestreId = null): void
   {
     Cache::forget('semestre_activo');
     Cache::forget('semestre_activo_id');
+
+    // Invalidar caches de stats si se proporciona ID específico
+    if ($semestreId) {
+      Cache::forget("semestre:{$semestreId}:top-carreras");
+      Cache::forget("semestre:{$semestreId}:stats");
+    }
+  }
+
+  /**
+   * Invalida caché de conteos para una materia
+   * Útil cuando se crean/actualizan movimientos de una materia
+   * 
+   * @param int $materiaId ID de la materia
+   * @return void
+   */
+  protected function invalidarCacheMateria(int $materiaId): void
+  {
+    Cache::forget("materia:{$materiaId}:stats");
+    Cache::forget("materia:{$materiaId}:estudiantes");
+  }
+
+  /**
+   * Invalida caché de conteos para un grupo
+   * Útil cuando se crean/actualizan movimientos de un grupo
+   * 
+   * @param int $grupoId ID del grupo
+   * @return void
+   */
+  protected function invalidarCacheGrupo(int $grupoId): void
+  {
+    Cache::forget("grupo:{$grupoId}:stats");
+    Cache::forget("grupo:{$grupoId}:estudiantes");
   }
 }
+
