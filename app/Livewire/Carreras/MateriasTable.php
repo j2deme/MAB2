@@ -36,6 +36,7 @@ final class MateriasTable extends PowerGridComponent
     /** @var Builder */
     $builder = Materia::query()
       ->where('carrera_id', $this->carreraId)
+      ->withCount('grupos')
       ->orderBy('semestre')
       ->orderBy('clave', 'asc');
 
@@ -58,7 +59,7 @@ final class MateriasTable extends PowerGridComponent
       ->add('hp')
       ->add('cr')
       ->add('activo')
-      ->add('grupos_count', fn(Materia $model) => $model->grupos->count());
+      ->add('grupos_count');
   }
 
   public function columns(): array

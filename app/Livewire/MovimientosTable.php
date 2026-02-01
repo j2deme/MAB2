@@ -78,34 +78,28 @@ final class MovimientosTable extends PowerGridComponent
 
         if (Auth::user()->es('Estudiante')) {
             return Movimiento::query()
-                ->with('user', 'grupo.materia', 'carrera')
+                ->select('movimientos.*')
+                ->with('user:id,username', 'grupo:id,siglas,materia_id', 'grupo.materia:id,nombre_completo,clave,carrera_id', 'carrera:id,nombre,siglas')
                 ->where('user_id', Auth::id())
-                ->where('movimientos.semestre_id', $semestre->id)
+                ->where('semestre_id', $semestre->id)
                 ->orderBy('tipo')
                 ->orderBy('estatus');
         }
 
         $query = Movimiento::query()
-            ->with('user', 'grupo.materia', 'carrera')
-            ->join('users', 'movimientos.user_id', '=', 'users.id')
-            ->join('grupos', 'movimientos.grupo_id', '=', 'grupos.id')
-            ->join('materias', 'grupos.materia_id', '=', 'materias.id')
-            ->select('movimientos.*', 'users.username', 'materias.carrera_id', 'grupos.siglas')
-            ->orderBy('users.username')
-            ->where('movimientos.semestre_id', $semestre->id)
+            ->select('movimientos.*')
+            ->with('user:id,username', 'grupo:id,siglas,materia_id', 'grupo.materia:id,nombre_completo,clave,carrera_id', 'carrera:id,nombre,siglas')
+            ->where('semestre_id', $semestre->id)
             ->whereIn('estatus', $this->tipos)
+            ->orderBy('updated_at', 'desc')
             ->when($this->clave != '', function ($query) {
-                return $query->where('materias.clave', $this->clave);
+                return $query->whereHas('grupo.materia', fn($q) => $q->where('clave', $this->clave));
             })
             ->when($this->estudiante != '', function ($query) {
-                return $query->where('users.username', $this->estudiante);
+                return $query->whereHas('user', fn($q) => $q->where('username', $this->estudiante));
             })
             ->when(Auth::user()->es('Coordinador'), function ($query) {
-                return $query->whereIn('movimientos.carrera_id', Auth::user()->carreras->pluck('id'));
-                // ->orWhere(function ($query) {
-                //     $query->where('movimientos.is_paralelo', true)
-                //         ->whereIn('movimientos.carrera_id', Auth::user()->carreras->pluck('id'));
-                // });
+                return $query->whereIn('carrera_id', Auth::user()->carreras->pluck('id'));
             });
 
         return $query;

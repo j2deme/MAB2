@@ -58,7 +58,7 @@ final class GruposTable extends PowerGridComponent
     {
         return PowerGrid::fields()
             ->add('id')
-            ->add('grupo_siglas')
+            ->add('siglas')
             ->add('semestre_id')
             ->add('materia_id')
             ->add('materia_nombre', fn(Grupo $model) => e($model->materia->nombre_completo . ' (' . $model->materia->clave . ')'))
@@ -79,7 +79,7 @@ final class GruposTable extends PowerGridComponent
                 ->sortable()
                 ->searchable(),
 
-            Column::make('Grupo', 'grupo_siglas')
+            Column::make('Grupo', 'siglas')
                 ->contentClasses('flex items-center justify-center')
                 ->sortable()
                 ->searchable(),
