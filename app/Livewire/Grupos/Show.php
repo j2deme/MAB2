@@ -30,30 +30,37 @@ class Show extends Component
     {
         $grupo = $this->form->grupoModel;
 
-        // Movimientos del grupo (altas/bajas con estatus) - TODOS para stats
-        $movimientosCompletos = $grupo->movimientos()
+        // Movimientos a mostrar (todos o primeros 10) con paginación
+        $movimientos = $grupo->movimientos()
             ->with('user')
             ->where('deleted_at', null)
             ->latest('updated_at')
+            ->when(!$this->mostrarTodos, fn($q) => $q->take(10))
             ->get();
 
-        // Movimientos a mostrar (todos o primeros 10)
-        $movimientos = $this->mostrarTodos
-            ? $movimientosCompletos
-            : $movimientosCompletos->take(10);
+        // Stats calculados en BD (optimizados para escalabilidad)
+        $totalEstudiantes = $grupo->movimientos()
+            ->selectRaw('COUNT(DISTINCT user_id) as total')
+            ->where('deleted_at', null)
+            ->value('total') ?? 0;
 
-        // Estudiantes registrados (distinct users con movimientos)
-        $totalEstudiantes = $movimientosCompletos->pluck('user_id')->unique()->count();
+        $totalMovimientos = $grupo->movimientos()
+            ->where('deleted_at', null)
+            ->count();
 
-        // Stats
-        $totalMovimientos = $movimientosCompletos->count();
-        $altasAprobadas   = $movimientosCompletos->filter(fn($m) => $m->tipo->value === 'Alta')->count();
-        $bajasAprobadas   = $movimientosCompletos->filter(fn($m) => $m->tipo->value === 'Baja')->count();
+        $altasAprobadas = $grupo->movimientos()
+            ->where('tipo', 'ALTA')
+            ->where('deleted_at', null)
+            ->count();
+
+        $bajasAprobadas = $grupo->movimientos()
+            ->where('tipo', 'BAJA')
+            ->where('deleted_at', null)
+            ->count();
 
         return view('livewire.grupo.show', [
             'grupo' => $grupo,
             'movimientos' => $movimientos,
-            'movimientosCompletos' => $movimientosCompletos,
             'totalEstudiantes' => $totalEstudiantes,
             'totalMovimientos' => $totalMovimientos,
             'altasAprobadas' => $altasAprobadas,

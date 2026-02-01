@@ -7,6 +7,7 @@ use App\Models\Semestre;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Cache;
 
 class Show extends Component
 {
@@ -23,7 +24,7 @@ class Show extends Component
         $semestre = $this->form->semestreModel;
         $now      = Carbon::now();
 
-        // Stats generales
+        // Stats generales (queries simples, escalables)
         $gruposActivos      = $semestre->grupos()->count();
         $movimientosTotales = $semestre->movimientos()->where('deleted_at', null)->count();
         $altasTotales       = $semestre->movimientos()->where('tipo', 'ALTA')->where('deleted_at', null)->count();
@@ -53,23 +54,30 @@ class Show extends Component
             'fin_bajas' => $semestre->fin_bajas,
         ];
 
-        // Top 5 carreras por movimientos
-        $topCarreras = $semestre->movimientos()
-            ->with('carrera')
-            ->where('deleted_at', null)
-            ->get()
-            ->groupBy('carrera_id')
-            ->map(function ($movimientos, $carreraId) {
-                $carrera = $movimientos->first()->carrera;
-                return [
-                    'carrera' => $carrera,
-                    'count' => $movimientos->count(),
-                    'altas' => $movimientos->filter(fn($m) => $m->tipo->value === 'Alta')->count(),
-                    'bajas' => $movimientos->filter(fn($m) => $m->tipo->value === 'Baja')->count(),
-                ];
-            })
-            ->sortByDesc('count')
-            ->take(5);
+        // Top 5 carreras por movimientos - CACHEADO (5 minutos, periodicidad: moderada)
+        $topCarreras = Cache::remember(
+            "semestre:{$semestre->id}:top-carreras",
+            300, // 5 minutos
+            function () use ($semestre) {
+                $topCarrerasRaw = $semestre->movimientos()
+                    ->selectRaw('carrera_id, COUNT(*) as count, SUM(CASE WHEN tipo = ? THEN 1 ELSE 0 END) as altas, SUM(CASE WHEN tipo = ? THEN 1 ELSE 0 END) as bajas', ['ALTA', 'BAJA'])
+                    ->where('deleted_at', null)
+                    ->groupBy('carrera_id')
+                    ->orderByDesc('count')
+                    ->limit(5)
+                    ->with('carrera')
+                    ->get();
+
+                return $topCarrerasRaw->map(function ($movimiento) {
+                    return [
+                        'carrera' => $movimiento->carrera,
+                        'count' => $movimiento->count,
+                        'altas' => $movimiento->altas,
+                        'bajas' => $movimiento->bajas,
+                    ];
+                });
+            }
+        );
 
         return view('livewire.semestre.show', [
             'semestre' => $semestre,
