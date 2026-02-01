@@ -246,10 +246,13 @@ final class MovimientosTable extends PowerGridComponent
                 ->optionLabel('siglas')
                 ->optionValue('siglas'),
 
-            Filter::select('carrera', 'materias.carrera_id')
+            Filter::select('carrera', 'carrera_id')
                 ->datasource($carreras)
                 ->optionLabel('siglas')
-                ->optionValue('id'),
+                ->optionValue('id')
+                ->builder(function (Builder $query, $value) {
+                    return $query->whereHas('grupo.materia', fn($q) => $q->where('carrera_id', $value));
+                }),
 
             Filter::enumSelect('tipo_icon', 'tipo')
                 ->datasource(MovesType::cases())
