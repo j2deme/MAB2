@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Models\Carrera;
 use Illuminate\Support\Carbon;
+use Livewire\Attributes\Lazy;
 use Illuminate\Database\Eloquent\Builder;
 use PowerComponents\LivewirePowerGrid\Button;
 use PowerComponents\LivewirePowerGrid\Column;
@@ -18,6 +19,7 @@ use PowerComponents\LivewirePowerGrid\Traits\WithExport;
 use WireUi\Traits\WireUiActions;
 use Illuminate\Support\Facades\Blade;
 
+#[Lazy]
 final class CarrerasTable extends PowerGridComponent
 {
     use WithExport;

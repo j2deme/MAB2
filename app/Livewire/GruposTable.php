@@ -7,6 +7,7 @@ use App\Models\Carrera;
 use App\Models\Materia;
 use App\Traits\UsesSemestreActivo;
 use Illuminate\Support\Carbon;
+use Livewire\Attributes\Lazy;
 use Illuminate\Database\Eloquent\Builder;
 use PowerComponents\LivewirePowerGrid\Button;
 use PowerComponents\LivewirePowerGrid\Column;
@@ -20,6 +21,7 @@ use PowerComponents\LivewirePowerGrid\PowerGridComponent;
 use PowerComponents\LivewirePowerGrid\Traits\WithExport;
 use Illuminate\Support\Facades\Blade;
 
+#[Lazy]
 final class GruposTable extends PowerGridComponent
 {
     use WithExport;

@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Models\Semestre;
 use App\Traits\UsesSemestreActivo;
 use Illuminate\Support\Carbon;
+use Livewire\Attributes\Lazy;
 // Use fully-qualified return type for datasource to avoid import mismatch
 use PowerComponents\LivewirePowerGrid\Button;
 use PowerComponents\LivewirePowerGrid\Column;
@@ -19,6 +20,7 @@ use PowerComponents\LivewirePowerGrid\Traits\WithExport;
 use WireUi\Traits\WireUiActions;
 use Illuminate\Support\Facades\Blade;
 
+#[Lazy]
 final class SemestresTable extends PowerGridComponent
 {
     use WithExport;
