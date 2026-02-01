@@ -6,6 +6,7 @@ use App\Enums\MovesType;
 use App\Livewire\Forms\MateriaForm;
 use App\Models\Materia;
 use App\Traits\UsesSemestreActivo;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -25,6 +26,7 @@ class Show extends Component
     {
         $materia        = $this->form->materiaModel;
         $semestreActivo = $this->getSemestreActivo();
+        $cacheKey       = $this->getCacheKeyForUser("materia.{$materia->id}");
 
         // Grupos de esta materia en el semestre activo con conteos agregados
         $grupos = $materia->grupos()
@@ -44,38 +46,39 @@ class Show extends Component
             ];
         });
 
-        // Stats totales de la materia (solo del semestre activo) - calculadas en BD
-        $movimientosTotales = $materia->movimientos()
-            ->whereNull('movimientos.deleted_at')
-            ->whereHas('grupo', fn($q) => $q->where('semestre_id', $semestreActivo?->id))
-            ->count();
-
-        $altasTotales = $materia->movimientos()
-            ->where('tipo', 'ALTA')
-            ->whereNull('movimientos.deleted_at')
-            ->whereHas('grupo', fn($q) => $q->where('semestre_id', $semestreActivo?->id))
-            ->count();
-
-        $bajasTotales = $materia->movimientos()
-            ->where('tipo', 'BAJA')
-            ->whereNull('movimientos.deleted_at')
-            ->whereHas('grupo', fn($q) => $q->where('semestre_id', $semestreActivo?->id))
-            ->count();
-
-        $estudiantesRegistrados = $materia->movimientos()
-            ->selectRaw('COUNT(DISTINCT user_id) as total')
-            ->whereNull('movimientos.deleted_at')
-            ->whereHas('grupo', fn($q) => $q->where('semestre_id', $semestreActivo?->id))
-            ->value('total') ?? 0;
+        // Stats totales de la materia con caché granular por usuario
+        $stats = Cache::remember($cacheKey, 1800, function () use ($materia, $semestreActivo) {
+            return [
+                'movimientosTotales' => $materia->movimientos()
+                    ->whereNull('movimientos.deleted_at')
+                    ->whereHas('grupo', fn($q) => $q->where('semestre_id', $semestreActivo?->id))
+                    ->count(),
+                'altasTotales' => $materia->movimientos()
+                    ->where('tipo', 'ALTA')
+                    ->whereNull('movimientos.deleted_at')
+                    ->whereHas('grupo', fn($q) => $q->where('semestre_id', $semestreActivo?->id))
+                    ->count(),
+                'bajasTotales' => $materia->movimientos()
+                    ->where('tipo', 'BAJA')
+                    ->whereNull('movimientos.deleted_at')
+                    ->whereHas('grupo', fn($q) => $q->where('semestre_id', $semestreActivo?->id))
+                    ->count(),
+                'estudiantesRegistrados' => $materia->movimientos()
+                    ->selectRaw('COUNT(DISTINCT user_id) as total')
+                    ->whereNull('movimientos.deleted_at')
+                    ->whereHas('grupo', fn($q) => $q->where('semestre_id', $semestreActivo?->id))
+                    ->value('total') ?? 0,
+            ];
+        });
 
         return view('livewire.materia.show', [
             'materia' => $materia,
             'gruposConEstudiantes' => $gruposConEstudiantes,
             'semestreActivo' => $semestreActivo,
-            'movimientosTotales' => $movimientosTotales,
-            'altasTotales' => $altasTotales,
-            'bajasTotales' => $bajasTotales,
-            'estudiantesRegistrados' => $estudiantesRegistrados,
+            'movimientosTotales' => $stats['movimientosTotales'],
+            'altasTotales' => $stats['altasTotales'],
+            'bajasTotales' => $stats['bajasTotales'],
+            'estudiantesRegistrados' => $stats['estudiantesRegistrados'],
         ]);
     }
 }

@@ -4,9 +4,39 @@ namespace App\Traits;
 
 use App\Models\Semestre;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Auth;
 
 trait UsesSemestreActivo
 {
+  /**
+   * Obtiene clave de caché granular por usuario y semestre
+   * 
+   * @param string $prefix
+   * @return string
+   */
+  protected function getCacheKeyForUser(string $prefix = ''): string
+  {
+    $userId     = Auth::id() ?? 'guest';
+    $semestreId = $this->getSemestreActivoId() ?? 'none';
+    return implode(':', array_filter([$prefix, 'user', $userId, 'sem', $semestreId]));
+  }
+
+  /**
+   * Invalida caché granular para usuario actual
+   * 
+   * @param string|null $prefix
+   * @return void
+   */
+  protected function invalidateCacheForUser(?string $prefix = null): void
+  {
+    if ($prefix) {
+      Cache::forget($this->getCacheKeyForUser($prefix));
+    } else {
+      $userId     = Auth::id() ?? 'guest';
+      $semestreId = $this->getSemestreActivoId() ?? 'none';
+      Cache::tags(["user_$userId", "sem_$semestreId"])->flush();
+    }
+  }
   /**
    * Obtiene el semestre activo desde caché
    * 
