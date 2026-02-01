@@ -6,6 +6,7 @@ use App\Models\Movimiento;
 use App\Models\Semestre;
 use App\Models\Carrera;
 use App\Models\User;
+use App\Traits\UsesSemestreActivo;
 use Illuminate\Support\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use PowerComponents\LivewirePowerGrid\Button;
@@ -28,6 +29,7 @@ final class MovimientosTable extends PowerGridComponent
 {
     use WithExport;
     use WireUiActions;
+    use UsesSemestreActivo;
 
     public string $tableName = 'MovimientosTable';
     public string $clave = '';
@@ -72,7 +74,7 @@ final class MovimientosTable extends PowerGridComponent
 
     public function datasource(): Builder
     {
-        $semestre = Semestre::where('activo', true)->first();
+        $semestre = $this->getSemestreActivo();
 
         if (Auth::user()->es('Estudiante')) {
             return Movimiento::query()
@@ -213,9 +215,8 @@ final class MovimientosTable extends PowerGridComponent
         // Filtros para coordinadores
         if (Auth::user()->es('Coordinador')) {
             $carreras = Auth::user()->carreras;
-            $siglas   = Semestre::where('activo', true)
-                ->first()
-                ->movimientos()
+            $semestre = $this->getSemestreActivo();
+            $siglas   = $semestre->movimientos()
                 ->join('grupos', 'movimientos.grupo_id', '=', 'grupos.id')
                 ->whereIn('carrera_id', $carreras->pluck('id'))
                 ->groupBy('grupos.siglas')

@@ -7,6 +7,7 @@ use App\Enums\MovesType;
 use App\Livewire\Forms\MovimientoForm;
 use App\Models\Movimiento;
 use App\Models\Semestre;
+use App\Traits\UsesSemestreActivo;
 use Auth;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -18,12 +19,13 @@ use App\Enums\UserRoles;
 class Create extends Component
 {
     use WireUiActions;
+    use UsesSemestreActivo;
     public MovimientoForm $form;
     public $estudiantes = [];
 
     public function mount($tipo = null, Movimiento $movimiento)
     {
-        $semestre                = Semestre::where('activo', true)->first();
+        $semestre                = $this->getSemestreActivo();
         $movimiento->user_id     = Auth::user()->id;
         $movimiento->semestre_id = $semestre->id;
         $movimiento->estatus     = MovesStatus::REGISTRADO;

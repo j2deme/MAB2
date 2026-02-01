@@ -8,14 +8,17 @@ use App\Models\Semestre;
 use App\Models\Carrera;
 use App\Enums\MovesType;
 use App\Enums\MovesStatus;
-use Auth;
+use App\Traits\UsesSemestreActivo;
+use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
+  use UsesSemestreActivo;
+
   public function index()
   {
-    $semestre = Semestre::where('activo', true)->first();
-    $user     = auth()->user();
+    $semestre = $this->getSemestreActivo();
+    $user     = Auth::user();
 
     $movimientosTotales = $altasTotales = $bajasTotales = $pendientesTotales = $autorizadosTotales = $rechazadosTotales = null;
     $carreras        = null;
@@ -70,12 +73,12 @@ class DashboardController extends Controller
         ];
 
         // Acumular totales
-        $totalesResumen['altas'] += $altas;
-        $totalesResumen['bajas'] += $bajas;
-        $totalesResumen['pendientes'] += $pendientes;
+        $totalesResumen['altas']       += $altas;
+        $totalesResumen['bajas']       += $bajas;
+        $totalesResumen['pendientes']  += $pendientes;
         $totalesResumen['autorizados'] += $autorizados;
-        $totalesResumen['rechazados'] += $rechazados;
-        $totalesResumen['total'] += $total;
+        $totalesResumen['rechazados']  += $rechazados;
+        $totalesResumen['total']       += $total;
       }
     }
 

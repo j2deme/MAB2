@@ -7,6 +7,7 @@ use App\Models\Semestre;
 use App\Models\Grupo;
 use App\Models\User;
 use Livewire\Form;
+use App\Traits\UsesSemestreActivo;
 use App\Enums\MovesStatus;
 use App\Enums\MovesType;
 use App\Enums\Ups;
@@ -18,6 +19,8 @@ use Illuminate\Support\Str;
 
 class MovimientoForm extends Form
 {
+    use UsesSemestreActivo;
+
     public ?Movimiento $movimientoModel;
 
     public $user_id = '';
@@ -103,7 +106,7 @@ class MovimientoForm extends Form
 
         $this->cargaDesplegables($tipo);
 
-        $semestre       = Semestre::where('activo', true)->first();
+        $semestre       = $this->getSemestreActivo();
         $this->semestre = $semestre;
 
         if ($tipo == 'alta') {
@@ -198,7 +201,7 @@ class MovimientoForm extends Form
 
     private function cargaDesplegables($tipo = '')
     {
-        $semestre = Semestre::where('activo', true)->first();
+        $semestre = $this->getSemestreActivo();
 
         $this->tipos      = MovesType::cases();
         $this->respuestas = MovesAnswers::cases();

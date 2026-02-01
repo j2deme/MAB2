@@ -4,9 +4,11 @@ namespace App\Livewire\Forms;
 
 use App\Models\Semestre;
 use Livewire\Form;
+use App\Traits\UsesSemestreActivo;
 
 class SemestreForm extends Form
 {
+    use UsesSemestreActivo;
     public ?Semestre $semestreModel;
 
     public $clave = '';
@@ -68,7 +70,7 @@ class SemestreForm extends Form
         $this->semestreModel->update($this->validate());
 
         // Sino hay un semestre activo, se activa el actual
-        if (!Semestre::where('activo', true)->exists()) {
+        if (!$this->getSemestreActivo()) {
             $this->semestreModel->update(['activo' => true]);
         }
 

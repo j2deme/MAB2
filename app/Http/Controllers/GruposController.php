@@ -6,9 +6,11 @@ use App\Models\Materia;
 use App\Models\Grupo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use App\Traits\UsesSemestreActivo;
 
 class GruposController extends Controller
 {
+    use UsesSemestreActivo;
     public function batch()
     {
         $carreras = \App\Models\Carrera::all();
@@ -23,7 +25,7 @@ class GruposController extends Controller
         ]);
 
         // $carrera  = \App\Models\Carrera::find($request->carrera_id);
-        $semestre = \App\Models\Semestre::where('activo', true)->first();
+        $semestre = $this->getSemestreActivo();
 
         $archivo  = $request->file('archivo');
         $filetype = $archivo->getClientOriginalExtension();
