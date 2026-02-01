@@ -40,7 +40,7 @@ final class CarrerasTable extends PowerGridComponent
         ];
     }
 
-    public function datasource(): Builder
+    public function datasource()
     {
         return Carrera::query()
             ->orderBy('nombre');
