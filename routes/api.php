@@ -8,7 +8,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Contracts\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Builder;
 
 // Route::get('/user', function (Request $request) {
 //     return $request->user();
@@ -64,7 +64,9 @@ Route::name('api.')->group(function () {
     Route::get('/grupos', function (Request $request) {
         $request->headers->set('Content-Type', 'application/json');
 
-        $semestre = Semestre::where('activo', true)->first();
+        $semestre = \Cache::remember('semestre_activo', 3600, function () {
+            return Semestre::where('activo', true)->first();
+        });
 
         return Grupo::query()
             ->where('semestre_id', $semestre->id)
