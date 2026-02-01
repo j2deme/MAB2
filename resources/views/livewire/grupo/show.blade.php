@@ -169,7 +169,8 @@
                     <div class="mt-4 p-3 bg-blue-50 rounded-md border border-blue-200">
                         <p class="text-sm text-blue-700">
                             Mostrando {{ $movimientos->count() }} de {{ $totalMovimientos }} movimientos.
-                            <button wire:click="mostrarTodos" class="font-semibold hover:underline text-blue-700">
+                            <button type="button" wire:click="mostrarTodos"
+                                class="font-semibold hover:underline text-blue-700">
                                 Ver todos
                             </button>
                         </p>
