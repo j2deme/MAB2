@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Models\Movimiento;
+use App\Observers\MovimientoObserver;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +21,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Registrar observer para invalidar caches al actualizar movimientos
+        Movimiento::observe(MovimientoObserver::class);
     }
 }
