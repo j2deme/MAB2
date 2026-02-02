@@ -20,7 +20,6 @@ use PowerComponents\LivewirePowerGrid\Traits\WithExport;
 use WireUi\Traits\WireUiActions;
 use Illuminate\Support\Facades\Blade;
 
-#[Lazy]
 final class SemestresTable extends PowerGridComponent
 {
     use WithExport;
@@ -123,6 +122,12 @@ final class SemestresTable extends PowerGridComponent
     {
         return [
         ];
+    }
+
+    public function mount(): void
+    {
+        parent::mount();
+        $this->dispatch('semestres-table-mounted');
     }
 
     #[\Livewire\Attributes\On('delete')]

@@ -170,6 +170,48 @@
                         @endif
                     </div>
                 </div>
+
+                <!-- Grupos del Semestre -->
+                <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
+                    <div class="w-full">
+                        <div class="sm:flex sm:items-center">
+                            <div class="sm:flex-auto">
+                                <h2 class="text-base font-semibold leading-6 text-gray-900">Grupos del Semestre</h2>
+                                <p class="mt-2 text-sm text-gray-700">Listado de grupos pertenecientes a este semestre.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="flow-root mt-4" id="semestre-grupos-wrapper">
+                            <div id="semestre-grupos-spinner"
+                                class="p-6 flex items-center justify-center bg-white border rounded">
+                                <svg class="animate-spin h-5 w-5 text-gray-600" xmlns="http://www.w3.org/2000/svg"
+                                    fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                        stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor"
+                                        d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+                                </svg>
+                                <span class="ml-3 text-sm text-gray-600">Cargando grupos...</span>
+                            </div>
+
+                            <livewire:grupos-table :semestre-id="$semestre->id" />
+
+                            <script>
+                                (function () {
+                                        window.addEventListener('grupos-table-mounted', function () {
+                                            var s = document.getElementById('semestre-grupos-spinner');
+                                            if (s) s.style.display = 'none';
+                                        });
+                                        setTimeout(function () {
+                                            var s = document.getElementById('semestre-grupos-spinner');
+                                            if (s && s.style.display !== 'none') s.style.display = 'none';
+                                        }, 6000);
+                                    })();
+                            </script>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 

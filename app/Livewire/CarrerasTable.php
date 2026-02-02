@@ -19,7 +19,6 @@ use PowerComponents\LivewirePowerGrid\Traits\WithExport;
 use WireUi\Traits\WireUiActions;
 use Illuminate\Support\Facades\Blade;
 
-#[Lazy]
 final class CarrerasTable extends PowerGridComponent
 {
     use WithExport;
@@ -95,6 +94,12 @@ final class CarrerasTable extends PowerGridComponent
     {
         return [
         ];
+    }
+
+    public function mount(): void
+    {
+        parent::mount();
+        $this->dispatch('carreras-table-mounted');
     }
 
     #[\Livewire\Attributes\On('delete')]

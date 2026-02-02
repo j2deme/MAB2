@@ -21,11 +21,12 @@ use PowerComponents\LivewirePowerGrid\PowerGridComponent;
 use PowerComponents\LivewirePowerGrid\Traits\WithExport;
 use Illuminate\Support\Facades\Blade;
 
-#[Lazy]
 final class GruposTable extends PowerGridComponent
 {
     use WithExport;
     use UsesSemestreActivo;
+
+    public ?int $semestreId = null;
 
     public function setUp(): array
     {
@@ -44,7 +45,7 @@ final class GruposTable extends PowerGridComponent
 
     public function datasource(): Builder
     {
-        $semestreActivoId = $this->getSemestreActivoId();
+        $semestreActivoId = $this->semestreId ?? $this->getSemestreActivoId();
         // Use Eloquent relationships to ensure an Eloquent Builder is returned
         return Grupo::query()
             ->with(['materia', 'materia.carrera'])
@@ -159,6 +160,12 @@ final class GruposTable extends PowerGridComponent
                 ->optionLabel('label')
                 ->optionValue('value'),
         ];
+    }
+
+    public function mount(): void
+    {
+        parent::mount();
+        $this->dispatch('grupos-table-mounted');
     }
 
     #[\Livewire\Attributes\On('delete')]

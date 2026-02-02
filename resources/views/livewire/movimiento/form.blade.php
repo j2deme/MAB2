@@ -111,7 +111,6 @@
         @endif
 
         {{-- Admin / Jefe / Coordinador: mostrar campos para resolver movimiento --}}
-        @defer(on: 'revealed')
         @if (!auth()->user()->es('Estudiante'))
         <div>
             <x-select wire:model.defer='form.respuesta' id='respuesta' name='respuesta' :label="__('Respuesta')"
@@ -134,7 +133,6 @@
             </x-select>
         </div>
         @endif
-        @endefer
 
         <div class="flex items-center gap-4">
             <x-primary-button>
