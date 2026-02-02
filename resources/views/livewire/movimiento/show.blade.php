@@ -59,13 +59,16 @@
                 </x-slot>
               </x-card>
 
+              @defer(on: 'revealed')
               <h2 class="mt-8 text-base font-semibold leading-6 text-gray-900">Motivo</h2>
               <x-card title="{{ $movimiento->motivo }}" shadow="md" class="mt-4">
                 @if (!Str($movimiento->motivo_adicional)->isEmpty())
                 <p class="text-sm">{{ $movimiento->motivo_adicional }}</p>
                 @endif
               </x-card>
+              @endefer
 
+              @defer(on: 'revealed')
               <h2 class="mt-8 text-base font-semibold leading-6 text-gray-900">Respuesta</h2>
               <x-card shadow="md" class="mt-4 border-2 border-{{ $movimiento->estatus->color() }}-500">
                 <x-slot name="title" class="w-full">
@@ -83,6 +86,7 @@
                 <p class="text-sm">{!! Str::markdown($movimiento->respuesta_adicional) !!}</p>
                 @endif
               </x-card>
+              @endefer
             </div>
           </div>
         </div>
