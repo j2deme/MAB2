@@ -22,7 +22,23 @@ class MonitorQueries
         QueryMonitor::enable();
         QueryMonitor::reset();
 
-        $response = $next($request);
+        try {
+            $response = $next($request);
+        } catch (\TypeError $e) {
+            // Detectar errores relacionados con method_exists y registrar información útil
+            if (str_contains($e->getMessage(), 'method_exists')) {
+                \Log::error('TypeError method_exists detected', [
+                    'message' => $e->getMessage(),
+                    'route' => optional($request->route())->getName(),
+                    'uri' => $request->getRequestUri(),
+                    'method' => $request->method(),
+                    'user_id' => optional(auth()->user())->id,
+                    'trace' => $e->getTraceAsString(),
+                ]);
+            }
+
+            throw $e;
+        }
 
         // Log de alertas N+1 al finalizar la request
         QueryMonitor::logNPlusOneIssues();
