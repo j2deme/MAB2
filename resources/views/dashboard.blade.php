@@ -240,9 +240,14 @@
             }
 
             document.addEventListener('DOMContentLoaded', renderDashboardCharts);
-            if (window.Livewire) {
-              window.Livewire.on('message.processed', renderDashboardCharts);
-            }
+
+            document.addEventListener('livewire:load', function () {
+              renderDashboardCharts();
+              if (window.Livewire) {
+                // Livewire v3: use message.processed to rerender charts after updates
+                window.Livewire.on('message.processed', renderDashboardCharts);
+              }
+            });
           </script>
 
           @endif
