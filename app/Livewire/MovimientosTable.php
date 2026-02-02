@@ -38,6 +38,12 @@ final class MovimientosTable extends PowerGridComponent
 
     public $tipos = [];
 
+    // Caches para HTML pre-renderizado (evita Blade::render por fila)
+    private array $tipoIconCache = [];
+    private array $estatusBadgeCache = [];
+    private array $carreraBadgeCache = [];
+    private ?string $paraleloIconHtml = null;
+
     public function setUp(): array
     {
         if (request()->routeIs('movimientos.materias.clave')) {
@@ -129,20 +135,7 @@ final class MovimientosTable extends PowerGridComponent
             ->add('semestre_id')
             ->add('carrera_id')
             ->add('carrera', function (Movimiento $move) {
-                // If user has multiple carreras, pass the collection to the carrera-badge component
-                $userCarreras = $move->user->carreras ?? collect();
-                if ($userCarreras->count() > 1) {
-                    return view('components.carrera-badge', ['carreras' => $userCarreras])->render();
-                }
-
-                // Single carrera (prefer user's, fallback to movimiento->carrera)
-                $carrera  = $userCarreras->first() ?? $move->carrera ?? null;
-                $paralelo = null;
-                if ($move->is_paralelo) {
-                    $paralelo = $move->grupo && $move->grupo->materia ? $move->grupo->materia->carrera : $move->carrera;
-                }
-
-                return view('components.carrera-badge', ['carrera' => $carrera, 'paralelo' => $paralelo])->render();
+                return $this->renderCarreraBadge($move);
             })
             ->add('grupo_id')
             ->add('materia', fn(Movimiento $move) => $move->grupo->materia->nombre_completo)
@@ -150,39 +143,11 @@ final class MovimientosTable extends PowerGridComponent
             ->add('tipo')
             ->add('tipo_string', fn(Movimiento $move) => $move->tipo->value)
             ->add('tipo_icon', function (Movimiento $move) {
-                $icon          = method_exists($move->tipo, 'icon') ? $move->tipo->icon() : null;
-                $color         = method_exists($move->tipo, 'color') ? $move->tipo->color() : 'gray';
-                $colorClassMap = ['blue' => 'text-blue-600', 'red' => 'text-red-600'];
-                $colorClass    = $colorClassMap[$color] ?? 'text-gray-600';
-
-                // Resolve label and icon whether tipo is enum or string
-                $label    = is_object($move->tipo) ? ($move->tipo->value ?? (string) $move->tipo) : (string) $move->tipo;
-                $iconName = is_object($move->tipo) && method_exists($move->tipo, 'icon') ? $move->tipo->icon() : $icon;
-
-                if (in_array($iconName, ['arrow-up', 'arrow-down'])) {
-                    $iconHtml       = Blade::render("<x-icon name=\"{$iconName}\" class=\"w-4 h-4 {$colorClass}\" />");
-                    $colorTextClass = $iconName === 'arrow-up' ? 'text-blue-600' : 'text-red-600';
-                    return '<span class="inline-flex items-center space-x-2"><span class="' . $colorTextClass . '">' . $iconHtml . '</span><span class="text-xs font-semibold">' . e($label) . '</span></span>';
-                }
-
-                return '<span class="text-xs">' . e($label) . '</span>';
+                return $this->renderTipoIcon($move);
             })
             ->add('estatus')
             ->add('estatus_badge', function (Movimiento $move) {
-                $label    = method_exists($move->estatus, 'descripcion') ? $move->estatus->descripcion() : ($move->estatus->value ?? 'N/A');
-                $colorKey = method_exists($move->estatus, 'color') ? $move->estatus->color() : 'gray';
-                $colorMap = [
-                    'sky' => 'bg-sky-500',
-                    'amber' => 'bg-amber-500',
-                    'green' => 'bg-green-600',
-                    'emerald' => 'bg-emerald-600',
-                    'red' => 'bg-red-600',
-                    'rose' => 'bg-rose-600',
-                    'gray' => 'bg-gray-500'
-                ];
-                $bgClass  = $colorMap[$colorKey] ?? 'bg-gray-500';
-                // Render WireUI badge with the status label and color key
-                return Blade::render("<x-badge :label=\"\$label\" color=\"{$colorKey}\" />", ['label' => $label]);
+                return $this->renderEstatusBadge($move);
             })
             ->add('motivo')
             ->add('motivo_adicional')
@@ -191,13 +156,7 @@ final class MovimientosTable extends PowerGridComponent
             ->add('asociado_id')
             ->add('is_paralelo')
             ->add('paralelo_icon', function (Movimiento $move) {
-                if ($move->is_paralelo) {
-                    // Use WireUI Phosphor icon 'letter-circle-p' in bold weight, colored blue
-                    $pIcon = Blade::render('<x-icon name="letter-circle-p" bold class="w-5 h-5 text-blue-600" />');
-                    return '<span class="inline-flex items-center text-sm font-semibold">' . $pIcon . '</span>';
-                }
-                // Render a bold Phosphor 'minus' icon when not paralelo
-                return Blade::render('<x-icon name="minus" bold class="w-5 h-5 text-gray-400" />');
+                return $this->renderParaleloIcon($move);
             })
             ->add('created_at');
     }
@@ -343,6 +302,107 @@ final class MovimientosTable extends PowerGridComponent
         $this->notification()->success('Registro eliminado', 'Solicitud eliminada correctamente.');
 
         $this->refresh();
+    }
+
+    /**
+     * Render helpers that cache HTML snippets to avoid repeated Blade::render calls.
+     */
+    private function renderTipoIcon(Movimiento $move): string
+    {
+        $icon          = method_exists($move->tipo, 'icon') ? $move->tipo->icon() : null;
+        $color         = method_exists($move->tipo, 'color') ? $move->tipo->color() : 'gray';
+        $colorClassMap = ['blue' => 'text-blue-600', 'red' => 'text-red-600'];
+        $colorClass    = $colorClassMap[$color] ?? 'text-gray-600';
+
+        $label    = is_object($move->tipo) ? ($move->tipo->value ?? (string) $move->tipo) : (string) $move->tipo;
+        $iconName = is_object($move->tipo) && method_exists($move->tipo, 'icon') ? $move->tipo->icon() : $icon;
+
+        $cacheKey = 'tipo_' . ($iconName ?? 'none') . '_' . $colorClass . '_' . md5($label);
+
+        if (isset($this->tipoIconCache[$cacheKey])) {
+            return $this->tipoIconCache[$cacheKey];
+        }
+
+        if (in_array($iconName, ['arrow-up', 'arrow-down'])) {
+            $iconHtml       = Blade::render("<x-icon name=\"{$iconName}\" class=\"w-4 h-4 {$colorClass}\" />");
+            $colorTextClass = $iconName === 'arrow-up' ? 'text-blue-600' : 'text-red-600';
+            $html           = '<span class="inline-flex items-center space-x-2"><span class="' . $colorTextClass . '">' . $iconHtml . '</span><span class="text-xs font-semibold">' . e($label) . '</span></span>';
+        } else {
+            $html = '<span class="text-xs">' . e($label) . '</span>';
+        }
+
+        $this->tipoIconCache[$cacheKey] = $html;
+        return $html;
+    }
+
+    private function renderEstatusBadge(Movimiento $move): string
+    {
+        $statusKey = is_object($move->estatus) ? ($move->estatus->value ?? (string) $move->estatus) : (string) $move->estatus;
+        if (isset($this->estatusBadgeCache[$statusKey])) {
+            return $this->estatusBadgeCache[$statusKey];
+        }
+
+        $label    = method_exists($move->estatus, 'descripcion') ? $move->estatus->descripcion() : ($move->estatus->value ?? 'N/A');
+        $colorKey = method_exists($move->estatus, 'color') ? $move->estatus->color() : 'gray';
+
+        // Cache per statusKey (small cardinality)
+        $html                                = Blade::render("<x-badge :label=\"\$label\" color=\"{$colorKey}\" />", ['label' => $label]);
+        $this->estatusBadgeCache[$statusKey] = $html;
+        return $html;
+    }
+
+    private function renderParaleloIcon(Movimiento $move): string
+    {
+        if ($this->paraleloIconHtml !== null) {
+            // Return appropriate HTML based on paralelo flag
+            return $move->is_paralelo
+                ? $this->paraleloIconHtml
+                : $this->paraleloIconHtml . '<!--not-paralelo-->';
+        }
+
+        $pIcon   = Blade::render('<x-icon name="letter-circle-p" bold class="w-5 h-5 text-blue-600" />');
+        $notIcon = Blade::render('<x-icon name="minus" bold class="w-5 h-5 text-gray-400" />');
+
+        // Store composite HTMLs keyed by presence; we'll return correct one
+        $this->paraleloIconHtml = '<span class="inline-flex items-center text-sm font-semibold">' . $pIcon . '</span>';
+        // Append a marker for not-paralelo case to avoid re-rendering notIcon each time
+        $notHtml = $notIcon;
+
+        return $move->is_paralelo ? $this->paraleloIconHtml : $notHtml;
+    }
+
+    private function renderCarreraBadge(Movimiento $move): string
+    {
+        // Build a cache key based on user's carreras or single carrera and paralelo target
+        $userCarreras = $move->user->carreras ?? collect();
+        if ($userCarreras->count() > 1) {
+            $ids = $userCarreras->pluck('id')->sort()->values()->toArray();
+            $key = 'carr_multi_' . implode('-', $ids);
+            if (isset($this->carreraBadgeCache[$key])) {
+                return $this->carreraBadgeCache[$key];
+            }
+            $html                          = view('components.carrera-badge', ['carreras' => $userCarreras])->render();
+            $this->carreraBadgeCache[$key] = $html;
+            return $html;
+        }
+
+        $carrera  = $userCarreras->first() ?? $move->carrera ?? null;
+        $paralelo = null;
+        if ($move->is_paralelo) {
+            $paralelo = $move->grupo && $move->grupo->materia ? $move->grupo->materia->carrera : $move->carrera;
+        }
+
+        $carreraId = $carrera?->id ?? 'none';
+        $parKey    = $paralelo?->id ?? 'nopar';
+        $cacheKey  = "carr_{$carreraId}_par_{$parKey}";
+
+        if (isset($this->carreraBadgeCache[$cacheKey])) {
+            return $this->carreraBadgeCache[$cacheKey];
+        }
+
+        $html                               = view('components.carrera-badge', ['carrera' => $carrera, 'paralelo' => $paralelo])->render();
+        $this->carreraBadgeCache[$cacheKey] = $html;
+        return $html;
     }
 
     public function actions(Movimiento $row): array
