@@ -100,7 +100,14 @@ final class MovimientosTable extends PowerGridComponent
 
         $query = Movimiento::query()
             ->select('movimientos.*')
-            ->with('user:id,username', 'user.carreras', 'grupo:id,siglas,materia_id', 'grupo.materia:id,nombre_completo,clave,carrera_id', 'carrera:id,nombre,siglas')
+            ->with(
+                'user:id,username',
+                'user.carreras',
+                'grupo:id,siglas,materia_id',
+                'grupo.materia:id,nombre_completo,clave,carrera_id',
+                'grupo.materia.carrera:id,nombre,siglas,color',
+                'carrera:id,nombre,siglas'
+            )
             ->where('semestre_id', $semestre->id)
             ->whereIn('estatus', $this->tipos)
             ->orderBy('updated_at', 'desc')
