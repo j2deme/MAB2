@@ -160,9 +160,9 @@ final class MovimientosTable extends PowerGridComponent
                 $iconName = is_object($move->tipo) && method_exists($move->tipo, 'icon') ? $move->tipo->icon() : $icon;
 
                 if (in_array($iconName, ['arrow-up', 'arrow-down'])) {
-                    $svg            = view('components.safe-icon', ['name' => $iconName, 'class' => $colorClass])->render();
+                    $iconHtml       = Blade::render("<x-icon name=\"{$iconName}\" class=\"w-4 h-4 {$colorClass}\" />");
                     $colorTextClass = $iconName === 'arrow-up' ? 'text-blue-600' : 'text-red-600';
-                    return '<span class="inline-flex items-center space-x-2"><span class="' . $colorTextClass . '">' . $svg . '</span><span class="text-xs font-semibold">' . e($label) . '</span></span>';
+                    return '<span class="inline-flex items-center space-x-2"><span class="' . $colorTextClass . '">' . $iconHtml . '</span><span class="text-xs font-semibold">' . e($label) . '</span></span>';
                 }
 
                 return '<span class="text-xs">' . e($label) . '</span>';
@@ -181,7 +181,8 @@ final class MovimientosTable extends PowerGridComponent
                     'gray' => 'bg-gray-500'
                 ];
                 $bgClass  = $colorMap[$colorKey] ?? 'bg-gray-500';
-                return view('components.safe-badge', ['label' => $label, 'bgClass' => $bgClass])->render();
+                // Render WireUI badge with the status label and color key
+                return Blade::render("<x-badge :label=\"\$label\" color=\"{$colorKey}\" />", ['label' => $label]);
             })
             ->add('motivo')
             ->add('motivo_adicional')
@@ -191,10 +192,12 @@ final class MovimientosTable extends PowerGridComponent
             ->add('is_paralelo')
             ->add('paralelo_icon', function (Movimiento $move) {
                 if ($move->is_paralelo) {
-                    $svg = view('components.safe-icon', ['name' => 'p-circle', 'class' => 'text-blue-600 mr-1'])->render();
-                    return '<span class="inline-flex items-center text-sm font-semibold">' . $svg . '</span>';
+                    // Use WireUI Phosphor icon 'letter-circle-p' in bold weight, colored blue
+                    $pIcon = Blade::render('<x-icon name="letter-circle-p" bold class="w-5 h-5 text-blue-600" />');
+                    return '<span class="inline-flex items-center text-sm font-semibold">' . $pIcon . '</span>';
                 }
-                return '<span class="text-sm text-gray-400">-</span>';
+                // Render a bold Phosphor 'minus' icon when not paralelo
+                return Blade::render('<x-icon name="minus" bold class="w-5 h-5 text-gray-400" />');
             })
             ->add('created_at');
     }
