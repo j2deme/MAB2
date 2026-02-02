@@ -43,10 +43,13 @@ final class UsersTable extends PowerGridComponent
 
     public function datasource(): Builder
     {
-        return User::query()
+        /** @var \Illuminate\Database\Eloquent\Builder $query */
+        $query = User::query()
             ->with('carreras')
             ->orderBy('rol')
             ->orderBy('username');
+
+        return $query;
     }
 
     public function relationSearch(): array
