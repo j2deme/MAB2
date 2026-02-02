@@ -16,8 +16,7 @@ class ListaMaterias extends Component
 {
     use WireUiActions;
 
-    public Semestre $semestre;
-
+    public ?Semestre $semestre = null;
     public $semestres;
 
     public function mount()
@@ -75,6 +74,7 @@ class ListaMaterias extends Component
         // Cache conteos por 5 min (cambian más frecuentemente)
         $this->injectCounts($semestreId);
     }
+
 
     private function injectCounts($semestreId): void
     {

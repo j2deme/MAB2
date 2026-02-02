@@ -22,26 +22,40 @@ class ListaGeneracion extends Component
     public Semestre $semestre;
 
     public $generaciones;
+    // Opciones (sin filtros)
+    public $carrerasOptions = null;
 
     public function mount()
     {
         $this->semestre = Semestre::whereActivo(true)->first();
+        $semestreId     = $this->semestre?->id;
 
-        $semestreId = $this->semestre?->id;
-
+        // Inicializar options
+        if (Auth::user()->es('Coordinador')) {
+            $this->carrerasOptions = Auth::user()->carreras;
+        } else {
+            $this->carrerasOptions = \App\Models\Carrera::query()->orderBy('siglas')->get();
+        }
         if (!$semestreId) {
             $this->generaciones = collect();
             return;
         }
+
+        $this->loadStructure();
+    }
+
+    private function loadStructure(): void
+    {
+        $semestreId = $this->semestre?->id;
 
         // Generar clave de cache única por usuario (coordinador tiene filtro diferente)
         $userId         = Auth::id();
         $esCoordinador  = Auth::user()->es('Coordinador');
         $carrerasFilter = $esCoordinador ? implode(',', Auth::user()->carreras->pluck('id')->toArray()) : 'todos';
         $cacheKey       = "lista_generacion_sem_{$semestreId}_user_{$userId}_carr_{$carrerasFilter}";
+        $useCache       = true;
 
-        // Cache estructura por 24h
-        $this->generaciones = Cache::remember($cacheKey, 24 * 3600, function () use ($semestreId, $esCoordinador) {
+        $build = function () use ($semestreId, $esCoordinador) {
             // Obtener user_ids únicos con movimientos en el semestre
             $userIds = Movimiento::query()
                 ->where('semestre_id', $semestreId)
@@ -61,6 +75,8 @@ class ListaGeneracion extends Component
                 ->select('id', 'username', 'name')
                 ->whereIn('id', $userIds)
                 ->with('carreras:id,nombre,siglas,color');
+
+            // No per-request search or carrera filters in this cached build
 
             if ($esCoordinador) {
                 $carrerasIds = Auth::user()->carreras->pluck('id')->toArray();
@@ -91,7 +107,15 @@ class ListaGeneracion extends Component
             }
 
             return collect($generaciones)->sortKeys();
-        });
+        };
+
+        if ($useCache) {
+            $this->generaciones = Cache::remember($cacheKey, 24 * 3600, $build);
+        } else {
+            $this->generaciones = $build();
+        }
+
+        // No aplicar filtros: mantenemos la estructura cacheada completa
 
         // Cache conteos por 5 min (cambian más frecuentemente)
         $this->injectCounts($semestreId);
