@@ -73,14 +73,14 @@ final class MovimientosTable extends PowerGridComponent
         return $config;
     }
 
-    public function datasource(): Builder
+    public function datasource(): Builder|\Illuminate\Database\Query\Builder
     {
         $semestre = $this->getSemestreActivo();
 
         if (Auth::user()->es('Estudiante')) {
             return Movimiento::query()
                 ->select('movimientos.*')
-                ->with('user:id,username', 'grupo:id,siglas,materia_id', 'grupo.materia:id,nombre_completo,clave,carrera_id', 'carrera:id,nombre,siglas')
+                ->with('user:id,username', 'user.carreras', 'grupo:id,siglas,materia_id', 'grupo.materia:id,nombre_completo,clave,carrera_id', 'carrera:id,nombre,siglas')
                 ->where('user_id', Auth::id())
                 ->where('semestre_id', $semestre->id)
                 ->orderBy('tipo')
@@ -94,7 +94,7 @@ final class MovimientosTable extends PowerGridComponent
 
         $query = Movimiento::query()
             ->select('movimientos.*')
-            ->with('user:id,username', 'grupo:id,siglas,materia_id', 'grupo.materia:id,nombre_completo,clave,carrera_id', 'carrera:id,nombre,siglas')
+            ->with('user:id,username', 'user.carreras', 'grupo:id,siglas,materia_id', 'grupo.materia:id,nombre_completo,clave,carrera_id', 'carrera:id,nombre,siglas')
             ->where('semestre_id', $semestre->id)
             ->whereIn('estatus', $this->tipos)
             ->orderBy('updated_at', 'desc')

@@ -52,11 +52,10 @@
                     </div>
                     <div class="place-self-end">
                       @php
-                      // Contar movimientos pendientes (estatus REGISTRADO)
-                      $pendientes = $coleccionGrupos->filter(function($grupo) {
-                      return in_array($grupo->estatus, ['Registrado', 'En revisión']);
-                      })->count();
-                      $bg = ($pendientes > 0) ? 'bg-white' : "bg-{$primerGrupo->carrera_color}";
+                      // Usar el conteo agregado de pendientes si existe (evita N+1)
+                      $pendientes = $coleccionGrupos->first()->pendientes ?? 0;
+                      $bg = ($pendientes > 0) ? 'bg-white' : (isset($primerGrupo->carrera_color) ?
+                      "bg-{$primerGrupo->carrera_color}" : 'bg-gray-200');
                       @endphp
                       <div
                         class="inline-flex items-center justify-center text-sm border border-gray-300 rounded-full w-7 h-7 {{ $bg }} font-semibold">

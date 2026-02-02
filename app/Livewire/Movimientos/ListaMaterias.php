@@ -23,65 +23,54 @@ class ListaMaterias extends Component
     {
         $this->semestre = Semestre::whereActivo(true)->first();
 
-        // Consulta SQL directa para obtener materias, grupos y movimientos del semestre activo
-        $results = \DB::select("
-        SELECT m.id as materia_id, m.clave, m.nombre, m.nombre_completo, m.semestre as materia_semestre, m.carrera_id,
-        g.id as grupo_id, g.semestre_id,
-        c.id as carrera_id, c.color as carrera_color, c.nombre as carrera_nombre, c.siglas as carrera_siglas,
-        mo.id as movimiento_id, mo.estatus, mo.is_paralelo
-        FROM materias m
-        INNER JOIN grupos g ON g.materia_id = m.id AND g.semestre_id = ?
-        INNER JOIN carreras c ON c.id = m.carrera_id
-        INNER JOIN movimientos mo ON mo.grupo_id = g.id AND mo.semestre_id = ? AND (mo.deleted_at IS NULL)
-        ", [$this->semestre->id, $this->semestre->id]);
+        $semestreId = $this->semestre?->id;
 
-        $semestres = [];
-        foreach ($results as $row) {
-            $pos   = $row->materia_semestre;
-            $clave = $row->clave;
-
-            // Filtrar por coordinador
-            if (auth()->user()->es('Coordinador')) {
-                $materiaCarreraId = $row->carrera_id;
-                $carrerasIds      = auth()->user()->carreras->pluck('id')->toArray();
-                if (!in_array($materiaCarreraId, $carrerasIds)) {
-                    continue;
-                }
-            }
-
-            if (!isset($semestres[$pos][$clave])) {
-                $semestres[$pos][$clave] = collect();
-            }
-
-            // Crear objeto en lugar de array
-            $semestres[$pos][$clave]->push((object) [
-                'grupo_id' => $row->grupo_id,
-                'materia_id' => $row->materia_id,
-                'clave' => $row->clave,
-                'nombre' => $row->nombre,
-                'nombre_completo' => $row->nombre_completo,
-                'semestre' => $row->materia_semestre,
-                'estatus' => $row->estatus ?? null,
-                'is_paralelo' => $row->is_paralelo ?? null,
-                'total' => $row->movimiento_id ? 1 : 0,
-                'carrera_color' => $row->carrera_color,
-                'carrera_nombre' => $row->carrera_nombre,
-                'carrera_siglas' => $row->carrera_siglas,
+        // Obtén materias que tienen grupos en el semestre y agrega conteos para movimientos
+        $query = \App\Models\Materia::query()
+            ->whereHas('grupos', fn($q) => $q->where('semestre_id', $semestreId))
+            ->with(['carrera', 'grupos' => fn($q) => $q->where('semestre_id', $semestreId)->select('id', 'materia_id', 'siglas', 'semestre_id')])
+            ->withCount([
+                'movimientos as total_movimientos_count' => fn($q) => $q->where('movimientos.semestre_id', $semestreId),
+                'movimientos as pendientes_count' => fn($q) => $q->where('movimientos.semestre_id', $semestreId)->whereIn('movimientos.estatus', ['Registrado', 'En revisión']),
             ]);
+
+        // Si es coordinador, limitar por sus carreras
+        if (Auth::check() && Auth::user()->es('Coordinador')) {
+            $carrerasIds = Auth::user()->carreras->pluck('id')->toArray();
+            $query->whereIn('carrera_id', $carrerasIds);
         }
 
-        // Convertir arrays internos a colecciones
-        foreach ($semestres as $semestreKey => $materias) {
-            foreach ($materias as $claveMateria => $grupos) {
-                // Asegurar que sea una colección
-                if (!$grupos instanceof \Illuminate\Support\Collection) {
-                    $semestres[$semestreKey][$claveMateria] = collect($grupos);
-                }
-            }
-            $semestres[$semestreKey] = collect($materias);
-        }
+        $materias = $query->get();
 
-        $this->semestres = collect($semestres)->sortKeys();
+        // Agrupar por semestre (atributo de materia)
+        $grouped = $materias->groupBy('semestre')->map(function ($materiasDelSemestre) {
+            return $materiasDelSemestre->keyBy('clave')->map(function ($materia) {
+                // Tomar el primer grupo disponible en ese semestre
+                $primerGrupo = $materia->grupos->first();
+
+                return (object) [
+                    'grupo_id' => $primerGrupo?->id,
+                    'materia_id' => $materia->id,
+                    'clave' => $materia->clave,
+                    'nombre' => $materia->nombre,
+                    'nombre_completo' => $materia->nombre_completo,
+                    'semestre' => $materia->semestre,
+                    'estatus' => null,
+                    'is_paralelo' => null,
+                    'total' => $materia->total_movimientos_count ?? 0,
+                    'pendientes' => $materia->pendientes_count ?? 0,
+                    'carrera_color' => $materia->carrera?->color,
+                    'carrera_nombre' => $materia->carrera?->nombre,
+                    'carrera_siglas' => $materia->carrera?->siglas,
+                ];
+            })->map(function ($v) {
+                // Mantener la compatibilidad con la vista original que espera una colección de "grupos"
+                // por cada clave; devolvemos una colección con un único objeto.
+                return collect([$v]);
+            });
+        });
+
+        $this->semestres = collect($grouped)->sortKeys();
     }
 
     #[Layout('layouts.app')]
