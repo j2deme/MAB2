@@ -8,6 +8,7 @@ use App\Models\Carrera;
 use App\Models\User;
 use App\Traits\UsesSemestreActivo;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Database\Eloquent\Builder;
 use PowerComponents\LivewirePowerGrid\Button;
 use PowerComponents\LivewirePowerGrid\Column;
@@ -86,6 +87,11 @@ final class MovimientosTable extends PowerGridComponent
                 ->orderBy('estatus');
         }
 
+        // Cache the carrera IDs for coordinators to avoid repeated queries
+        $carreras = Auth::user()->es('Coordinador')
+            ? Auth::user()->carreras->pluck('id')->toArray()
+            : [];
+
         $query = Movimiento::query()
             ->select('movimientos.*')
             ->with('user:id,username', 'grupo:id,siglas,materia_id', 'grupo.materia:id,nombre_completo,clave,carrera_id', 'carrera:id,nombre,siglas')
@@ -98,8 +104,8 @@ final class MovimientosTable extends PowerGridComponent
             ->when($this->estudiante != '', function ($query) {
                 return $query->whereHas('user', fn($q) => $q->where('username', $this->estudiante));
             })
-            ->when(Auth::user()->es('Coordinador'), function ($query) {
-                return $query->whereIn('carrera_id', Auth::user()->carreras->pluck('id'));
+            ->when(!empty($carreras), function ($query) use ($carreras) {
+                return $query->whereIn('carrera_id', $carreras);
             });
 
         return $query;
@@ -123,28 +129,73 @@ final class MovimientosTable extends PowerGridComponent
             ->add('semestre_id')
             ->add('carrera_id')
             ->add('carrera', function (Movimiento $move) {
+                // If user has multiple carreras, pass the collection to the carrera-badge component
+                $userCarreras = $move->user->carreras ?? collect();
+                if ($userCarreras->count() > 1) {
+                    return view('components.carrera-badge', ['carreras' => $userCarreras])->render();
+                }
+
+                // Single carrera (prefer user's, fallback to movimiento->carrera)
+                $carrera  = $userCarreras->first() ?? $move->carrera ?? null;
+                $paralelo = null;
                 if ($move->is_paralelo) {
                     $paralelo = $move->grupo && $move->grupo->materia ? $move->grupo->materia->carrera : $move->carrera;
-                    return Blade::render('components.carrera-badge', ['carrera' => $move->user->carreras->first(), 'paralelo' => $paralelo]);
-                } else {
-                    return Blade::render('components.carrera-badge', ['carrera' => $move->user->carreras->first()]);
                 }
+
+                return view('components.carrera-badge', ['carrera' => $carrera, 'paralelo' => $paralelo])->render();
             })
             ->add('grupo_id')
             ->add('materia', fn(Movimiento $move) => $move->grupo->materia->nombre_completo)
             ->add('siglas', fn(Movimiento $move) => $move->grupo->siglas)
             ->add('tipo')
             ->add('tipo_string', fn(Movimiento $move) => $move->tipo->value)
-            ->add('tipo_icon', fn(Movimiento $move) => Blade::render('components.movimiento-tipo-icon', ['tipo' => $move->tipo->value]))
+            ->add('tipo_icon', function (Movimiento $move) {
+                $icon          = method_exists($move->tipo, 'icon') ? $move->tipo->icon() : null;
+                $color         = method_exists($move->tipo, 'color') ? $move->tipo->color() : 'gray';
+                $colorClassMap = ['blue' => 'text-blue-600', 'red' => 'text-red-600'];
+                $colorClass    = $colorClassMap[$color] ?? 'text-gray-600';
+
+                // Resolve label and icon whether tipo is enum or string
+                $label    = is_object($move->tipo) ? ($move->tipo->value ?? (string) $move->tipo) : (string) $move->tipo;
+                $iconName = is_object($move->tipo) && method_exists($move->tipo, 'icon') ? $move->tipo->icon() : $icon;
+
+                if (in_array($iconName, ['arrow-up', 'arrow-down'])) {
+                    $svg            = view('components.safe-icon', ['name' => $iconName, 'class' => $colorClass])->render();
+                    $colorTextClass = $iconName === 'arrow-up' ? 'text-blue-600' : 'text-red-600';
+                    return '<span class="inline-flex items-center space-x-2"><span class="' . $colorTextClass . '">' . $svg . '</span><span class="text-xs font-semibold">' . e($label) . '</span></span>';
+                }
+
+                return '<span class="text-xs">' . e($label) . '</span>';
+            })
             ->add('estatus')
-            ->add('estatus_badge', fn(Movimiento $move) => Blade::render('components.movimiento-estatus-badge', ['estatus' => $move->estatus]))
+            ->add('estatus_badge', function (Movimiento $move) {
+                $label    = method_exists($move->estatus, 'descripcion') ? $move->estatus->descripcion() : ($move->estatus->value ?? 'N/A');
+                $colorKey = method_exists($move->estatus, 'color') ? $move->estatus->color() : 'gray';
+                $colorMap = [
+                    'sky' => 'bg-sky-500',
+                    'amber' => 'bg-amber-500',
+                    'green' => 'bg-green-600',
+                    'emerald' => 'bg-emerald-600',
+                    'red' => 'bg-red-600',
+                    'rose' => 'bg-rose-600',
+                    'gray' => 'bg-gray-500'
+                ];
+                $bgClass  = $colorMap[$colorKey] ?? 'bg-gray-500';
+                return view('components.safe-badge', ['label' => $label, 'bgClass' => $bgClass])->render();
+            })
             ->add('motivo')
             ->add('motivo_adicional')
             ->add('respuesta')
             ->add('respuesta_adicional')
             ->add('asociado_id')
             ->add('is_paralelo')
-            ->add('paralelo_icon', fn(Movimiento $move) => Blade::render('components.paralelo-icon', ['paralelo' => $move->is_paralelo]))
+            ->add('paralelo_icon', function (Movimiento $move) {
+                if ($move->is_paralelo) {
+                    $svg = view('components.safe-icon', ['name' => 'p-circle', 'class' => 'text-blue-600 mr-1'])->render();
+                    return '<span class="inline-flex items-center text-sm font-semibold">' . $svg . '</span>';
+                }
+                return '<span class="text-sm text-gray-400">-</span>';
+            })
             ->add('created_at');
     }
 
@@ -198,57 +249,65 @@ final class MovimientosTable extends PowerGridComponent
         if (Auth::user()->es('Estudiante')) {
             return [
                 Filter::enumSelect('tipo_icon', 'tipo')
-                    ->datasource(MovesType::cases())
-                    ->optionLabel('movimientos.tipo'),
+                    ->datasource(MovesType::asArray())
+                    ->optionLabel('label')
+                    ->optionValue('value'),
 
                 Filter::enumSelect('estatus', 'estatus')
-                    ->datasource(MovesStatus::cases())
-                    ->optionLabel('movimientos.estatus'),
+                    ->datasource(MovesStatus::asArray())
+                    ->optionLabel('label')
+                    ->optionValue('value'),
             ];
         }
 
-        // Filtros para coordinadores
-        if (Auth::user()->es('Coordinador')) {
-            $carreras = Auth::user()->carreras;
+        // Caché granular por usuario para filtros computados
+        $cacheKey   = $this->getCacheKeyForUser('movimientos.filters');
+        $filterData = Cache::remember($cacheKey, 3600, function () {
             $semestre = $this->getSemestreActivo();
-            $siglas   = $semestre->movimientos()
-                ->join('grupos', 'movimientos.grupo_id', '=', 'grupos.id')
-                ->whereIn('carrera_id', $carreras->pluck('id'))
-                ->groupBy('grupos.siglas')
-                ->orderBy('grupos.siglas')
-                ->select('grupos.siglas')
-                ->get();
-        } else {
-            // Filtros para administradores y jefes
-            $carreras = Carrera::query()
-                ->orderBy('siglas')
-                ->get();
-            $siglas   = Movimiento::query()
-                ->join('grupos', 'movimientos.grupo_id', '=', 'grupos.id')
-                ->groupBy('grupos.siglas')
-                ->orderBy('grupos.siglas')
-                ->select('grupos.siglas')
-                ->get();
-        }
 
-        $estudiantes = User::query()
-            ->whereIn('id', $this->datasource()->pluck('user_id')->unique())
-            ->orderBy('username')
-            ->get();
+            if (Auth::user()->es('Coordinador')) {
+                $carreras = Auth::user()->carreras;
+                $siglas   = $semestre->movimientos()
+                    ->join('grupos', 'movimientos.grupo_id', '=', 'grupos.id')
+                    ->whereIn('carrera_id', $carreras->pluck('id'))
+                    ->groupBy('grupos.siglas')
+                    ->orderBy('grupos.siglas')
+                    ->select('grupos.siglas')
+                    ->get();
+            } else {
+                // Filtros para administradores y jefes
+                $carreras = Carrera::query()
+                    ->orderBy('siglas')
+                    ->get();
+                $siglas   = Movimiento::query()
+                    ->join('grupos', 'movimientos.grupo_id', '=', 'grupos.id')
+                    ->groupBy('grupos.siglas')
+                    ->orderBy('grupos.siglas')
+                    ->select('grupos.siglas')
+                    ->get();
+            }
+
+            $estudiantes = User::query()
+                ->whereIn('id', $this->datasource()->pluck('user_id')->unique())
+                ->orderBy('username')
+                ->get();
+
+            return compact('carreras', 'siglas', 'estudiantes');
+        });
 
         return [
             Filter::select('usuario', 'user_id')
-                ->datasource($estudiantes)
+                ->datasource($filterData['estudiantes'])
                 ->optionLabel('username')
                 ->optionValue('id'),
 
             Filter::select('siglas')
-                ->datasource($siglas)
+                ->datasource($filterData['siglas'])
                 ->optionLabel('siglas')
                 ->optionValue('siglas'),
 
             Filter::select('carrera', 'carrera_id')
-                ->datasource($carreras)
+                ->datasource($filterData['carreras'])
                 ->optionLabel('siglas')
                 ->optionValue('id')
                 ->builder(function (Builder $query, $value) {
@@ -256,12 +315,14 @@ final class MovimientosTable extends PowerGridComponent
                 }),
 
             Filter::enumSelect('tipo_icon', 'tipo')
-                ->datasource(MovesType::cases())
-                ->optionLabel('movimientos.tipo'),
+                ->datasource(MovesType::asArray())
+                ->optionLabel('label')
+                ->optionValue('value'),
 
             Filter::enumSelect('estatus', 'estatus')
-                ->datasource(MovesStatus::cases())
-                ->optionLabel('movimientos.estatus'),
+                ->datasource(MovesStatus::asArray())
+                ->optionLabel('label')
+                ->optionValue('value'),
 
             Filter::boolean('is_paralelo', 'is_paralelo')
                 ->label('Sí', 'No'),
@@ -272,6 +333,9 @@ final class MovimientosTable extends PowerGridComponent
     public function delete($rowId): void
     {
         Movimiento::query()->find($rowId)->delete();
+
+        // Invalida caché de filtros al eliminar
+        $this->invalidateCacheForUser('movimientos.filters');
 
         $this->notification()->success('Registro eliminado', 'Solicitud eliminada correctamente.');
 
@@ -286,5 +350,17 @@ final class MovimientosTable extends PowerGridComponent
                     'model' => $row
                 ]),
         ];
+    }
+
+    /**
+     * Dispatch a browser event when the component is mounted (useful for showing loaders)
+     */
+    public function mount(): void
+    {
+        // Ensure the parent PowerGridComponent mounts and initializes state
+        parent::mount();
+
+        // Livewire v3 uses ->dispatch() for events that reach the frontend
+        $this->dispatch('movimientos-table-mounted');
     }
 }
