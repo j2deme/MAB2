@@ -122,10 +122,18 @@ final class UsersTable extends PowerGridComponent
 
     public function filters(): array
     {
+        $roles = collect(UserRoles::cases())->map(function ($case) {
+            return [
+                'label' => $case->value,
+                'value' => $case->name,
+            ];
+        })->toArray();
+
         return [
-            Filter::enumSelect('rol', 'users.rol')
-                ->datasource(UserRoles::cases())
-                ->optionLabel('users.rol'),
+            Filter::select('rol')
+                ->dataSource($roles)
+                ->optionLabel('label')
+                ->optionValue('value'),
             Filter::boolean('inscrito')
                 ->label('Sí', 'No')
         ];
