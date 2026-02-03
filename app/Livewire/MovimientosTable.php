@@ -218,12 +218,12 @@ final class MovimientosTable extends PowerGridComponent
         if (Auth::user()->es('Estudiante')) {
             return [
                 Filter::enumSelect('tipo_icon', 'tipo')
-                    ->datasource(MovesType::asArray())
+                    ->datasource(MovesType::cases())
                     ->optionLabel('label')
                     ->optionValue('value'),
 
                 Filter::enumSelect('estatus', 'estatus')
-                    ->datasource(MovesStatus::asArray())
+                    ->datasource(MovesStatus::cases())
                     ->optionLabel('label')
                     ->optionValue('value'),
             ];
@@ -284,12 +284,12 @@ final class MovimientosTable extends PowerGridComponent
                 }),
 
             Filter::enumSelect('tipo_icon', 'tipo')
-                ->datasource(MovesType::asArray())
+                ->datasource(MovesType::cases())
                 ->optionLabel('label')
                 ->optionValue('value'),
 
             Filter::enumSelect('estatus', 'estatus')
-                ->datasource(MovesStatus::asArray())
+                ->datasource(MovesStatus::cases())
                 ->optionLabel('label')
                 ->optionValue('value'),
 

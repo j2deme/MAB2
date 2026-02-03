@@ -46,4 +46,10 @@ enum MovesStatus: string
         }
         return $array;
     }
+
+    // Used by PowerGrid FilterEnumSelect when passing enum cases as dataSource
+    public function labelPowergridFilter(): string
+    {
+        return $this->value;
+    }
 }
