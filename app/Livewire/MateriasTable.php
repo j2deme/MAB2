@@ -144,7 +144,10 @@ final class MateriasTable extends PowerGridComponent
             Filter::select('carrera_nombre', 'carrera_id')
                 ->dataSource(Carrera::all())
                 ->optionLabel('nombre')
-                ->optionValue('id'),
+                ->optionValue('id')
+                ->builder(function (Builder $query, $value) {
+                    return $query->where('carrera_id', $value);
+                }),
             Filter::select('semestre')
                 ->dataSource($semestres)
                 ->optionLabel('label')
@@ -152,7 +155,10 @@ final class MateriasTable extends PowerGridComponent
             Filter::select('carrera_badge', 'carrera_id')
                 ->dataSource($carreras)
                 ->optionLabel('label')
-                ->optionValue('value'),
+                ->optionValue('value')
+                ->builder(function (Builder $query, $value) {
+                    return $query->where('carrera_id', $value);
+                }),
         ];
     }
 
