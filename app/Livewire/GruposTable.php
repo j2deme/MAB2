@@ -140,6 +140,75 @@ final class GruposTable extends PowerGridComponent
             ];
         });
 
+        $semestreActivoId = $this->semestreId ?? $this->getSemestreActivoId();
+
+        // Leer filtros actualmente aplicados (PowerGrid puede enviar filtros en la request o mantenerlos en $this->filters)
+        $applied = request()->input('filters') ?? $this->filters ?? [];
+
+        $selectedSiglas = $applied['siglas'] ?? null;
+        // PowerGrid puede nombrar el filtro de carrera por el primer argumento (carrera_badge) o por el campo (carrera_id)
+        $selectedCarrera = $applied['carrera_badge'] ?? $applied['carrera_id'] ?? null;
+        $selectedMateria = $applied['materia_id'] ?? null;
+
+        // Materias disponibles condicionadas por filtros
+        $matQuery = Materia::query();
+        $matQuery->whereHas('grupos', function ($q) use ($semestreActivoId, $selectedSiglas, $selectedCarrera) {
+            $q->where('semestre_id', $semestreActivoId);
+            if ($selectedSiglas) {
+                $q->where('siglas', $selectedSiglas);
+            }
+            if ($selectedCarrera) {
+                $q->whereHas('materia', function ($mq) use ($selectedCarrera) {
+                    $mq->where('carrera_id', $selectedCarrera);
+                });
+            }
+        });
+
+        $materias = $matQuery->orderBy('nombre_completo')->get()->map(function ($materia) {
+            return [
+                'label' => $materia->nombre_completo . ' (' . $materia->clave . ')',
+                'value' => $materia->id,
+            ];
+        });
+
+        // Siglas disponibles condicionadas por filtros
+        $siglasQuery = Grupo::query()->where('semestre_id', $semestreActivoId);
+        if ($selectedCarrera) {
+            $siglasQuery->whereHas('materia', function ($q) use ($selectedCarrera) {
+                $q->where('carrera_id', $selectedCarrera);
+            });
+        }
+        if ($selectedMateria) {
+            $siglasQuery->where('materia_id', $selectedMateria);
+        }
+
+        $siglas = $siglasQuery->select('siglas')->distinct()->orderBy('siglas')->pluck('siglas')->map(function ($sigla) {
+            return [
+                'label' => $sigla,
+                'value' => $sigla,
+            ];
+        });
+
+        // Carreras disponibles condicionadas por filtros
+        $carrQuery = Carrera::query()->whereHas('materias', function ($mq) use ($semestreActivoId, $selectedSiglas, $selectedMateria) {
+            $mq->whereHas('grupos', function ($gq) use ($semestreActivoId, $selectedSiglas, $selectedMateria) {
+                $gq->where('semestre_id', $semestreActivoId);
+                if ($selectedSiglas) {
+                    $gq->where('siglas', $selectedSiglas);
+                }
+                if ($selectedMateria) {
+                    $gq->where('materia_id', $selectedMateria);
+                }
+            });
+        });
+
+        $carreras = $carrQuery->orderBy('nombre')->get()->map(function ($carrera) {
+            return [
+                'label' => $carrera->nombre,
+                'value' => $carrera->id,
+            ];
+        });
+
         return [
             Filter::select('materia_id')
                 ->dataSource($materias)
