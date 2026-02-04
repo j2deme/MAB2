@@ -273,7 +273,10 @@ final class MovimientosTable extends PowerGridComponent
             Filter::select('siglas')
                 ->datasource($filterData['siglas'])
                 ->optionLabel('siglas')
-                ->optionValue('siglas'),
+                ->optionValue('siglas')
+                ->builder(function (Builder $query, $value) {
+                    return $query->whereHas('grupo', fn($q) => $q->where('siglas', $value));
+                }),
 
             Filter::select('carrera', 'carrera_id')
                 ->datasource($filterData['carreras'])
