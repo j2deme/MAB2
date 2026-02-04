@@ -6,6 +6,12 @@
 
 <div class="py-12">
     <div class="max-w-full mx-auto sm:px-6 lg:px-8 space-y-6">
+        @if($grupo->deleted_at)
+        <div class="rounded-md bg-red-50 p-4 border border-red-200">
+            <p class="text-sm text-red-700">Este grupo está <strong>eliminado (soft-deleted)</strong>. Los movimientos
+                asociados pueden estar también eliminados y se muestran con su estatus.</p>
+        </div>
+        @endif
         <!-- Información Principal -->
         <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
             <div class="w-full">
@@ -155,7 +161,11 @@
                                         @include('components.movimiento-tipo-icon', ['tipo' => $mov->tipo->value])
                                     </td>
                                     <td class="whitespace-nowrap px-3 py-4 text-sm">
+                                        @if($mov->deleted_at)
+                                        <x-badge color="red" label="Borrado" sm />
+                                        @else
                                         @include('components.movimiento-estatus-badge', ['estatus' => $mov->estatus])
+                                        @endif
                                     </td>
                                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-600">
                                         {{ $mov->updated_at->format('d/m/Y H:i') }}

@@ -47,8 +47,16 @@ final class GruposTable extends PowerGridComponent
 
     public function datasource(): Builder
     {
+        // If the component is mounted inside the semestre show view (semestreId provided)
+        // include soft-deleted groups so the admin can see and manage them.
+        if ($this->semestreId) {
+            return Grupo::withTrashed()
+                ->with(['materia', 'materia.carrera'])
+                ->where('semestre_id', $this->semestreId);
+        }
+
         $semestreActivoId = $this->semestreId ?? $this->getSemestreActivoId();
-        // Use Eloquent relationships to ensure an Eloquent Builder is returned
+        // Default behavior: only non-deleted groups for active context
         return Grupo::query()
             ->with(['materia', 'materia.carrera'])
             ->where('semestre_id', $semestreActivoId);
@@ -74,12 +82,18 @@ final class GruposTable extends PowerGridComponent
             ->add('disponible_icon', fn(Grupo $model) => Blade::render('components.disponible-icon', ['disponible' => $model->is_disponible]))
             ->add('is_paralelizable')
             ->add('paralelizable_icon', fn(Grupo $model) => Blade::render('components.paralelo-icon', ['paralelo' => $model->is_paralelizable]))
+            ->add('estatus_badge', function (Grupo $model) {
+                if ($model->deleted_at) {
+                    return Blade::render("<x-badge color='red' label='Borrado' sm />");
+                }
+                return Blade::render("<x-badge color='green' label='Activo' sm />");
+            })
             ->add('created_at');
     }
 
     public function columns(): array
     {
-        return [
+        $cols = [
             Column::make('Materia', 'materia_nombre', 'materia_id')
                 ->sortable()
                 ->searchable(),
@@ -101,14 +115,26 @@ final class GruposTable extends PowerGridComponent
                 ->visibleInExport(false)
                 ->sortable(),
 
-            Column::make('Paralelizable', 'paralelizable_icon', 'is_paralelizable')
+        ];
+
+        // If we are in the semestre show (semestreId provided), replace the Paralelizable
+        // column with an Estatus column that shows if the group is deleted or active.
+        if ($this->semestreId) {
+            $cols[] = Column::make('Estatus', 'estatus_badge', 'deleted_at')
                 ->contentClasses('flex items-center justify-center')
                 ->visibleInExport(false)
-                ->sortable(),
+                ->sortable();
+        } else {
+            $cols[] = Column::make('Paralelizable', 'paralelizable_icon', 'is_paralelizable')
+                ->contentClasses('flex items-center justify-center')
+                ->visibleInExport(false)
+                ->sortable();
+        }
 
-            Column::action('')
-                ->title(Blade::render('<x-icon name="gear" class="w-5 h-5 text-gray-600" />')),
-        ];
+        $cols[] = Column::action('')
+            ->title(Blade::render('<x-icon name="gear" class="w-5 h-5 text-gray-600" />'));
+
+        return $cols;
     }
 
     public function filters(): array
@@ -155,6 +181,9 @@ final class GruposTable extends PowerGridComponent
         // Materias disponibles condicionadas por filtros
         $matQuery = Materia::query();
         $matQuery->whereHas('grupos', function ($q) use ($semestreActivoId, $selectedSiglas, $selectedCarrera) {
+            if ($this->semestreId) {
+                $q->withTrashed();
+            }
             $q->where('semestre_id', $semestreActivoId);
             if ($selectedSiglas) {
                 $q->where('siglas', $selectedSiglas);
@@ -174,7 +203,11 @@ final class GruposTable extends PowerGridComponent
         });
 
         // Siglas disponibles condicionadas por filtros
-        $siglasQuery = Grupo::query()->where('semestre_id', $semestreActivoId);
+        $siglasQuery = Grupo::query();
+        if ($this->semestreId) {
+            $siglasQuery->withTrashed();
+        }
+        $siglasQuery->where('semestre_id', $semestreActivoId);
         if ($selectedCarrera) {
             $siglasQuery->whereHas('materia', function ($q) use ($selectedCarrera) {
                 $q->where('carrera_id', $selectedCarrera);
@@ -194,6 +227,9 @@ final class GruposTable extends PowerGridComponent
         // Carreras disponibles condicionadas por filtros
         $carrQuery = Carrera::query()->whereHas('materias', function ($mq) use ($semestreActivoId, $selectedSiglas, $selectedMateria) {
             $mq->whereHas('grupos', function ($gq) use ($semestreActivoId, $selectedSiglas, $selectedMateria) {
+                if ($this->semestreId) {
+                    $gq->withTrashed();
+                }
                 $gq->where('semestre_id', $semestreActivoId);
                 if ($selectedSiglas) {
                     $gq->where('siglas', $selectedSiglas);
@@ -260,10 +296,104 @@ final class GruposTable extends PowerGridComponent
     #[\Livewire\Attributes\On('delete')]
     public function delete($rowId): void
     {
-        Grupo::query()->find($rowId)->delete();
+        // Buscar el grupo incluyendo los soft-deleted
+        $grupo = Grupo::withTrashed()->find($rowId);
 
+        if (!$grupo) {
+            $this->notification()->error('No encontrado', 'El grupo solicitado no existe.');
+            return;
+        }
+
+        // Si el grupo ya está soft-deleted, intentamos un borrado definitivo (forceDelete)
+        if ($grupo->trashed()) {
+            // Permitir borrado definitivo sólo si NO tiene movimientos activos
+            $activeMovs = $grupo->movimientos()->count();
+            if ($activeMovs > 0) {
+                $this->notification()->error('No se puede eliminar', "El grupo tiene {$activeMovs} movimiento(s) activo(s). Imposible eliminación definitiva.");
+                return;
+            }
+
+            // Si sólo tiene movimientos soft-deleted, eliminarlos definitivamente primero
+            $trashedMovs  = $grupo->movimientos()->onlyTrashed()->get();
+            $trashedCount = $trashedMovs->count();
+            if ($trashedCount > 0) {
+                $trashedMovs->each(fn($m) => $m->forceDelete());
+            }
+
+            $grupo->forceDelete();
+            $msg = 'Grupo eliminado definitivamente.';
+            if ($trashedCount > 0) {
+                $msg .= " Se eliminaron definitivamente {$trashedCount} movimiento(s) asociados.";
+            }
+
+            $this->notification()->success('Registro eliminado', $msg);
+            $this->refresh();
+            return;
+        }
+
+        // Grupo activo: realizar soft-delete
+        $grupo->delete();
         $this->notification()->error('Registro eliminado', 'Grupo eliminado correctamente.');
+        $this->refresh();
+    }
 
+    public function restore($rowId): void
+    {
+        $grupo = Grupo::withTrashed()->find($rowId);
+
+        if (!$grupo) {
+            $this->notification()->error('No encontrado', 'El grupo solicitado no existe.');
+            return;
+        }
+
+        if (!$grupo->trashed()) {
+            $this->notification()->info('No es necesario', 'El grupo ya está activo.');
+            return;
+        }
+
+        // Restaurar únicamente el grupo; no restaurar movimientos automáticamente
+        $grupo->restore();
+
+        $trashedMovsCount = $grupo->movimientos()->onlyTrashed()->count();
+        $msg              = 'Grupo restaurado correctamente.';
+        if ($trashedMovsCount > 0) {
+            $msg .= " Este grupo tiene {$trashedMovsCount} movimiento(s) eliminados. Puedes verlos en la lista con su estatus.";
+        }
+
+        $this->notification()->success('Restaurado', $msg);
+        $this->refresh();
+    }
+
+    public function forceDelete($rowId): void
+    {
+        $grupo = Grupo::withTrashed()->find($rowId);
+
+        if (!$grupo) {
+            $this->notification()->error('No encontrado', 'El grupo solicitado no existe.');
+            return;
+        }
+
+        // Permitir borrado definitivo sólo si NO hay movimientos activos
+        $activeMovs = $grupo->movimientos()->count();
+        if ($activeMovs > 0) {
+            $this->notification()->error('No se puede eliminar', "El grupo tiene {$activeMovs} movimiento(s) activo(s). Imposible eliminación definitiva.");
+            return;
+        }
+
+        // Forzar eliminación definitiva de movimientos soft-deleted primero
+        $trashedMovs  = $grupo->movimientos()->onlyTrashed()->get();
+        $trashedCount = $trashedMovs->count();
+        if ($trashedCount > 0) {
+            $trashedMovs->each(fn($m) => $m->forceDelete());
+        }
+
+        $grupo->forceDelete();
+        $msg = 'Grupo eliminado definitivamente.';
+        if ($trashedCount > 0) {
+            $msg .= " Se eliminaron definitivamente {$trashedCount} movimiento(s) asociados.";
+        }
+
+        $this->notification()->success('Eliminado', $msg);
         $this->refresh();
     }
 
@@ -271,9 +401,8 @@ final class GruposTable extends PowerGridComponent
     {
         return [
             Button::add('actions')
-                ->bladeComponent('row-actions', [
-                    'model' => 'grupos',
-                    'id' => $row->id
+                ->bladeComponent('grupo-row-actions', [
+                    'grupo' => $row,
                 ]),
         ];
     }

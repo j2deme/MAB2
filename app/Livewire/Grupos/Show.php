@@ -16,9 +16,16 @@ class Show extends Component
     public GrupoForm $form;
     public bool $mostrarTodos = false;
 
-    public function mount(Grupo $grupo)
+    public function mount($grupo)
     {
-        $this->form->setGrupoModel($grupo);
+        // $grupo may be a model (route model binding) or an id — resolve including trashed
+        if ($grupo instanceof Grupo) {
+            $g = $grupo;
+        } else {
+            $g = Grupo::withTrashed()->findOrFail($grupo);
+        }
+
+        $this->form->setGrupoModel($g);
     }
 
     public function mostrarTodos(): void
@@ -33,9 +40,10 @@ class Show extends Component
         $cacheKey = $this->getCacheKeyForUser("grupo.{$grupo->id}");
 
         // Movimientos a mostrar (todos o primeros 10) con paginación
+        // Mostrar movimientos incluyendo los soft-deleted para poder ver su estatus
         $movimientos = $grupo->movimientos()
             ->with('user')
-            ->where('deleted_at', null)
+            ->withTrashed()
             ->latest('updated_at')
             ->when(!$this->mostrarTodos, fn($q) => $q->take(10))
             ->get();

@@ -133,7 +133,21 @@ final class SemestresTable extends PowerGridComponent
     #[\Livewire\Attributes\On('delete')]
     public function delete($rowId): void
     {
-        Semestre::query()->find($rowId)->delete();
+        $semestre = Semestre::query()->find($rowId);
+
+        if (!$semestre) {
+            $this->notification()->error('No encontrado', 'El semestre no existe.');
+            return;
+        }
+
+        // Comprobar si existen grupos asociados (incluyendo soft-deleted)
+        $gruposCount = \App\Models\Grupo::withTrashed()->where('semestre_id', $rowId)->count();
+        if ($gruposCount > 0) {
+            $this->notification()->error('No se puede eliminar', "El semestre tiene {$gruposCount} grupo(s) asociado(s) (incluyendo inactivos). Elimina o reasigna esos grupos primero.");
+            return;
+        }
+
+        $semestre->delete();
 
         $this->notification()->error('Registro eliminado', 'Semestre eliminado correctamente.');
 
