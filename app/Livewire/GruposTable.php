@@ -19,11 +19,13 @@ use PowerComponents\LivewirePowerGrid\PowerGrid;
 use PowerComponents\LivewirePowerGrid\PowerGridFields;
 use PowerComponents\LivewirePowerGrid\PowerGridComponent;
 use PowerComponents\LivewirePowerGrid\Traits\WithExport;
+use WireUi\Traits\WireUiActions;
 use Illuminate\Support\Facades\Blade;
 
 final class GruposTable extends PowerGridComponent
 {
     use WithExport;
+    use WireUiActions;
     use UsesSemestreActivo;
 
     public ?int $semestreId = null;
