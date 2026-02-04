@@ -118,12 +118,20 @@ final class GruposTable extends PowerGridComponent
             ];
         });
 
-        $siglas = Grupo::query()->groupBy('siglas')->orderBy('siglas')->select('siglas')->get()->map(function ($sigla) {
-            return [
-                'label' => $sigla->siglas,
-                'value' => $sigla->siglas,
-            ];
-        });
+        $semestreActivoId = $this->semestreId ?? $this->getSemestreActivoId();
+
+        $siglas = Grupo::query()
+            ->where('semestre_id', $semestreActivoId)
+            ->select('siglas')
+            ->distinct()
+            ->orderBy('siglas')
+            ->pluck('siglas')
+            ->map(function ($sigla) {
+                return [
+                    'label' => $sigla,
+                    'value' => $sigla,
+                ];
+            });
 
         $carreras = Carrera::query()->orderBy('nombre')->get()->map(function ($carrera) {
             return [
@@ -137,14 +145,24 @@ final class GruposTable extends PowerGridComponent
                 ->dataSource($materias)
                 ->optionLabel('label')
                 ->optionValue('value'),
-            Filter::select('grupo_siglas')
+            // Filtro por siglas del grupo (coincide con el campo 'siglas')
+            Filter::select('siglas', 'siglas')
                 ->dataSource($siglas)
                 ->optionLabel('label')
-                ->optionValue('value'),
+                ->optionValue('value')
+                ->builder(function (Builder $query, $value) {
+                    return $query->where('siglas', $value);
+                }),
+
             Filter::select('carrera_badge', 'carrera_id')
                 ->dataSource($carreras)
                 ->optionLabel('label')
-                ->optionValue('value'),
+                ->optionValue('value')
+                ->builder(function (Builder $query, $value) {
+                    return $query->whereHas('materia', function ($q) use ($value) {
+                        $q->where('carrera_id', $value);
+                    });
+                }),
             Filter::select('is_disponible')
                 ->dataSource([
                     ['label' => 'Sí', 'value' => '1'],
