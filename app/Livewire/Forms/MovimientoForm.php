@@ -327,6 +327,10 @@ class MovimientoForm extends Form
             $this->backRoute = 'movimientos.pending';
         }
 
+        if (Str::contains($previous, 'solicitudes/sin-respuesta')) {
+            $this->backRoute = 'movimientos.missing';
+        }
+
         if (Str::contains($previous, 'solicitudes/atendidas')) {
             $this->backRoute = 'movimientos.attended';
         }

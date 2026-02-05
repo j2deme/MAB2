@@ -37,6 +37,7 @@ final class MovimientosTable extends PowerGridComponent
     public string $estudiante = '';
 
     public $tipos = [];
+    public bool $missingRespuesta = false;
 
     // Caches para HTML pre-renderizado (evita Blade::render por fila)
     private array $tipoIconCache = [];
@@ -55,6 +56,11 @@ final class MovimientosTable extends PowerGridComponent
         }
 
         if (request()->routeIs('movimientos.attended')) {
+            $this->tipos = [MovesStatus::AUTORIZADO, MovesStatus::AUTORIZADO_JEFE, MovesStatus::RECHAZADO, MovesStatus::RECHAZADO_JEFE];
+        } elseif (request()->routeIs('movimientos.missing')) {
+            // Page that lists movimientos without a 'respuesta' assigned.
+            $this->missingRespuesta = true;
+            // Only consider movimientos that were already resolved (authorized or rejected)
             $this->tipos = [MovesStatus::AUTORIZADO, MovesStatus::AUTORIZADO_JEFE, MovesStatus::RECHAZADO, MovesStatus::RECHAZADO_JEFE];
         } elseif (request()->routeIs('movimientos.pending')) {
             $this->tipos = [MovesStatus::REGISTRADO, MovesStatus::REVISION];
@@ -110,7 +116,15 @@ final class MovimientosTable extends PowerGridComponent
             )
             ->where('semestre_id', $semestre->id)
             ->whereIn('estatus', $this->tipos)
-            ->orderBy('updated_at', 'desc')
+            ->when($this->missingRespuesta, fn($q) => $q->where(function ($q2) {
+                $q2->whereNull('respuesta')->orWhere('respuesta', '');
+            }))
+            ->when($this->missingRespuesta, function ($q) {
+                // Priorizar movimientos rechazados en la vista "sin-respuesta".
+                $orderExpr = "CASE WHEN estatus IN ('" . MovesStatus::RECHAZADO->value . "', '" . MovesStatus::RECHAZADO_JEFE->value . "') THEN 0 "
+                    . "WHEN estatus IN ('" . MovesStatus::AUTORIZADO->value . "', '" . MovesStatus::AUTORIZADO_JEFE->value . "') THEN 1 ELSE 2 END";
+                $q->orderByRaw($orderExpr)->orderBy('updated_at', 'desc');
+            }, fn($q) => $q->orderBy('updated_at', 'desc'))
             ->when($this->clave != '', function ($query) {
                 return $query->whereHas('grupo.materia', fn($q) => $q->where('clave', $this->clave));
             })

@@ -40,6 +40,8 @@ class Edit extends Component
                 return $this->redirectRoute('movimientos.pending', navigate: true);
             case 'movimientos.attended':
                 return $this->redirectRoute('movimientos.attended', navigate: true);
+            case 'movimientos.missing':
+                return $this->redirectRoute('movimientos.missing', navigate: true);
             case 'movimientos.materias':
                 $materia = $this->form->movimientoModel->grupo->materia;
                 return $this->redirectRoute('movimientos.materias.clave', $materia->clave, navigate: true);

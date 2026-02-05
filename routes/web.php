@@ -61,6 +61,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/solicitudes/update/{movimiento}', \App\Livewire\Movimientos\Edit::class)->name('movimientos.edit');
     Route::get('/solicitudes/pendientes', \App\Livewire\Movimientos\Index::class)->name('movimientos.pending');
     Route::get('/solicitudes/atendidas', \App\Livewire\Movimientos\Index::class)->name('movimientos.attended');
+    Route::get('/solicitudes/sin-respuesta', \App\Livewire\Movimientos\Index::class)->name('movimientos.missing');
     Route::get('/solicitudes/materias', \App\Livewire\Movimientos\ListaMaterias::class)->name('movimientos.materias');
     Route::get('/solicitudes/materias/{clave}', \App\Livewire\Movimientos\Index::class)->name('movimientos.materias.clave');
     Route::get('/solicitudes/generacion', \App\Livewire\Movimientos\ListaGeneracion::class)->name('movimientos.generacion');
