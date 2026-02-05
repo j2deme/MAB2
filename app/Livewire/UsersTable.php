@@ -21,6 +21,8 @@ use App\Enums\UserRoles;
 use WireUi\Traits\WireUiActions;
 use Auth;
 
+use Illuminate\Support\Facades\Auth as FacadesAuth;
+
 final class UsersTable extends PowerGridComponent
 {
     use WithExport;
@@ -178,6 +180,33 @@ final class UsersTable extends PowerGridComponent
 
         // TODO: Agrega botón para reestablecer contraseña
         // TODO: Agrega botón para inscribir si es estudiante
+    }
+
+    #[\Livewire\Attributes\On('impersonate')]
+    public function impersonate($userId)
+    {
+        if (!Auth::user() || !Auth::user()->es('Administrador')) {
+            $this->notification()->error('No autorizado', 'Acción permitida solo para administradores.');
+            return;
+        }
+
+        $user = User::find($userId);
+        if (!$user) {
+            $this->notification()->error('Usuario no encontrado', 'El usuario seleccionado no existe.');
+            return;
+        }
+
+        if ($user->es('Administrador')) {
+            $this->notification()->error('No permitido', 'No puedes impersonar a otro administrador.');
+            return;
+        }
+
+        session(['admin_impersonator_id' => Auth::id()]);
+        session(['admin_impersonating' => true]);
+
+        FacadesAuth::loginUsingId($user->id);
+
+        return redirect()->route('dashboard');
     }
 
     /*

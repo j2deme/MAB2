@@ -74,8 +74,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/usuarios/upload', [UserController::class, 'batch'])->name('users.batch');
     Route::post('/usuarios/upload', [UserController::class, 'upload'])->name('users.upload');
 
-    // Impersonation (admin only)
-    Route::get('/admin/impersonate', \App\Livewire\Admin\Impersonate::class)->name('admin.impersonate');
 
 
 });
