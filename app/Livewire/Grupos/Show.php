@@ -40,9 +40,8 @@ class Show extends Component
         $cacheKey = $this->getCacheKeyForUser("grupo.{$grupo->id}");
 
         // Movimientos a mostrar (todos o primeros 10) con paginación
-        // Mostrar movimientos incluyendo los soft-deleted para poder ver su estatus
         $movimientos = $grupo->movimientos()
-            ->with('user')
+            ->with(['user.carreras'])
             ->withTrashed()
             ->latest('updated_at')
             ->when(!$this->mostrarTodos, fn($q) => $q->take(10))
