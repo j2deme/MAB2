@@ -23,7 +23,7 @@ class Create extends Component
     public MovimientoForm $form;
     public $estudiantes = [];
 
-    public function mount($tipo = null, Movimiento $movimiento)
+    public function mount(Movimiento $movimiento, $tipo = null)
     {
         $semestre                = $this->getSemestreActivo();
         $movimiento->user_id     = Auth::user()->id;
