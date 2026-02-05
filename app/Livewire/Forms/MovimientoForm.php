@@ -98,7 +98,7 @@ class MovimientoForm extends Form
         $this->is_paralelo         = $this->movimientoModel->is_paralelo;
 
         if (is_null($tipo)) {
-            $tipo = $this->movimientoModel->tipo->value;
+            $tipo = $this->movimientoModel->tipo?->value ?? '';
         }
 
         if ($this->movimientoModel->asociado()->first() !== null) {
@@ -195,14 +195,19 @@ class MovimientoForm extends Form
         if ($move->grupo_id == null) {
             return;
         }
-
-        $grupo   = Grupo::find($move->grupo_id);
+        // Try to use already loaded relations when possible to avoid extra queries
+        $grupo   = $move->grupo ?? Grupo::with('materia')->find($move->grupo_id);
         $materia = $grupo->materia;
 
-        $owner = User::find($move->user_id);
+        $owner = $move->user ?? User::with('carreras')->find($move->user_id);
 
-        // Si la carrera del dueño del movimiento es diferente a la carrera de la materia, se marca como paralelo
-        $move->is_paralelo = $owner->carreras()->first()->id !== $materia->carrera_id;
+        $firstCareer = $owner->carreras->first();
+        if (!$firstCareer) {
+            $move->is_paralelo = false;
+        } else {
+            // Si la carrera del dueño del movimiento es diferente a la carrera de la materia, se marca como paralelo
+            $move->is_paralelo = $firstCareer->id !== $materia->carrera_id;
+        }
         // La carrera del movimiento se iguala a la carrera de la materia
         $move->carrera_id = $materia->carrera_id;
 
@@ -216,18 +221,51 @@ class MovimientoForm extends Form
         $this->tipos      = MovesType::cases();
         $this->respuestas = MovesAnswers::cases();
 
-        $this->grupos = Grupo::with('materia')
+        // Cargar solo columnas necesarias y limitar resultados para evitar payloads grandes
+        $this->grupos = Grupo::query()
+            ->select('id', 'materia_id', 'siglas', 'semestre_id')
             ->where('semestre_id', $semestre->id)
             ->where('is_disponible', true)
+            ->with([
+                'materia' => function ($q) {
+                    $q->select('id', 'nombre_completo', 'clave', 'carrera_id')
+                        ->with(['carrera' => fn($c) => $c->select('id', 'nombre', 'siglas')]);
+                }
+            ])
+            ->orderBy('siglas')
+            ->limit(500)
             ->get();
+
+        // Si estamos editando y el grupo actual no está en la lista (por el limit), agréguelo.
+        if ($this->movimientoModel?->grupo_id) {
+            $current = Grupo::query()
+                ->select('id', 'materia_id', 'siglas', 'semestre_id')
+                ->with([
+                    'materia' => function ($q) {
+                        $q->select('id', 'nombre_completo', 'clave', 'carrera_id')
+                            ->with(['carrera' => fn($c) => $c->select('id', 'nombre', 'siglas')]);
+                    }
+                ])
+                ->find($this->movimientoModel->grupo_id);
+
+            if ($current) {
+                $gruposCollection = $this->grupos instanceof \Illuminate\Support\Collection ? $this->grupos : collect($this->grupos);
+                if (!$gruposCollection->contains('id', $current->id)) {
+                    $gruposCollection->push($current);
+                }
+                $this->grupos = $gruposCollection;
+            }
+        }
 
         $this->movimientos = Movimiento::where('user_id', Auth::user()->id)
             ->where('semestre_id', $semestre->id)
             ->where('estatus', MovesStatus::REGISTRADO)
             ->where('id', '!=', $this->movimientoModel->id)
+            ->limit(50)
             ->get();
 
-        if ($tipo === 'alta') {
+        $tipoNormalized = is_object($tipo) ? (string) $tipo : (string) $tipo;
+        if (strtolower($tipoNormalized) === 'alta') {
             $this->motivos = Ups::cases();
         } else {
             $this->motivos = Downs::cases();

@@ -1,26 +1,29 @@
 <div class="space-y-6">
+    @php
+    // Reverted to server-side loading for selects to avoid async-data issues.
+    @endphp
     @if ($form->outOfRange)
     {{-- Mensaje exclusivo para estudiantes --}}
     <x-alert title="Fuera de rango" negative>
-        @if($form->tipo->value == 'Alta')
+        @if($form->tipo?->value == 'Alta')
         <p>Fuera de rango para solicitar alta de materias.</p>
         @else
         <p>Fuera de rango para solicitar baja de materias.</p>
         @endif
         <p>Contacta a tu coordinador(a) de carrera para mayor información.</p>
     </x-alert>
-    @elseif(auth()->user()->es('Estudiante') and $form->tipo->value == 'Alta' and (count($form->altas) >=
+    @elseif(auth()->user()->es('Estudiante') and $form->tipo?->value == 'Alta' and (count($form->altas) >=
     $form->max_altas))
     {{-- Mensaje exclusivo para estudiantes que ya alcanzaron el máximo de solicitudes --}}
     <x-alert title="Límite alcanzado" negative>
         <p>Has alcanzado el límite de solicitudes de alta de materias.</p>
         <p>Si necesitar otro movimiento, analiza cual de los movimientos registrados ocupas menos y eliminalo.</p>
     </x-alert>
-    @includeWhen(auth()->user()->es('Estudiante') and $form->tipo->value == 'Alta', 'livewire.movimiento.slots')
+    @includeWhen(auth()->user()->es('Estudiante') and $form->tipo?->value == 'Alta', 'livewire.movimiento.slots')
     @else
     <x-errors />
 
-    @includeWhen(auth()->user()->es('Estudiante') and $form->tipo->value == 'Alta', 'livewire.movimiento.slots')
+    @includeWhen(auth()->user()->es('Estudiante') and $form->tipo?->value == 'Alta', 'livewire.movimiento.slots')
 
     {{-- Admin / Jefe / Coordinador: vista de lectura del movimiento --}}
     @if (!auth()->user()->es('Estudiante') and $form->movimientoModel->exists)
@@ -82,8 +85,8 @@
         auth()->user()->es('Administrador'))
         <div>
             <x-select wire:model.defer='form.grupo_id' id='grupo_id' name='grupo_id' :label="__('Grupo')"
-                placeholder='Selecciona un grupo' :options="$form->grupos" option-label="nombre" option-value="id"
-                option-description="materia.carrera.nombre" :searchable="true" />
+                placeholder='Selecciona un grupo' :async-data="route('api.grupos.index')" option-label="nombre" option-value="id"
+                option-description="materia.carrera.nombre" />
         </div>
         <div>
             <x-select wire:model.defer='form.motivo' id='motivo' name='motivo' :label="__('Motivo')"

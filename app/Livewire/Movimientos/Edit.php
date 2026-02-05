@@ -15,7 +15,11 @@ class Edit extends Component
 
     public function mount(Movimiento $movimiento)
     {
-        $this->form->setMovimientoModel($movimiento);
+        // Reload movimiento with the relations needed by the form to avoid N+1 on render
+        $mov = Movimiento::with(['grupo.materia.carrera', 'user.carreras', 'asociado'])
+            ->find($movimiento->id);
+
+        $this->form->setMovimientoModel($mov ?? $movimiento);
     }
 
     public function save()
