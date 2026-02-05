@@ -257,6 +257,7 @@ final class MovimientosTable extends PowerGridComponent
             }
 
             $estudiantes = User::query()
+                ->select('id', 'username', 'name')
                 ->whereIn('id', $this->datasource()->pluck('user_id')->unique())
                 ->orderBy('username')
                 ->get();
