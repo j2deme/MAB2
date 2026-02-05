@@ -68,30 +68,42 @@ Route::name('api.')->group(function () {
             return Semestre::where('activo', true)->first();
         });
 
-        return Grupo::query()
+        $query = Grupo::query()
             ->where('semestre_id', $semestre->id)
-            ->join('materias', 'grupos.materia_id', '=', 'materias.id')
-            ->join('carreras', 'materias.carrera_id', '=', 'carreras.id')
-            ->select('grupos.id', 'grupos.siglas', 'grupos.materia_id', 'materias.clave', 'materias.nombre_completo', 'materias.carrera_id', 'carreras.nombre as carrera')
-            ->when(
-                $request->search,
-                fn(Builder $query) => $query
-                    ->orWhere('clave', 'like', "%{$request->search}%")
-                    ->orWhere('nombre_completo', 'like', "%{$request->search}%")
-            )
-            ->when(
-                $request->exists('selected'),
-                fn(Builder $query) => $query->whereIn('id', $request->input('selected', [])),
-                fn(Builder $query) => $query->limit(10)
-            )
-            ->orderBy('materias.clave')
-            ->get()
-            ->map(function (Grupo $grupo) {
-                $grupo->nombre_visual = $grupo->nombre;
-                $grupo->description   = $grupo->carrera;
+            ->with(['materia' => function ($q) {
+                $q->select('id', 'clave', 'nombre_completo', 'carrera_id')
+                  ->with(['carrera' => fn($c) => $c->select('id', 'nombre', 'siglas')]);
+            }])
+            ->select('id', 'siglas', 'materia_id');
 
-                return $grupo;
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->whereHas('materia', function (Builder $q) use ($search) {
+                $q->where('clave', 'like', "%{$search}%")
+                  ->orWhere('nombre_completo', 'like', "%{$search}%");
             });
+        }
+
+        if ($request->exists('selected')) {
+            $query->whereIn('id', $request->input('selected', []));
+        } else {
+            $query->limit(10);
+        }
+
+        $grupos = $query->orderBy('id')->get()->map(function (Grupo $grupo) {
+            // Compose a human-friendly name used as option-label in selects
+            $materia = $grupo->materia;
+            $clave = $materia->clave ?? '';
+            $nombreCompleto = $materia->nombre_completo ?? '';
+            $siglas = $grupo->siglas ?? '';
+
+            $grupo->setAttribute('nombre', trim(sprintf('%s %s (%s)', $clave, $nombreCompleto, $siglas)));
+
+            // Keep nested materia.carrera so option-description paths like 'materia.carrera.nombre' work
+            return $grupo;
+        });
+
+        return $grupos;
     })->name('grupos.index');
 
     Route::get('/estudiantes', function (Request $request) {
