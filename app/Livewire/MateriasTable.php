@@ -5,7 +5,8 @@ namespace App\Livewire;
 use App\Models\Materia;
 use App\Models\Carrera;
 use Illuminate\Support\Carbon;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 use PowerComponents\LivewirePowerGrid\Button;
 use PowerComponents\LivewirePowerGrid\Column;
 use PowerComponents\LivewirePowerGrid\Exportable;
@@ -39,7 +40,7 @@ final class MateriasTable extends PowerGridComponent
         ];
     }
 
-    public function datasource(): Builder
+    public function datasource(): EloquentBuilder|QueryBuilder
     {
         return Materia::query()
             ->with('carrera')
@@ -145,7 +146,7 @@ final class MateriasTable extends PowerGridComponent
                 ->dataSource(Carrera::all())
                 ->optionLabel('nombre')
                 ->optionValue('id')
-                ->builder(function (Builder $query, $value) {
+                ->builder(function (EloquentBuilder $query, $value) {
                     return $query->where('carrera_id', $value);
                 }),
             Filter::select('semestre')
@@ -156,7 +157,7 @@ final class MateriasTable extends PowerGridComponent
                 ->dataSource($carreras)
                 ->optionLabel('label')
                 ->optionValue('value')
-                ->builder(function (Builder $query, $value) {
+                ->builder(function (EloquentBuilder $query, $value) {
                     return $query->where('carrera_id', $value);
                 }),
         ];

@@ -322,10 +322,10 @@ final class MovimientosTable extends PowerGridComponent
     {
         // Normalize tipo to enum instance when possible to avoid TypeErrors
         $tipoEnum = null;
-        if (is_object($move->tipo)) {
+        if ($move->tipo instanceof MovesType) {
             $tipoEnum = $move->tipo;
-        } elseif (is_string($move->tipo) || is_int($move->tipo)) {
-            $tipoEnum = \App\Enums\MovesType::tryFrom($move->tipo) ?? null;
+        } elseif (\is_string($move->tipo) || \is_int($move->tipo)) {
+            $tipoEnum = MovesType::tryFrom((string) $move->tipo) ?? null;
         }
 
         $icon          = $tipoEnum && method_exists($tipoEnum, 'icon') ? $tipoEnum->icon() : null;
@@ -333,7 +333,7 @@ final class MovimientosTable extends PowerGridComponent
         $colorClassMap = ['blue' => 'text-blue-600', 'red' => 'text-red-600'];
         $colorClass    = $colorClassMap[$color] ?? 'text-gray-600';
 
-        $label    = $tipoEnum ? ($tipoEnum->value ?? (string) $tipoEnum) : (is_scalar($move->tipo) ? (string) $move->tipo : '');
+        $label    = $tipoEnum ? ($tipoEnum->value ?? (string) $tipoEnum) : (\is_scalar($move->tipo) ? (string) $move->tipo : '');
         $iconName = $tipoEnum && method_exists($tipoEnum, 'icon') ? $tipoEnum->icon() : $icon;
 
         $cacheKey = 'tipo_' . ($iconName ?? 'none') . '_' . $colorClass . '_' . md5($label);
@@ -342,7 +342,7 @@ final class MovimientosTable extends PowerGridComponent
             return $this->tipoIconCache[$cacheKey];
         }
 
-        if (in_array($iconName, ['arrow-up', 'arrow-down'])) {
+        if (\in_array($iconName, ['arrow-up', 'arrow-down'])) {
             $iconHtml       = Blade::render("<x-icon name=\"{$iconName}\" class=\"w-4 h-4 {$colorClass}\" />");
             $colorTextClass = $iconName === 'arrow-up' ? 'text-blue-600' : 'text-red-600';
             $html           = '<span class="inline-flex items-center space-x-2"><span class="' . $colorTextClass . '">' . $iconHtml . '</span><span class="text-xs font-semibold">' . e($label) . '</span></span>';
@@ -358,18 +358,18 @@ final class MovimientosTable extends PowerGridComponent
     {
         // Normalize estatus to enum instance when possible
         $estatusEnum = null;
-        if (is_object($move->estatus)) {
+        if ($move->estatus instanceof MovesStatus) {
             $estatusEnum = $move->estatus;
-        } elseif (is_string($move->estatus) || is_int($move->estatus)) {
-            $estatusEnum = \App\Enums\MovesStatus::tryFrom($move->estatus) ?? null;
+        } elseif (\is_string($move->estatus) || \is_int($move->estatus)) {
+            $estatusEnum = MovesStatus::tryFrom((string) $move->estatus) ?? null;
         }
 
-        $statusKey = $estatusEnum ? ($estatusEnum->value ?? (string) $estatusEnum) : (is_scalar($move->estatus) ? (string) $move->estatus : '');
+        $statusKey = $estatusEnum ? ($estatusEnum->value ?? (string) $estatusEnum) : (\is_scalar($move->estatus) ? (string) $move->estatus : '');
         if (isset($this->estatusBadgeCache[$statusKey])) {
             return $this->estatusBadgeCache[$statusKey];
         }
 
-        $label    = $estatusEnum && method_exists($estatusEnum, 'descripcion') ? $estatusEnum->descripcion() : ($estatusEnum->value ?? (is_scalar($move->estatus) ? (string) $move->estatus : 'N/A'));
+        $label    = $estatusEnum && method_exists($estatusEnum, 'descripcion') ? $estatusEnum->descripcion() : ($estatusEnum->value ?? (\is_scalar($move->estatus) ? (string) $move->estatus : 'N/A'));
         $colorKey = $estatusEnum && method_exists($estatusEnum, 'color') ? $estatusEnum->color() : 'gray';
 
         // Cache per statusKey (small cardinality)
