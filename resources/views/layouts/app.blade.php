@@ -48,6 +48,19 @@
         @endif
 
         <!-- Page Content -->
+        @if(session('admin_impersonating'))
+        <div class="p-4 border-l-4 border-yellow-400 bg-yellow-50">
+            <div class="flex items-center justify-between">
+                <div class="text-sm text-yellow-800">Estás impersonando como <strong>{{ auth()->user()->rol->value
+                        }}</strong> - {{ auth()->user()->username ?? auth()->user()->name }}</div>
+                <form method="POST" action="{{ route('impersonate.stop') }}">
+                    @csrf
+                    <button type="submit" class="text-sm text-yellow-800 underline">Regresar al rol
+                        administrador</button>
+                </form>
+            </div>
+        </div>
+        @endif
         <main>
             {{ $slot }}
         </main>

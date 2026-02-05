@@ -74,8 +74,23 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/usuarios/upload', [UserController::class, 'batch'])->name('users.batch');
     Route::post('/usuarios/upload', [UserController::class, 'upload'])->name('users.upload');
 
+    // Impersonation (admin only)
+    Route::get('/admin/impersonate', \App\Livewire\Admin\Impersonate::class)->name('admin.impersonate');
+
+
 });
 
 
 
 require __DIR__ . '/auth.php';
+
+// Stop impersonation route
+Route::post('/impersonate/stop', function () {
+    if (!session()->has('admin_impersonator_id')) {
+        abort(403);
+    }
+    $adminId = session('admin_impersonator_id');
+    session()->forget(['admin_impersonator_id', 'admin_impersonating']);
+    \Illuminate\Support\Facades\Auth::loginUsingId($adminId);
+    return redirect()->route('dashboard');
+})->middleware(['auth'])->name('impersonate.stop');

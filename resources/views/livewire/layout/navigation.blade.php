@@ -36,6 +36,10 @@ $logout = function (Logout $logout) {
                         label="Grupos" />
                     <x-nav-link :href="route('users.index')" active="users.*" wire:navigate icon="users"
                         label="Usuarios" />
+                    @if(auth()->user()->es('Administrador'))
+                    <x-nav-link :href="route('admin.impersonate')" active="admin.impersonate" wire:navigate
+                        icon="mask-happy" label="Impersonar" />
+                    @endif
                     @endif
 
                     @if (auth()->user()->es('Estudiante'))
