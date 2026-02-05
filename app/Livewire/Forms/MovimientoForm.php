@@ -16,6 +16,7 @@ use App\Enums\MovesAnswers;
 use App\Enums\UserRoles;
 use Auth;
 use Illuminate\Support\Str;
+use Illuminate\Support\Arr;
 
 class MovimientoForm extends Form
 {
@@ -141,7 +142,16 @@ class MovimientoForm extends Form
 
     public function update(): void
     {
-        $this->movimientoModel->update($this->validate());
+        $data = $this->validate();
+
+        // Jefe y Coordinador sólo pueden modificar la resolución: respuesta, respuesta_adicional y estatus
+        if (Auth::user()->es([UserRoles::JEFE, UserRoles::COORDINADOR])) {
+            $allowed = Arr::only($data, ['respuesta', 'respuesta_adicional', 'estatus']);
+        } else {
+            $allowed = $data;
+        }
+
+        $this->movimientoModel->update($allowed);
         $this->revisaParalelo($this->movimientoModel);
         // $this->asociaMovimiento();
         //$this->reset();

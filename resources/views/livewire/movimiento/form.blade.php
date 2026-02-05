@@ -68,7 +68,7 @@
     </x-card>
     @endif
 
-    @if(!auth()->user()->es('Estudiante'))
+    @if(auth()->user()->es('Administrador'))
     <div>
         <x-select wire:model.defer="form.user_id" id="user_id" name="user_id" label="Estudiante"
             placeholder="Selecciona un estudiante" :async-data="route('api.estudiantes.index')" option-label="username"
@@ -79,7 +79,7 @@
         @enderror
     </div @endif {{-- Estudiante: mostrar campos para registrar movimiento --}} @if ((auth()->user()->es('Estudiante')
     and (count($form->altas) < $form->max_altas)) or
-        auth()->user()->es(['Administrador', 'Jefe', 'Coordinador']))
+        auth()->user()->es('Administrador'))
         <div>
             <x-select wire:model.defer='form.grupo_id' id='grupo_id' name='grupo_id' :label="__('Grupo')"
                 placeholder='Selecciona un grupo' :options="$form->grupos" option-label="nombre" option-value="id"
