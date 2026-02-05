@@ -119,7 +119,7 @@
             <x-select wire:model.defer='form.respuesta' id='respuesta' name='respuesta' :label="__('Respuesta')"
                 placeholder='Selecciona una respuesta rápida'>
                 @foreach ($form->respuestas as $respuesta)
-                <x-select.option label="{{ $respuesta->value }}" value="{{ $respuesta->value }}" />
+                <x-select.option label="{{ $respuesta['value'] }}" value="{{ $respuesta['value'] }}" />
                 @endforeach
             </x-select>
         </div>

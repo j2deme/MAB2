@@ -57,6 +57,33 @@ class MovimientoForm extends Form
 
     public function rules(): array
     {
+        // Por defecto la respuesta no es obligatoria (creación).
+        $respuestaRule = 'nullable|string';
+
+        // Determina si el actor actualmente tiene rol para resolver
+        $isResponder = Auth::check() && Auth::user()->es([UserRoles::JEFE, UserRoles::COORDINADOR]);
+        $isEditing = isset($this->movimientoModel) && ($this->movimientoModel?->exists ?? false);
+
+        // Obtén el valor textual del estatus que se está enviando/mostrando en el formulario.
+        $estatusValue = null;
+        if ($this->estatus instanceof MovesStatus) {
+            $estatusValue = $this->estatus->value;
+        } elseif (is_string($this->estatus)) {
+            $estatusValue = $this->estatus;
+        }
+
+        // Exigir respuesta cuando el estatus resultante es de tipo AUTORIZADO o RECHAZADO
+        $acceptedOrRejected = in_array($estatusValue, [
+            MovesStatus::AUTORIZADO->value,
+            MovesStatus::AUTORIZADO_JEFE->value,
+            MovesStatus::RECHAZADO->value,
+            MovesStatus::RECHAZADO_JEFE->value,
+        ], true);
+
+        if ($isResponder && $isEditing && $acceptedOrRejected) {
+            $respuestaRule = 'required|string';
+        }
+
         return [
             'user_id' => 'required',
             'semestre_id' => 'required',
@@ -66,7 +93,7 @@ class MovimientoForm extends Form
             'estatus' => 'required',
             'motivo' => 'required|string',
             'motivo_adicional' => 'nullable|string|max:250',
-            'respuesta' => 'nullable|string',
+            'respuesta' => $respuestaRule,
             'respuesta_adicional' => 'nullable|string',
             'is_paralelo' => 'required|boolean',
         ];
@@ -218,8 +245,16 @@ class MovimientoForm extends Form
     {
         $semestre = $this->getSemestreActivo();
 
-        $this->tipos      = MovesType::cases();
-        $this->respuestas = MovesAnswers::cases();
+        $this->tipos = MovesType::cases();
+
+        // Livewire serializes public properties when hydrating the component.
+        // Enum instances may not serialize reliably across the wire boundary,
+        // so convert the enum cases to a plain array of strings (value + name)
+        // that are safe to render on the client.
+        $this->respuestas = collect(MovesAnswers::cases())->map(fn($c) => [
+            'name' => $c->name,
+            'value' => $c->value,
+        ])->values()->all();
 
         // Cargar solo columnas necesarias y limitar resultados para evitar payloads grandes
         $this->grupos = Grupo::query()
