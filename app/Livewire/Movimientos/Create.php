@@ -47,6 +47,7 @@ class Create extends Component
         // Si el usuario es Administrador o Jefe, carga la lista de los estudiantes activos
         if (Auth::user()->es(['Administrador', 'Jefe'])) {
             $this->estudiantes = User::where('rol', UserRoles::ESTUDIANTE)
+                ->select('id', 'name', 'username')
                 ->orderBy('username')
                 ->get();
         }
@@ -59,6 +60,7 @@ class Create extends Component
                     fn($query) =>
                     $query->whereIn('id', $carrerasIds)
                 )
+                ->select('id', 'name', 'username')
                 ->orderBy('username')
                 ->get();
         }
