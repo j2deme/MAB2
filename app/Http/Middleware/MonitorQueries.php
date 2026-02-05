@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use App\Services\QueryMonitor;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * Middleware para monitorear queries N+1 en desarrollo/testing.
@@ -32,7 +33,7 @@ class MonitorQueries
                     'route' => optional($request->route())->getName(),
                     'uri' => $request->getRequestUri(),
                     'method' => $request->method(),
-                    'user_id' => optional(auth()->user())->id,
+                    'user_id' => Auth::id(),
                     'trace' => $e->getTraceAsString(),
                 ]);
             }
