@@ -78,17 +78,38 @@ class ListaMaterias extends Component
 
     private function injectCounts($semestreId): void
     {
-        $cacheKeyCountsBase = "lista_materias_counts_sem_{$semestreId}";
-        $counts             = Cache::remember($cacheKeyCountsBase, 5 * 60, function () use ($semestreId) {
-            return \App\Models\Materia::query()
+        $userId = Auth::id();
+        $esCoordinador = Auth::user()->es('Coordinador');
+        $carrerasFilter = $esCoordinador ? implode(',', Auth::user()->carreras->pluck('id')->toArray()) : 'todos';
+        $cacheKeyCountsBase = "lista_materias_counts_sem_{$semestreId}_user_{$userId}_carr_{$carrerasFilter}";
+        $counts             = Cache::remember($cacheKeyCountsBase, 5 * 60, function () use ($semestreId, $esCoordinador) {
+            $carrerasIds = $esCoordinador ? Auth::user()->carreras->pluck('id')->toArray() : null;
+
+            $query = \App\Models\Materia::query()
                 ->select('id')
-                ->whereHas('grupos', fn($q) => $q->where('semestre_id', $semestreId))
-                ->withCount([
-                    'movimientos as total_movimientos_count' => fn($q) => $q->where('movimientos.semestre_id', $semestreId),
-                    'movimientos as pendientes_count' => fn($q) => $q->where('movimientos.semestre_id', $semestreId)->whereIn('movimientos.estatus', ['Registrado', 'En revisión']),
-                ])
-                ->get()
-                ->keyBy('id');
+                ->whereHas('grupos', fn($q) => $q->where('semestre_id', $semestreId));
+
+            if ($esCoordinador && !empty($carrerasIds)) {
+                $query->whereIn('carrera_id', $carrerasIds);
+            }
+
+            $query->withCount([
+                'movimientos as total_movimientos_count' => function($q) use ($semestreId, $esCoordinador) {
+                    $q->where('movimientos.semestre_id', $semestreId);
+                    if ($esCoordinador) {
+                        $q->where('movimientos.is_paralelo', false);
+                    }
+                },
+                'movimientos as pendientes_count' => function($q) use ($semestreId, $esCoordinador) {
+                    $q->where('movimientos.semestre_id', $semestreId)
+                      ->whereIn('movimientos.estatus', ['Registrado', 'En revisión']);
+                    if ($esCoordinador) {
+                        $q->where('movimientos.is_paralelo', false);
+                    }
+                },
+            ]);
+
+            return $query->get()->keyBy('id');
         });
 
         // Inyectar conteos en estructura cacheada

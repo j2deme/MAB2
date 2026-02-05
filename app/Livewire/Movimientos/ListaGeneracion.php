@@ -123,14 +123,18 @@ class ListaGeneracion extends Component
 
     private function injectCounts($semestreId): void
     {
-        $cacheKeyCountsBase = "lista_generacion_counts_sem_{$semestreId}";
-        $counts             = Cache::remember($cacheKeyCountsBase, 5 * 60, function () use ($semestreId) {
+        $userId = Auth::id();
+        $esCoordinador = Auth::user()->es('Coordinador');
+        $carrerasFilter = $esCoordinador ? implode(',', Auth::user()->carreras->pluck('id')->toArray()) : 'todos';
+        $cacheKeyCountsBase = "lista_generacion_counts_sem_{$semestreId}_user_{$userId}_carr_{$carrerasFilter}";
+        $counts             = Cache::remember($cacheKeyCountsBase, 5 * 60, function () use ($semestreId, $esCoordinador) {
             $statuses = [MovesStatus::REGISTRADO, MovesStatus::REVISION];
             return Movimiento::query()
                 ->select('user_id')
                 ->where('semestre_id', $semestreId)
                 ->whereNotNull('user_id')
                 ->whereIn('estatus', $statuses)
+                ->when($esCoordinador, fn($q) => $q->where('is_paralelo', false))
                 ->groupBy('user_id')
                 ->selectRaw('count(*) as total')
                 ->pluck('total', 'user_id');
