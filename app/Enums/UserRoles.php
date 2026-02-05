@@ -9,8 +9,12 @@ enum UserRoles: string
     case COORDINADOR = 'Coordinador';
     case ESTUDIANTE = 'Estudiante';
 
-    public static function es(string $value): self
+    public static function es(string|self $value): self
     {
+        if ($value instanceof self) {
+            return $value;
+        }
+
         return match ($value) {
             'Administrador' => self::ADMIN,
             'Jefe' => self::JEFE,
