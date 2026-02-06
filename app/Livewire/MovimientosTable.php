@@ -44,6 +44,8 @@ final class MovimientosTable extends PowerGridComponent
     private array $estatusBadgeCache = [];
     private array $carreraBadgeCache = [];
     private ?string $paraleloIconHtml = null;
+    private ?string $paraleloNotHtml = null;
+    private bool $debugScriptRendered = false;
 
     public function setUp(): array
     {
@@ -394,22 +396,17 @@ final class MovimientosTable extends PowerGridComponent
 
     private function renderParaleloIcon(Movimiento $move): string
     {
-        if ($this->paraleloIconHtml !== null) {
-            // Return appropriate HTML based on paralelo flag
-            return $move->is_paralelo
-                ? $this->paraleloIconHtml
-                : $this->paraleloIconHtml . '<!--not-paralelo-->';
+        // Prepare and cache base HTML for icons once to avoid repeated Blade::render
+        if ($this->paraleloIconHtml === null || $this->paraleloNotHtml === null) {
+            $pIcon   = Blade::render('<x-icon name="letter-circle-p" bold class="w-5 h-5 text-blue-600" />');
+            $notIcon = Blade::render('<x-icon name="minus" bold class="w-5 h-5 text-gray-400" />');
+
+            $this->paraleloIconHtml = '<span class="inline-flex items-center text-sm font-semibold">' . $pIcon . '</span>';
+            $this->paraleloNotHtml  = '<span class="inline-flex items-center text-sm text-gray-400">' . $notIcon . '</span>';
         }
 
-        $pIcon   = Blade::render('<x-icon name="letter-circle-p" bold class="w-5 h-5 text-blue-600" />');
-        $notIcon = Blade::render('<x-icon name="minus" bold class="w-5 h-5 text-gray-400" />');
-
-        // Store composite HTMLs keyed by presence; we'll return correct one
-        $this->paraleloIconHtml = '<span class="inline-flex items-center text-sm font-semibold">' . $pIcon . '</span>';
-        // Append a marker for not-paralelo case to avoid re-rendering notIcon each time
-        $notHtml = $notIcon;
-
-        return $move->is_paralelo ? $this->paraleloIconHtml : $notHtml;
+        // Mostrar sólo el icono correcto (sin depuración)
+        return $move->is_paralelo ? $this->paraleloIconHtml : $this->paraleloNotHtml;
     }
 
     private function renderCarreraBadge(Movimiento $move): string

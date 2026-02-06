@@ -17,6 +17,7 @@ use App\Enums\UserRoles;
 use Auth;
 use Illuminate\Support\Str;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Log;
 
 class MovimientoForm extends Form
 {
@@ -62,7 +63,7 @@ class MovimientoForm extends Form
 
         // Determina si el actor actualmente tiene rol para resolver
         $isResponder = Auth::check() && Auth::user()->es([UserRoles::JEFE, UserRoles::COORDINADOR]);
-        $isEditing = isset($this->movimientoModel) && ($this->movimientoModel?->exists ?? false);
+        $isEditing   = isset($this->movimientoModel) && ($this->movimientoModel?->exists ?? false);
 
         // Obtén el valor textual del estatus que se está enviando/mostrando en el formulario.
         $estatusValue = null;
@@ -228,16 +229,28 @@ class MovimientoForm extends Form
 
         $owner = $move->user ?? User::with('carreras')->find($move->user_id);
 
-        $firstCareer = $owner->carreras->first();
-        if (!$firstCareer) {
-            $move->is_paralelo = false;
-        } else {
-            // Si la carrera del dueño del movimiento es diferente a la carrera de la materia, se marca como paralelo
-            $move->is_paralelo = $firstCareer->id !== $materia->carrera_id;
-        }
-        // La carrera del movimiento se iguala a la carrera de la materia
-        $move->carrera_id = $materia->carrera_id;
+        $ownerCarreras = $owner->carreras ?? collect();
 
+        // Computación explícita del valor para poder registrarlo en logs antes de persistir
+        if ($ownerCarreras->isEmpty()) {
+            $computed = false;
+        } else {
+            $computed = !$ownerCarreras->contains('id', $materia->carrera_id);
+        }
+
+        // Log no destructivo para diagnosticar falsos positivos en entornos de prueba/producción
+        Log::debug('revisaParalelo', [
+            'movimiento_id' => $move->id,
+            'user_id' => $move->user_id,
+            'owner_carreras' => $ownerCarreras->pluck('id')->all(),
+            'materia_carrera_id' => $materia->carrera_id ?? null,
+            'old_is_paralelo' => $move->is_paralelo ?? null,
+            'computed_is_paralelo' => $computed,
+        ]);
+
+        // Asignar y persistir
+        $move->is_paralelo = $computed;
+        $move->carrera_id  = $materia->carrera_id;
         $move->save();
     }
 
