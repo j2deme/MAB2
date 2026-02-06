@@ -36,7 +36,6 @@ $logout = function (Logout $logout) {
                         label="Grupos" />
                     <x-nav-link :href="route('users.index')" active="users.*" wire:navigate icon="users"
                         label="Usuarios" />
-                    {{-- Impersonar via users list; nav link removed --}}
                     @endif
 
                     @if (auth()->user()->es('Estudiante'))
@@ -92,7 +91,7 @@ $logout = function (Logout $logout) {
                         </x-dropdown.item>
                         @if(auth()->user()->es('Administrador'))
                         <x-dropdown.item :href="route('movimientos.missing')" wire:navigate>
-                            <x-icon name="clipboard-text" class="w-5 h-5 mr-1 text-gray-500" />
+                            <x-icon name="file-dashed" class="w-5 h-5 mr-1 text-gray-500" />
                             Solicitudes sin respuesta
                         </x-dropdown.item>
                         @endif
