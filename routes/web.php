@@ -58,6 +58,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/solicitudes/create', \App\Livewire\Movimientos\Create::class)->name('movimientos.create');
     Route::get('/solicitudes/create/{tipo}', \App\Livewire\Movimientos\Create::class)->name('movimientos.request');
     Route::get('/solicitudes/show/{movimiento}', \App\Livewire\Movimientos\Show::class)->name('movimientos.show');
+    // Partial HTML endpoint for modal content (AJAX)
+    Route::get('/solicitudes/partial/{movimiento}', [\App\Http\Controllers\MovimientoController::class, 'showPartial'])->name('movimientos.partial');
     Route::get('/solicitudes/update/{movimiento}', \App\Livewire\Movimientos\Edit::class)->name('movimientos.edit');
     Route::get('/solicitudes/pendientes', \App\Livewire\Movimientos\Index::class)->name('movimientos.pending');
     Route::get('/solicitudes/atendidas', \App\Livewire\Movimientos\Index::class)->name('movimientos.attended');

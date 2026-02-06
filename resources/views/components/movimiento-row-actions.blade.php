@@ -5,7 +5,8 @@ use App\Enums\MovesStatus;
 @endphp
 
 <div class="flex items-center justify-center space-x-1">
-  <x-button wire:navigate flat secondary interaction:solid href="{{ route('movimientos.show', $model->id) }}"
+  <x-button flat secondary interaction:solid
+    onclick="(function(id){ try{ if(typeof fetchMovimientoPartial==='function') fetchMovimientoPartial(id); }catch(e){} })({{ $model->id }})"
     class="relative">
     @if(auth()->user()->es(['Estudiante','Coordinador']) and $model->respuesta_adicional != null)
     @php
