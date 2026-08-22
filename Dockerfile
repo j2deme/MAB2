@@ -1,16 +1,16 @@
 FROM php:8.3-apache AS web
 RUN apt-get update && apt-get install -y \
-  libfreetype-dev \
-  libjpeg62-turbo-dev \
-  libpng-dev \
-  && docker-php-ext-configure gd --with-freetype --with-jpeg \
-  && docker-php-ext-install -j$(nproc) gd
+    libfreetype-dev \
+    libjpeg62-turbo-dev \
+    libpng-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) gd
 
 RUN apt-get update && apt-get install -y \
-  libzip-dev \
-  zip \
-  unzip \
-  git
+    libzip-dev \
+    zip \
+    unzip \
+    git
 
 # Clear cache
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
@@ -40,14 +40,18 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 # RUN composer update
 RUN composer install --no-dev
 
-RUN apt-get update && apt-get install -y \
-  software-properties-common \
-  npm
-RUN npm install npm@latest -g && \
-  npm install n -g && \
-  n latest
+# Install Node.js 20.x (includes npm)
+RUN apt-get update && apt-get install -y curl
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+RUN apt-get install -y nodejs
 
-RUN npm install && npm run build
+# Verify installation
+RUN node -v
+RUN npm -v
+
+# Build frontend assets
+RUN npm install
+RUN npm run build
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
