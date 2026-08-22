@@ -1,22 +1,21 @@
 services:
-  web:
-    image: mab:2.0
-    build:
-      target: web
-      context: .
-    env_file:
-      - .env
-    ports:
-      - "8091:80"
-    volumes:
-      - .:/var/www/html
-    networks:
-      - app-network
-    develop:
-      watch:
-        - action: sync
-          path: .
-          target: /var/www/html
+    web:
+        image: mab:2.0
+        build:
+            target: web
+            context: .
+        env_file:
+            - .env
+        ports:
+            - "8091:80"
+        volumes:
+            - .:/var/www/html
+            - /var/www/html/vendor
+            - /var/www/html/node_modules
+            - /var/www/html/public/build
+        networks:
+            - app-network
 
 networks:
-  app-network:
+    app-network:
+        driver: bridge
