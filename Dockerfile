@@ -1,4 +1,5 @@
 FROM php:8.3-apache AS web
+
 RUN apt-get update && apt-get install -y \
     libfreetype-dev \
     libjpeg62-turbo-dev \
@@ -8,6 +9,8 @@ RUN apt-get update && apt-get install -y \
 
 RUN apt-get update && apt-get install -y \
     libzip-dev \
+    libonig-dev \
+    libxml2-dev \
     zip \
     unzip \
     git
@@ -19,7 +22,13 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 RUN a2enmod rewrite
 
 # Install PHP extensions
-RUN docker-php-ext-install pdo_mysql zip bcmath
+RUN docker-php-ext-install pdo_mysql zip bcmath \
+    dom \
+    mbstring \
+    exif \
+    pcntl \
+    gd \
+    xml
 
 # Configure Apache DocumentRoot to point to Laravel public directory
 # and update Apache configuration files
