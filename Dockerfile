@@ -47,7 +47,7 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 
 # Install app dependencies
 # RUN composer update
-RUN composer install --no-dev
+RUN composer install --no-dev --prefer-dist
 
 # Install Node.js 20.x (includes npm)
 RUN apt-get update && apt-get install -y curl
@@ -62,10 +62,16 @@ RUN npm -v
 RUN npm install
 RUN npm run build
 
-# Set permissions
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
-RUN chown -R www-data bootstrap/ storage/ storage/logs/
+# Clean Node cache (optional)
+RUN rm -rf node_modules/.cache
 
-RUN php artisan optimize
-RUN php artisan config:cache
-RUN php artisan route:cache
+# Ajustar permisos para Laravel
+RUN mkdir -p storage \
+    && mkdir -p bootstrap/cache \
+    && chown -R www-data:www-data storage bootstrap/cache \
+    && chmod -R 775 storage bootstrap/cache
+
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+ENTRYPOINT ["docker-entrypoint.sh"]
