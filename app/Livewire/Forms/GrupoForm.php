@@ -5,9 +5,12 @@ namespace App\Livewire\Forms;
 use App\Models\Grupo;
 use Livewire\Form;
 use Illuminate\Validation\Rule;
+use App\Traits\UsesSemestreActivo;
 
 class GrupoForm extends Form
 {
+    use UsesSemestreActivo;
+
     public ?Grupo $grupoModel;
 
     public $siglas = '';
@@ -57,7 +60,11 @@ class GrupoForm extends Form
 
     public function store(): void
     {
-        $this->grupoModel->create($this->validate());
+        $grupo = $this->grupoModel->create($this->validate());
+
+        $this->invalidarCacheSemestre((int) $grupo->semestre_id);
+        $this->invalidarCacheMateria((int) $grupo->materia_id);
+        $this->invalidarCacheGrupo((int) $grupo->id);
 
         $this->reset();
     }
@@ -65,6 +72,10 @@ class GrupoForm extends Form
     public function update(): void
     {
         $this->grupoModel->update($this->validate());
+
+        $this->invalidarCacheSemestre((int) $this->grupoModel->semestre_id);
+        $this->invalidarCacheMateria((int) $this->grupoModel->materia_id);
+        $this->invalidarCacheGrupo((int) $this->grupoModel->id);
 
         $this->reset();
     }

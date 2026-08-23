@@ -8,62 +8,77 @@ use Illuminate\Support\Facades\DB;
 
 class MovimientoObserver
 {
-  /**
-   * Handle the Movimiento "created" event.
-   */
-  public function created(Movimiento $movimiento): void
-  {
-    $this->invalidateCaches($movimiento);
-  }
+    /**
+     * Handle the Movimiento "created" event.
+     */
+    public function created(Movimiento $movimiento): void
+    {
+        $this->invalidateCaches($movimiento);
+    }
 
-  /**
-   * Handle the Movimiento "updated" event.
-   */
-  public function updated(Movimiento $movimiento): void
-  {
-    $this->invalidateCaches($movimiento);
-  }
+    /**
+     * Handle the Movimiento "updated" event.
+     */
+    public function updated(Movimiento $movimiento): void
+    {
+        $this->invalidateCaches($movimiento);
+    }
 
-  /**
-   * Handle the Movimiento "deleted" event.
-   */
-  public function deleted(Movimiento $movimiento): void
-  {
-    $this->invalidateCaches($movimiento);
-  }
+    /**
+     * Handle the Movimiento "deleted" event.
+     */
+    public function deleted(Movimiento $movimiento): void
+    {
+        $this->invalidateCaches($movimiento);
+    }
 
-  /**
-   * Handle the Movimiento "restored" event.
-   */
-  public function restored(Movimiento $movimiento): void
-  {
-    $this->invalidateCaches($movimiento);
-  }
+    /**
+     * Handle the Movimiento "restored" event.
+     */
+    public function restored(Movimiento $movimiento): void
+    {
+        $this->invalidateCaches($movimiento);
+    }
 
-  /**
-   * Invalida todos los caches relacionados con este movimiento
-   */
-  private function invalidateCaches(Movimiento $movimiento): void
-  {
-    $semestreId = $movimiento->semestre_id;
+    /**
+     * Invalida todos los caches relacionados con este movimiento
+     */
+    private function invalidateCaches(Movimiento $movimiento): void
+    {
+        $semestreId = $movimiento->semestre_id;
 
-    $this->forgetCachePattern("lista_materias_sem_{$semestreId}_*");
-    $this->forgetCachePattern("lista_materias_counts_sem_{$semestreId}_*");
-    $this->forgetCachePattern("lista_generacion_sem_{$semestreId}_*");
-    $this->forgetCachePattern("lista_generacion_counts_sem_{$semestreId}_*");
-  }
+        Cache::forget('semestre_activo');
+        Cache::forget('semestre_activo_id');
+        Cache::forget("semestre:{$semestreId}:top-carreras");
+        Cache::forget("semestre:{$semestreId}:stats");
 
-  /**
-   * Invalida caches con sufijo variable usando la tabla del store de cache.
-   * Este patrón es seguro para cache database y evita dejar entries stale.
-   */
-  private function forgetCachePattern(string $pattern): void
-  {
-    $cacheTable  = config('cache.stores.database.table', 'cache');
-    $likePattern = str_replace('*', '%', $pattern);
+        $this->forgetCachePattern("lista_materias_sem_{$semestreId}_*");
+        $this->forgetCachePattern("lista_materias_counts_sem_{$semestreId}_*");
+        $this->forgetCachePattern("lista_generacion_sem_{$semestreId}_*");
+        $this->forgetCachePattern("lista_generacion_counts_sem_{$semestreId}_*");
+        $this->forgetCachePattern("movimientos.%");
+        $this->forgetCachePattern("semestre:{$semestreId}:*");
 
-    DB::table($cacheTable)
-      ->where('key', 'like', $likePattern)
-      ->delete();
-  }
+        if ($movimiento->grupo_id) {
+            $this->forgetCachePattern("grupo:{$movimiento->grupo_id}:*");
+        }
+
+        if ($movimiento->carrera_id) {
+            $this->forgetCachePattern("movimientos.%carr_{$movimiento->carrera_id}%");
+        }
+    }
+
+    /**
+     * Invalida caches con sufijo variable usando la tabla del store de cache.
+     * Este patrón es seguro para cache database y evita dejar entries stale.
+     */
+    private function forgetCachePattern(string $pattern): void
+    {
+        $cacheTable  = config('cache.stores.database.table', 'cache');
+        $likePattern = str_replace('*', '%', $pattern);
+
+        DB::table($cacheTable)
+            ->where('key', 'like', $likePattern)
+            ->delete();
+    }
 }

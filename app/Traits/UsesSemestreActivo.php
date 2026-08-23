@@ -5,12 +5,13 @@ namespace App\Traits;
 use App\Models\Semestre;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 trait UsesSemestreActivo
 {
   /**
    * Obtiene clave de caché granular por usuario y semestre
-   * 
+   *
    * @param string $prefix
    * @return string
    */
@@ -23,7 +24,7 @@ trait UsesSemestreActivo
 
   /**
    * Invalida caché granular para usuario actual
-   * 
+   *
    * @param string|null $prefix
    * @return void
    */
@@ -39,7 +40,7 @@ trait UsesSemestreActivo
   }
   /**
    * Obtiene el semestre activo desde caché
-   * 
+   *
    * @return Semestre|null
    */
   protected function getSemestreActivo(): ?Semestre
@@ -53,7 +54,7 @@ trait UsesSemestreActivo
 
   /**
    * Obtiene solo el ID del semestre activo desde caché
-   * 
+   *
    * @return int|null
    */
   protected function getSemestreActivoId(): ?int
@@ -68,7 +69,7 @@ trait UsesSemestreActivo
   /**
    * Invalida el caché del semestre activo y stats relacionados
    * Útil cuando se cambia el semestre activo o se actualizan movimientos
-   * 
+   *
    * @param int|null $semestreId ID del semestre a invalidar (si null, invalida todos)
    * @return void
    */
@@ -77,17 +78,24 @@ trait UsesSemestreActivo
     Cache::forget('semestre_activo');
     Cache::forget('semestre_activo_id');
 
-    // Invalidar caches de stats si se proporciona ID específico
     if ($semestreId) {
       Cache::forget("semestre:{$semestreId}:top-carreras");
       Cache::forget("semestre:{$semestreId}:stats");
+      $this->forgetCachePattern("semestre:{$semestreId}:*");
+      $this->forgetCachePattern("lista_materias_sem_{$semestreId}_*");
+      $this->forgetCachePattern("lista_materias_counts_sem_{$semestreId}_*");
+      $this->forgetCachePattern("lista_generacion_sem_{$semestreId}_*");
+      $this->forgetCachePattern("lista_generacion_counts_sem_{$semestreId}_*");
+      $this->forgetCachePattern("movimientos.%sem_{$semestreId}%");
+      $this->forgetCachePattern("movimientos.%_sem_{$semestreId}%");
+      $this->forgetCachePattern("movimientos.*sem_{$semestreId}*");
     }
   }
 
   /**
    * Invalida caché de conteos para una materia
    * Útil cuando se crean/actualizan movimientos de una materia
-   * 
+   *
    * @param int $materiaId ID de la materia
    * @return void
    */
@@ -95,12 +103,13 @@ trait UsesSemestreActivo
   {
     Cache::forget("materia:{$materiaId}:stats");
     Cache::forget("materia:{$materiaId}:estudiantes");
+    $this->forgetCachePattern("materia:{$materiaId}:*");
   }
 
   /**
    * Invalida caché de conteos para un grupo
    * Útil cuando se crean/actualizan movimientos de un grupo
-   * 
+   *
    * @param int $grupoId ID del grupo
    * @return void
    */
@@ -108,6 +117,41 @@ trait UsesSemestreActivo
   {
     Cache::forget("grupo:{$grupoId}:stats");
     Cache::forget("grupo:{$grupoId}:estudiantes");
+    $this->forgetCachePattern("grupo:{$grupoId}:*");
+  }
+
+  /**
+   * Invalida todas las entradas cache que coincidan con un patrón en el store de cache.
+   * Útil para slugs con sufijo variable y cache granular por usuario.
+   */
+  protected function forgetCachePattern(string $pattern): void
+  {
+    $cacheTable  = config('cache.stores.database.table', 'cache');
+    $likePattern = str_replace('*', '%', $pattern);
+
+    DB::table($cacheTable)
+      ->where('key', 'like', $likePattern)
+      ->delete();
+  }
+
+  /**
+   * Invalida los caches de filtros y listados que dependen de movimientos.
+   */
+  protected function invalidarCacheMovimientosPorSemestre(int $semestreId): void
+  {
+    $this->invalidarCacheSemestre($semestreId);
+    $this->forgetCachePattern('lista_materias_%');
+    $this->forgetCachePattern('lista_generacion_%');
+    $this->forgetCachePattern('movimientos.%');
+    $this->forgetCachePattern('materia:*:stats');
+    $this->forgetCachePattern('grupo:*:stats');
+  }
+
+  protected function invalidarCacheCarrera(int $carreraId): void
+  {
+    $this->forgetCachePattern("movimientos.%carr_{$carreraId}%");
+    $this->forgetCachePattern("movimientos.%user_%carr_{$carreraId}%");
+    $this->forgetCachePattern("movimientos.carreras.user_%");
   }
 }
 

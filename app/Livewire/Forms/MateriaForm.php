@@ -5,9 +5,12 @@ namespace App\Livewire\Forms;
 use App\Models\Materia;
 use Livewire\Form;
 use Illuminate\Validation\Rule;
+use App\Traits\UsesSemestreActivo;
 
 class MateriaForm extends Form
 {
+    use UsesSemestreActivo;
+
     public ?Materia $materiaModel;
 
     public $clave = '';
@@ -71,7 +74,10 @@ class MateriaForm extends Form
     public function store(): void
     {
         $this->activo = (is_null($this->activo)) ? false : $this->activo;
-        $this->materiaModel->create($this->validate());
+        $materia      = $this->materiaModel->create($this->validate());
+
+        $this->invalidarCacheSemestre((int) $materia->semestre);
+        $this->invalidarCacheMateria((int) $materia->id);
 
         $this->reset();
     }
@@ -79,6 +85,9 @@ class MateriaForm extends Form
     public function update(): void
     {
         $this->materiaModel->update($this->validate());
+
+        $this->invalidarCacheSemestre((int) $this->materiaModel->semestre);
+        $this->invalidarCacheMateria((int) $this->materiaModel->id);
 
         $this->reset();
     }

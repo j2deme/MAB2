@@ -5,9 +5,12 @@ namespace App\Livewire\Forms;
 use App\Models\Carrera;
 use Livewire\Form;
 use Illuminate\Validation\Rule;
+use App\Traits\UsesSemestreActivo;
 
 class CarreraForm extends Form
 {
+    use UsesSemestreActivo;
+
     public ?Carrera $carreraModel;
 
     public $siglas = '';
@@ -45,7 +48,10 @@ class CarreraForm extends Form
 
     public function store(): void
     {
-        $this->carreraModel->create($this->validate());
+        $carrera = $this->carreraModel->create($this->validate());
+
+        $this->invalidarCacheCarrera((int) $carrera->id);
+        $this->forgetCachePattern('movimientos.%');
 
         $this->reset();
     }
@@ -53,6 +59,9 @@ class CarreraForm extends Form
     public function update(): void
     {
         $this->carreraModel->update($this->validate());
+
+        $this->invalidarCacheCarrera((int) $this->carreraModel->id);
+        $this->forgetCachePattern('movimientos.%');
 
         $this->reset();
     }

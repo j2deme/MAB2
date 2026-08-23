@@ -209,6 +209,10 @@ class MovimientoForm extends Form
 
         $movimiento = $this->movimientoModel->create($this->validate());
         if (!is_null($movimiento)) {
+            $this->invalidarCacheMovimientosPorSemestre((int) $movimiento->semestre_id);
+            if ($movimiento->grupo_id) {
+                $this->invalidarCacheGrupo((int) $movimiento->grupo_id);
+            }
             $this->revisaParalelo($movimiento);
             // $this->asociaMovimientoo();
             //$this->reset();
@@ -229,6 +233,10 @@ class MovimientoForm extends Form
         }
 
         $this->movimientoModel->update($allowed);
+        $this->invalidarCacheMovimientosPorSemestre((int) $this->movimientoModel->semestre_id);
+        if ($this->movimientoModel->grupo_id) {
+            $this->invalidarCacheGrupo((int) $this->movimientoModel->grupo_id);
+        }
         $this->revisaParalelo($this->movimientoModel);
         // $this->asociaMovimiento();
         //$this->reset();
