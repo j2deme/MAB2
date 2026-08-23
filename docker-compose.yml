@@ -11,6 +11,12 @@ services:
         volumes:
             - .:/var/www/html
             - ./storage:/var/www/html/storage
+        healthcheck:
+            test: ["CMD", "curl", "-f", "http://localhost/health"]
+            interval: 5s
+            timeout: 3s
+            retries: 5
+            start_period: 10s
         networks:
             - app-network
 
