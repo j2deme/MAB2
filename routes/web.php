@@ -95,3 +95,7 @@ Route::post('/impersonate/stop', function () {
     \Illuminate\Support\Facades\Auth::loginUsingId($adminId);
     return redirect()->route('dashboard');
 })->middleware(['auth'])->name('impersonate.stop');
+
+Route::get('/health', function () {
+    return response()->json(['status' => 'ok'], 200);
+});
