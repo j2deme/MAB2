@@ -11,6 +11,7 @@ use App\Models\Grupo;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class MovimientoFilterService
 {
@@ -117,9 +118,11 @@ class MovimientoFilterService
    */
   public static function invalidateCacheForSemestre(Semestre $semestre): void
   {
-    $pattern = "movimientos.*sem_{$semestre->id}*";
-    // Use generic invalidation for pattern-based keys
-    Cache::flush(); // More aggressive but ensures consistency
+    $cacheTable = config('cache.stores.database.table', 'cache');
+
+    DB::table($cacheTable)
+      ->where('key', 'like', "movimientos.%sem_{$semestre->id}%")
+      ->delete();
   }
 
   /**
@@ -127,8 +130,11 @@ class MovimientoFilterService
    */
   public static function invalidateCachePattern(string $pattern): void
   {
-    // Tag-based invalidation would be more elegant, but for now we use flush
-    // In production, consider implementing tag-based caching
-    Cache::flush();
+    $cacheTable  = config('cache.stores.database.table', 'cache');
+    $likePattern = str_replace('*', '%', $pattern);
+
+    DB::table($cacheTable)
+      ->where('key', 'like', $likePattern)
+      ->delete();
   }
 }

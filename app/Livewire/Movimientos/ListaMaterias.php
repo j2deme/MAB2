@@ -78,9 +78,9 @@ class ListaMaterias extends Component
 
     private function injectCounts($semestreId): void
     {
-        $userId = Auth::id();
-        $esCoordinador = Auth::user()->es('Coordinador');
-        $carrerasFilter = $esCoordinador ? implode(',', Auth::user()->carreras->pluck('id')->toArray()) : 'todos';
+        $userId             = Auth::id();
+        $esCoordinador      = Auth::user()->es('Coordinador');
+        $carrerasFilter     = $esCoordinador ? implode(',', Auth::user()->carreras->pluck('id')->toArray()) : 'todos';
         $cacheKeyCountsBase = "lista_materias_counts_sem_{$semestreId}_user_{$userId}_carr_{$carrerasFilter}";
         $counts             = Cache::remember($cacheKeyCountsBase, 5 * 60, function () use ($semestreId, $esCoordinador) {
             $carrerasIds = $esCoordinador ? Auth::user()->carreras->pluck('id')->toArray() : null;
@@ -94,15 +94,15 @@ class ListaMaterias extends Component
             }
 
             $query->withCount([
-                'movimientos as total_movimientos_count' => function($q) use ($semestreId, $esCoordinador) {
+                'movimientos as total_movimientos_count' => function ($q) use ($semestreId, $esCoordinador) {
                     $q->where('movimientos.semestre_id', $semestreId);
                     if ($esCoordinador) {
                         $q->where('movimientos.is_paralelo', false);
                     }
                 },
-                'movimientos as pendientes_count' => function($q) use ($semestreId, $esCoordinador) {
+                'movimientos as pendientes_count' => function ($q) use ($semestreId, $esCoordinador) {
                     $q->where('movimientos.semestre_id', $semestreId)
-                      ->whereIn('movimientos.estatus', ['Registrado', 'En revisión']);
+                        ->whereIn('movimientos.estatus', ['Registrado', 'En revisión']);
                     if ($esCoordinador) {
                         $q->where('movimientos.is_paralelo', false);
                     }
@@ -126,7 +126,12 @@ class ListaMaterias extends Component
 
     public static function invalidateCache($semestreId): void
     {
-        Cache::forget("lista_materias_counts_sem_{$semestreId}");
+        $cacheTable = config('cache.stores.database.table', 'cache');
+
+        \Illuminate\Support\Facades\DB::table($cacheTable)
+            ->where('key', 'like', "lista_materias_sem_{$semestreId}_%")
+            ->orWhere('key', 'like', "lista_materias_counts_sem_{$semestreId}_%")
+            ->delete();
     }
 
     #[Layout('layouts.app')]

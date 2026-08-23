@@ -123,9 +123,9 @@ class ListaGeneracion extends Component
 
     private function injectCounts($semestreId): void
     {
-        $userId = Auth::id();
-        $esCoordinador = Auth::user()->es('Coordinador');
-        $carrerasFilter = $esCoordinador ? implode(',', Auth::user()->carreras->pluck('id')->toArray()) : 'todos';
+        $userId             = Auth::id();
+        $esCoordinador      = Auth::user()->es('Coordinador');
+        $carrerasFilter     = $esCoordinador ? implode(',', Auth::user()->carreras->pluck('id')->toArray()) : 'todos';
         $cacheKeyCountsBase = "lista_generacion_counts_sem_{$semestreId}_user_{$userId}_carr_{$carrerasFilter}";
         $counts             = Cache::remember($cacheKeyCountsBase, 5 * 60, function () use ($semestreId, $esCoordinador) {
             $statuses = [MovesStatus::REGISTRADO, MovesStatus::REVISION];
@@ -150,7 +150,12 @@ class ListaGeneracion extends Component
 
     public static function invalidateCache($semestreId): void
     {
-        Cache::forget("lista_generacion_counts_sem_{$semestreId}");
+        $cacheTable = config('cache.stores.database.table', 'cache');
+
+        \Illuminate\Support\Facades\DB::table($cacheTable)
+            ->where('key', 'like', "lista_generacion_sem_{$semestreId}_%")
+            ->orWhere('key', 'like', "lista_generacion_counts_sem_{$semestreId}_%")
+            ->delete();
     }
 
     #[Layout('layouts.app')]
