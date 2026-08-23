@@ -18,6 +18,7 @@ use Auth;
 use Illuminate\Support\Str;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 
 class MovimientoForm extends Form
 {
@@ -138,28 +139,74 @@ class MovimientoForm extends Form
         $semestre       = $this->getSemestreActivo();
         $this->semestre = $semestre;
 
-        if ($tipo == 'alta') {
-            $this->max_altas = $semestre->max_altas;
+        $tipoNormalized = $this->normalizeTipo($tipo);
 
-            $this->altas = Movimiento::where('user_id', Auth::user()->id)
-                ->where('semestre_id', $semestre->id)
-                ->where('deleted_at', null)
-                ->where('tipo', MovesType::ALTA)
-                ->get();
+        if ($tipoNormalized === 'alta') {
+            $this->max_altas = $semestre?->max_altas ?? 0;
+
+            if ($semestre) {
+                $this->altas = Movimiento::where('user_id', Auth::user()->id)
+                    ->where('semestre_id', $semestre->id)
+                    ->whereNull('deleted_at')
+                    ->where('tipo', MovesType::ALTA)
+                    ->get();
+            }
         }
 
         if (Auth::user()->es('Estudiante')) {
-            match ($tipo) {
-                'alta', 'Alta' => $this->outOfRange = !now()->between($semestre->inicio_altas, $semestre->fin_altas),
-                'baja', 'Baja' => $this->outOfRange = !now()->between($semestre->inicio_bajas, $semestre->fin_bajas),
-            };
+            $this->outOfRange = $this->isRequestOutsideRange($tipoNormalized, $semestre);
         }
 
         $this->setBackRoute(request()->headers->get('referer'));
     }
 
+    private function normalizeTipo(string|MovesType|null $tipo): string
+    {
+        if ($tipo instanceof MovesType) {
+            return strtolower($tipo->value);
+        }
+
+        return strtolower(trim((string) $tipo));
+    }
+
+    public function isRequestOutsideRange(string|MovesType|null $tipo, ?Semestre $semestre = null): bool
+    {
+        $semestre ??= $this->getSemestreActivo();
+
+        if (!$semestre) {
+            return true;
+        }
+
+        return match ($this->normalizeTipo($tipo)) {
+            'alta' => !now()->between($semestre->inicio_altas, $semestre->fin_altas),
+            'baja' => !now()->between($semestre->inicio_bajas, $semestre->fin_bajas),
+            default => false,
+        };
+    }
+
+    public function validateRequestWindow(): void
+    {
+        if (!Auth::user()?->es('Estudiante')) {
+            return;
+        }
+
+        $tipo = $this->normalizeTipo($this->tipo ?? $this->movimientoModel?->tipo);
+
+        if ($tipo === '') {
+            return;
+        }
+
+        if ($this->isRequestOutsideRange($tipo, $this->getSemestreActivo())) {
+            throw ValidationException::withMessages([
+                'tipo' => ['Fuera de rango para registrar solicitudes de ' . $tipo . ' de materias.'],
+            ]);
+        }
+    }
+
     public function store(): void
     {
+        $this->validateRequestWindow();
+
         $movimiento = $this->movimientoModel->create($this->validate());
         if (!is_null($movimiento)) {
             $this->revisaParalelo($movimiento);
@@ -170,6 +217,8 @@ class MovimientoForm extends Form
 
     public function update(): void
     {
+        $this->validateRequestWindow();
+
         $data = $this->validate();
 
         // Jefe y Coordinador sólo pueden modificar la resolución: respuesta, respuesta_adicional y estatus

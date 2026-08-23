@@ -57,6 +57,7 @@ class SemestreForm extends Form
         $this->activo = true;
         $this->semestreModel->create($this->validate());
 
+        $this->invalidarCacheSemestre();
         $this->reset();
     }
 
@@ -74,6 +75,7 @@ class SemestreForm extends Form
             $this->semestreModel->update(['activo' => true]);
         }
 
+        $this->invalidarCacheSemestre($this->semestreModel->id);
         $this->reset();
     }
 }
