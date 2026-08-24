@@ -1,7 +1,7 @@
 # ============================
 # BASE (compartido)
 # ============================
-FROM php:8.3-apache AS base
+FROM php:8.3-apache-bookworm AS base
 
 RUN apt-get update && apt-get install -y \
     libfreetype-dev \
