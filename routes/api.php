@@ -70,32 +70,34 @@ Route::name('api.')->group(function () {
 
         $query = Grupo::query()
             ->where('semestre_id', $semestre->id)
-            ->with(['materia' => function ($q) {
-                $q->select('id', 'clave', 'nombre_completo', 'carrera_id')
-                  ->with(['carrera' => fn($c) => $c->select('id', 'nombre', 'siglas')]);
-            }])
+            ->with([
+                'materia' => function ($q) {
+                    $q->select('id', 'clave', 'nombre_completo', 'carrera_id')
+                        ->with(['carrera' => fn($c) => $c->select('id', 'nombre', 'siglas')]);
+                }
+            ])
             ->select('id', 'siglas', 'materia_id');
 
         if ($request->filled('search')) {
             $search = $request->search;
             $query->whereHas('materia', function (Builder $q) use ($search) {
                 $q->where('clave', 'like', "%{$search}%")
-                  ->orWhere('nombre_completo', 'like', "%{$search}%");
+                    ->orWhere('nombre_completo', 'like', "%{$search}%");
             });
         }
 
         if ($request->exists('selected')) {
             $query->whereIn('id', $request->input('selected', []));
-        } else {
+        } elseif (!$request->filled('search')) {
             $query->limit(10);
         }
 
         $grupos = $query->orderBy('id')->get()->map(function (Grupo $grupo) {
             // Compose a human-friendly name used as option-label in selects
-            $materia = $grupo->materia;
-            $clave = $materia->clave ?? '';
+            $materia        = $grupo->materia;
+            $clave          = $materia->clave ?? '';
             $nombreCompleto = $materia->nombre_completo ?? '';
-            $siglas = $grupo->siglas ?? '';
+            $siglas         = $grupo->siglas ?? '';
 
             $grupo->setAttribute('nombre', trim(sprintf('%s %s (%s)', $clave, $nombreCompleto, $siglas)));
 
