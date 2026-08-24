@@ -13,6 +13,10 @@ if echo "$CHANGED_FILES" | grep -qE "composer.json|composer.lock"; then
     NEED_REBUILD=true
 fi
 
+if echo "$CHANGED_FILES" | grep -qE "Dockerfile|docker-compose.yml"; then
+    NEED_REBUILD=true
+fi
+
 if [ "$NEED_REBUILD" = true ]; then
     echo "Reconstruyendo imagen..."
     docker compose build --no-cache
