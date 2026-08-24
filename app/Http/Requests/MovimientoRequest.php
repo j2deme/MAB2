@@ -22,17 +22,17 @@ class MovimientoRequest extends FormRequest
     public function rules(): array
     {
         return [
-			'user_id' => 'required',
-			'semestre_id' => 'required',
-			'carrera_id' => 'required',
-			'grupo_id' => 'required',
-			'tipo' => 'required',
-			'estatus' => 'required',
-			'motivo' => 'required|string',
-			'motivo_adicional' => 'string',
-			'respuesta' => 'string',
-			'respuesta_adicional' => 'string',
-			'is_paralelo' => 'required',
+            'user_id' => 'required|exists:users,id',
+            'semestre_id' => 'required|exists:semestres,id',
+            'carrera_id' => 'nullable|integer|exists:carreras,id',
+            'grupo_id' => 'required|exists:grupos,id',
+            'tipo' => 'required|string',
+            'estatus' => 'required|string',
+            'motivo' => 'required|string',
+            'motivo_adicional' => 'nullable|string|max:200',
+            'respuesta' => 'nullable|string',
+            'respuesta_adicional' => 'nullable|string',
+            'is_paralelo' => 'nullable|boolean',
         ];
     }
 }

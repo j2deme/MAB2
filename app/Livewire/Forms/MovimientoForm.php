@@ -87,17 +87,17 @@ class MovimientoForm extends Form
         }
 
         return [
-            'user_id' => 'required',
-            'semestre_id' => 'required',
-            'carrera_id' => 'nullable',
-            'grupo_id' => 'required',
-            'tipo' => 'required',
-            'estatus' => 'required',
+            'user_id' => 'required|exists:users,id',
+            'semestre_id' => 'required|exists:semestres,id',
+            'carrera_id' => 'nullable|integer|exists:carreras,id',
+            'grupo_id' => 'required|exists:grupos,id',
+            'tipo' => 'required|string',
+            'estatus' => 'required|string',
             'motivo' => 'required|string',
-            'motivo_adicional' => 'nullable|string|max:250',
+            'motivo_adicional' => 'nullable|string|max:200',
             'respuesta' => $respuestaRule,
             'respuesta_adicional' => 'nullable|string',
-            'is_paralelo' => 'required|boolean',
+            'is_paralelo' => 'nullable|boolean',
         ];
     }
 

@@ -80,13 +80,16 @@
         @error('form.user_id')
         <x-input-error class="mt-2" :messages="$message" />
         @enderror
-    </div @endif {{-- Estudiante: mostrar campos para registrar movimiento --}} @if ((auth()->user()->es('Estudiante')
-    and (count($form->altas) < $form->max_altas)) or
+    </div>
+    @endif
+
+    {{-- Estudiante: mostrar campos para registrar movimiento --}}
+    @if ((auth()->user()->es('Estudiante') and (count($form->altas) < $form->max_altas)) or
         auth()->user()->es('Administrador'))
         <div>
             <x-select wire:model.defer='form.grupo_id' id='grupo_id' name='grupo_id' :label="__('Grupo')"
-                placeholder='Selecciona un grupo' :async-data="route('api.grupos.index')" option-label="nombre" option-value="id"
-                option-description="materia.carrera.nombre" />
+                placeholder='Selecciona un grupo' :async-data="route('api.grupos.index')" option-label="nombre"
+                option-value="id" option-description="materia.carrera.nombre" />
         </div>
         <div>
             <x-select wire:model.defer='form.motivo' id='motivo' name='motivo' :label="__('Motivo')"
