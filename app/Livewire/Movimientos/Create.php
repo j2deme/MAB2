@@ -23,6 +23,16 @@ class Create extends Component
     public MovimientoForm $form;
     public $estudiantes = [];
 
+    public function updatedFormCarreraId($value): void
+    {
+        $this->form->refreshOptionsForCareer($value);
+    }
+
+    public function updatedFormMateriaId($value): void
+    {
+        $this->form->refreshOptionsForMateria($value);
+    }
+
     public function mount(Movimiento $movimiento, $tipo = null)
     {
         $semestre                = $this->getSemestreActivo();
@@ -53,7 +63,7 @@ class Create extends Component
         }
         // Si el usuario es Coordinador, carga la lista de los estudiantes activos, en la carreras asociadas al coordinador
         if (Auth::user()->es('Coordinador')) {
-            $carrerasIds       = Auth::user()->carreras()->pluck('id');
+            $carrerasIds       = Auth::user()->carreras()->pluck('carreras.id');
             $this->estudiantes = User::where('rol', UserRoles::ESTUDIANTE)
                 ->whereHas(
                     'carreras',

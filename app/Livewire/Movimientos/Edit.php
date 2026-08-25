@@ -13,6 +13,16 @@ class Edit extends Component
     use WireUiActions;
     public MovimientoForm $form;
 
+    public function updatedFormCarreraId($value): void
+    {
+        $this->form->refreshOptionsForCareer($value);
+    }
+
+    public function updatedFormMateriaId($value): void
+    {
+        $this->form->refreshOptionsForMateria($value);
+    }
+
     public function mount(Movimiento $movimiento)
     {
         // Reload movimiento with the relations needed by the form to avoid N+1 on render

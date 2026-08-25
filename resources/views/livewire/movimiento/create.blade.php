@@ -1,6 +1,12 @@
 <x-slot name="header">
+    @php
+    $tipoMovimiento = $form->tipo instanceof \BackedEnum ? strtolower($form->tipo->value) : strtolower((string)
+    $form->tipo);
+    $tituloMovimiento = in_array($tipoMovimiento, ['alta', 'baja'], true) ? "Crear solicitud de {$tipoMovimiento}" :
+    'Crear solicitud';
+    @endphp
     <h2 class="text-xl font-semibold leading-tight text-gray-800">
-        {{ __('Create') }} solicitud
+        {{ $tituloMovimiento }}
     </h2>
 </x-slot>
 
@@ -10,7 +16,7 @@
             <div class="w-full">
                 <div class="sm:flex sm:items-center">
                     <div class="sm:flex-auto">
-                        <h1 class="text-base font-semibold leading-6 text-gray-900">{{ __('Create') }} solicitud</h1>
+                        <h1 class="text-base font-semibold leading-6 text-gray-900">{{ $tituloMovimiento }}</h1>
                     </div>
                     <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
                         @include('components.back-button', ['url' => route('movimientos.index')])

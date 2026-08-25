@@ -6,6 +6,7 @@ use App\Models\Movimiento;
 use App\Models\Semestre;
 use App\Models\Grupo;
 use App\Models\User;
+use App\Models\Carrera;
 use Livewire\Form;
 use App\Traits\UsesSemestreActivo;
 use App\Enums\MovesStatus;
@@ -19,6 +20,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Validation\Rule;
 
 class MovimientoForm extends Form
 {
@@ -29,6 +31,7 @@ class MovimientoForm extends Form
     public $user_id = '';
     public $semestre_id = '';
     public $carrera_id = '';
+    public $materia_id = '';
     public $grupo_id = '';
     public $tipo = '';
     public $estatus = '';
@@ -44,6 +47,8 @@ class MovimientoForm extends Form
     public $estatuses = [];
     public $movimientos = [];
     public $grupos = [];
+    public $carreras = [];
+    public $materias = [];
     public $motivos = [];
     public $respuestas = [];
 
@@ -65,6 +70,16 @@ class MovimientoForm extends Form
         // Determina si el actor actualmente tiene rol para resolver
         $isResponder = Auth::check() && Auth::user()->es([UserRoles::JEFE, UserRoles::COORDINADOR]);
         $isEditing   = isset($this->movimientoModel) && ($this->movimientoModel?->exists ?? false);
+        $groupRule   = ['required', 'exists:grupos,id'];
+
+        if (Auth::check() && Auth::user()->es(UserRoles::ESTUDIANTE)) {
+            $groupRule = [
+                'required',
+                Rule::exists('grupos', 'id')->where(fn($query) => $query
+                    ->where('semestre_id', $this->getSemestreActivoId())
+                    ->where('is_disponible', true)),
+            ];
+        }
 
         // Obtén el valor textual del estatus que se está enviando/mostrando en el formulario.
         $estatusValue = null;
@@ -90,7 +105,7 @@ class MovimientoForm extends Form
             'user_id' => 'required|exists:users,id',
             'semestre_id' => 'required|exists:semestres,id',
             'carrera_id' => 'nullable|integer|exists:carreras,id',
-            'grupo_id' => 'required|exists:grupos,id',
+            'grupo_id' => $groupRule,
             'tipo' => 'required|string',
             'estatus' => 'required|string',
             'motivo' => 'required|string',
@@ -117,6 +132,7 @@ class MovimientoForm extends Form
         $this->semestre_id         = $this->movimientoModel->semestre_id;
         $this->carrera_id          = $this->movimientoModel->carrera_id;
         $this->grupo_id            = $this->movimientoModel->grupo_id;
+        $this->materia_id          = $this->movimientoModel->grupo?->materia_id ?? '';
         $this->tipo                = $this->movimientoModel->tipo;
         $this->estatus             = $this->movimientoModel->estatus;
         $this->motivo              = $this->movimientoModel->motivo;
@@ -158,6 +174,19 @@ class MovimientoForm extends Form
         }
 
         $this->setBackRoute(request()->headers->get('referer'));
+    }
+
+    public function refreshOptionsForCareer($value): void
+    {
+        $this->materia_id = '';
+        $this->grupo_id   = '';
+        $this->cargaOpcionesGrupo($value);
+    }
+
+    public function refreshOptionsForMateria($value): void
+    {
+        $this->grupo_id = '';
+        $this->cargaGruposPorMateria($value);
     }
 
     private function normalizeTipo(string|MovesType|null $tipo): string
@@ -206,6 +235,8 @@ class MovimientoForm extends Form
     public function store(): void
     {
         $this->validateRequestWindow();
+        $this->normalizeEnumFields();
+        $this->validateStudentGroupSelection();
 
         $movimiento = $this->movimientoModel->create($this->validate());
         if (!is_null($movimiento)) {
@@ -222,6 +253,9 @@ class MovimientoForm extends Form
     public function update(): void
     {
         $this->validateRequestWindow();
+        $this->normalizeEnumFields();
+        $this->validateResponderStatus();
+        $this->validateStudentGroupSelection();
 
         $data = $this->validate();
 
@@ -240,6 +274,53 @@ class MovimientoForm extends Form
         $this->revisaParalelo($this->movimientoModel);
         // $this->asociaMovimiento();
         //$this->reset();
+    }
+
+    private function normalizeEnumFields(): void
+    {
+        if ($this->tipo instanceof MovesType) {
+            $this->tipo = $this->tipo->value;
+        }
+
+        if ($this->estatus instanceof MovesStatus) {
+            $this->estatus = $this->estatus->value;
+        }
+    }
+
+    private function validateResponderStatus(): void
+    {
+        if (!Auth::check() || !Auth::user()->es([UserRoles::JEFE, UserRoles::COORDINADOR])) {
+            return;
+        }
+
+        $allowed = Auth::user()->es(UserRoles::JEFE)
+            ? [MovesStatus::REGISTRADO->value, MovesStatus::REVISION->value, MovesStatus::RECHAZADO_JEFE->value, MovesStatus::AUTORIZADO_JEFE->value]
+            : [MovesStatus::REGISTRADO->value, MovesStatus::REVISION->value, MovesStatus::RECHAZADO->value, MovesStatus::AUTORIZADO->value];
+
+        if (!in_array($this->estatus, $allowed, true)) {
+            throw ValidationException::withMessages([
+                'estatus' => ['El estatus seleccionado no está permitido para este rol.'],
+            ]);
+        }
+    }
+
+    private function validateStudentGroupSelection(): void
+    {
+        if (!Auth::check() || !Auth::user()->es(UserRoles::ESTUDIANTE)) {
+            return;
+        }
+
+        $grupo     = Grupo::with('materia')->find($this->grupo_id);
+        $tipo      = $this->normalizeTipo($this->tipo);
+        $carreraId = $tipo === 'baja'
+            ? Auth::user()->carreras()->value('carreras.id')
+            : $this->carrera_id;
+
+        if (!$grupo || (int) $grupo->materia_id !== (int) $this->materia_id || ($carreraId && (int) $grupo->materia->carrera_id !== (int) $carreraId)) {
+            throw ValidationException::withMessages([
+                'grupo_id' => ['El grupo seleccionado no corresponde a la materia o carrera indicada.'],
+            ]);
+        }
     }
 
     private function asociaMovimiento()
@@ -313,7 +394,8 @@ class MovimientoForm extends Form
 
     private function cargaDesplegables($tipo = '')
     {
-        $semestre = $this->getSemestreActivo();
+        $semestre       = $this->getSemestreActivo();
+        $this->semestre = $semestre;
 
         $this->tipos = MovesType::cases();
 
@@ -326,41 +408,7 @@ class MovimientoForm extends Form
             'value' => $c->value,
         ])->values()->all();
 
-        // Cargar solo columnas necesarias y limitar resultados para evitar payloads grandes
-        $this->grupos = Grupo::query()
-            ->select('id', 'materia_id', 'siglas', 'semestre_id')
-            ->where('semestre_id', $semestre->id)
-            ->where('is_disponible', true)
-            ->with([
-                'materia' => function ($q) {
-                    $q->select('id', 'nombre_completo', 'clave', 'carrera_id')
-                        ->with(['carrera' => fn($c) => $c->select('id', 'nombre', 'siglas')]);
-                }
-            ])
-            ->orderBy('siglas')
-            ->limit(500)
-            ->get();
-
-        // Si estamos editando y el grupo actual no está en la lista (por el limit), agréguelo.
-        if ($this->movimientoModel?->grupo_id) {
-            $current = Grupo::query()
-                ->select('id', 'materia_id', 'siglas', 'semestre_id')
-                ->with([
-                    'materia' => function ($q) {
-                        $q->select('id', 'nombre_completo', 'clave', 'carrera_id')
-                            ->with(['carrera' => fn($c) => $c->select('id', 'nombre', 'siglas')]);
-                    }
-                ])
-                ->find($this->movimientoModel->grupo_id);
-
-            if ($current) {
-                $gruposCollection = $this->grupos instanceof \Illuminate\Support\Collection ? $this->grupos : collect($this->grupos);
-                if (!$gruposCollection->contains('id', $current->id)) {
-                    $gruposCollection->push($current);
-                }
-                $this->grupos = $gruposCollection;
-            }
-        }
+        $this->cargaOpcionesGrupo($this->carrera_id ?: Auth::user()->carreras()->value('carreras.id'));
 
         $this->movimientos = Movimiento::where('user_id', Auth::user()->id)
             ->where('semestre_id', $semestre->id)
@@ -381,6 +429,54 @@ class MovimientoForm extends Form
             UserRoles::COORDINADOR => $this->estatuses = [MovesStatus::REGISTRADO, MovesStatus::REVISION, MovesStatus::RECHAZADO, MovesStatus::AUTORIZADO],
             default => $this->estatuses = MovesStatus::cases()
         };
+    }
+
+    private function cargaOpcionesGrupo($carreraId = null): void
+    {
+        $this->carreras = Carrera::query()
+            ->whereHas('materias.grupos', fn($query) => $query
+                ->where('semestre_id', $this->semestre->id)
+                ->where('is_disponible', true))
+            ->orderBy('nombre')
+            ->get(['id', 'nombre', 'siglas']);
+
+        if (Auth::user()->es('Estudiante')) {
+            $studentCareerId  = Auth::user()->carreras()->value('carreras.id');
+            $carreraId        = $this->normalizeTipo($this->tipo) === 'baja' ? $studentCareerId : $carreraId;
+            $this->carrera_id = $carreraId;
+
+            if ($this->normalizeTipo($this->tipo) === 'baja') {
+                $this->carreras = $this->carreras->where('id', $studentCareerId)->values();
+            }
+        }
+
+        $filtered = Grupo::query()
+            ->select('id', 'materia_id', 'siglas', 'semestre_id')
+            ->where('semestre_id', $this->semestre->id)
+            ->where('is_disponible', true)
+            ->when($carreraId, fn($query) => $query->whereHas('materia', fn($materia) => $materia->where('carrera_id', $carreraId)))
+            ->when($this->materia_id, fn($query) => $query->where('materia_id', $this->materia_id))
+            ->with([
+                'materia' => fn($query) => $query
+                    ->select('id', 'nombre_completo', 'clave', 'carrera_id')
+                    ->with(['carrera' => fn($career) => $career->select('id', 'nombre', 'siglas')])
+            ])
+            ->orderBy('siglas')
+            ->get();
+
+        $this->materias = $filtered->pluck('materia')
+            ->filter()
+            ->unique('id')
+            ->sortBy('nombre_completo')
+            ->values();
+
+        $this->grupos = $filtered->values();
+    }
+
+    private function cargaGruposPorMateria($materiaId): void
+    {
+        $this->materia_id = $materiaId;
+        $this->cargaOpcionesGrupo($this->carrera_id);
     }
 
     private function setBackRoute($previous)
