@@ -41,11 +41,13 @@ Route::name('api.')->group(function () {
         return Materia::query()
             ->with('carrera')
             ->select('id', 'clave', 'nombre_completo', 'carrera_id')
+            ->when($request->filled('carrera_id'), fn(Builder $query) => $query->where('carrera_id', $request->integer('carrera_id')))
             ->when(
                 $request->search,
                 fn(Builder $query) => $query
-                    ->orWhere('clave', 'like', "%{$request->search}%")
-                    ->orWhere('nombre_completo', 'like', "%{$request->search}%")
+                    ->where(fn(Builder $searchQuery) => $searchQuery
+                        ->where('clave', 'like', "%{$request->search}%")
+                        ->orWhere('nombre_completo', 'like', "%{$request->search}%"))
             )
             ->when(
                 $request->exists('selected'),
@@ -78,11 +80,24 @@ Route::name('api.')->group(function () {
             ])
             ->select('id', 'siglas', 'materia_id');
 
+        if ($request->filled('carrera_id')) {
+            $query->whereHas('materia', fn(Builder $q) => $q->where('carrera_id', $request->integer('carrera_id')));
+        }
+
+        if ($request->filled('materia_id')) {
+            $query->where('materia_id', $request->integer('materia_id'));
+        }
+
+        if ($request->boolean('available')) {
+            $query->where('is_disponible', true);
+        }
+
         if ($request->filled('search')) {
             $search = $request->search;
             $query->whereHas('materia', function (Builder $q) use ($search) {
-                $q->where('clave', 'like', "%{$search}%")
-                    ->orWhere('nombre_completo', 'like', "%{$search}%");
+                $q->where(fn(Builder $searchQuery) => $searchQuery
+                    ->where('clave', 'like', "%{$search}%")
+                    ->orWhere('nombre_completo', 'like', "%{$search}%"));
             });
         }
 

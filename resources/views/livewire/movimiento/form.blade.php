@@ -87,16 +87,13 @@
     @if ((auth()->user()->es('Estudiante') and (count($form->altas) < $form->max_altas)) or
         auth()->user()->es('Administrador'))
         @if (auth()->user()->es('Estudiante'))
-        <div class="relative rounded-lg"
+        <div wire:key="materia-container-{{ $form->carrera_id ?: 'none' }}" class="relative rounded-lg"
             wire:loading.class="shadow-[0_0_0_3px_rgba(59,130,246,0.22),0_0_18px_rgba(59,130,246,0.7)] animate-pulse"
             wire:target="form.carrera_id">
             <x-select wire:model.live="form.carrera_id" id="carrera_id" name="carrera_id"
                 label="Carrera donde se imparte" placeholder="Selecciona una carrera" searchable
-                wire:loading.attr="disabled" wire:target="form.carrera_id" :disabled="$form->tipo?->value == 'Baja'">
-                @foreach ($form->carreras as $carrera)
-                <x-select.option label="{{ $carrera['nombre'] }}" value="{{ $carrera['id'] }}" />
-                @endforeach
-            </x-select>
+                wire:loading.attr="disabled" wire:target="form.carrera_id" :async-data="route('api.carreras.index')"
+                option-label="nombre" option-value="id" :disabled="$form->tipo?->value == 'Baja'" />
             <span class="mt-1 hidden items-center justify-end gap-1 text-xs font-medium text-blue-600" wire:loading.flex
                 wire:target="form.carrera_id">
                 <x-icon name="spinner-gap" class="h-3.5 w-3.5 animate-spin" />
@@ -108,12 +105,9 @@
             wire:target="form.carrera_id,form.materia_id">
             <x-select wire:model.live="form.materia_id" id="materia_id" name="materia_id" label="Materia"
                 placeholder="Busca una materia por nombre o clave" searchable wire:loading.attr="disabled"
-                wire:target="form.carrera_id,form.materia_id" :disabled="!$form->carrera_id">
-                @foreach ($form->materias as $materia)
-                <x-select.option label="{{ $materia['nombre_completo'] }} ({{ $materia['clave'] }})"
-                    value="{{ $materia['id'] }}" />
-                @endforeach
-            </x-select>
+                wire:target="form.carrera_id,form.materia_id"
+                :async-data="route('api.materias.index', ['carrera_id' => $form->carrera_id])"
+                option-label="nombre_visual" option-value="id" :disabled="!$form->carrera_id" />
             <span class="mt-1 hidden items-center justify-end gap-1 text-xs font-medium text-blue-600" wire:loading.flex
                 wire:target="form.carrera_id,form.materia_id">
                 <x-icon name="spinner-gap" class="h-3.5 w-3.5 animate-spin" />
@@ -123,14 +117,16 @@
         <div class="relative rounded-lg"
             wire:loading.class="shadow-[0_0_0_3px_rgba(59,130,246,0.22),0_0_18px_rgba(59,130,246,0.7)] animate-pulse"
             wire:target="form.carrera_id,form.materia_id">
-            <x-select wire:model.defer="form.grupo_id" id="grupo_id" name="grupo_id" label="Grupo"
-                placeholder="Selecciona un grupo" wire:loading.attr="disabled"
-                wire:target="form.carrera_id,form.materia_id" :disabled="!$form->materia_id">
+            <label for="grupo_id" class="block text-sm font-medium text-gray-700">Grupo</label>
+            <select wire:model.defer="form.grupo_id" id="grupo_id" name="grupo_id" wire:loading.attr="disabled"
+                wire:target="form.carrera_id,form.materia_id" @disabled(!$form->materia_id)
+                class="mt-1 block w-full rounded-md border-gray-300 bg-white text-sm shadow-sm focus:border-primary-500
+                focus:ring-primary-500 disabled:bg-gray-100 disabled:text-gray-400">
+                <option value="">Selecciona un grupo</option>
                 @foreach ($form->grupos as $grupo)
-                <x-select.option label="{{ $grupo['siglas'] }} ({{ $grupo['materia']['clave'] }})"
-                    value="{{ $grupo['id'] }}" />
+                <option value="{{ $grupo['id'] }}">{{ $grupo['siglas'] }}</option>
                 @endforeach
-            </x-select>
+            </select>
             <span class="mt-1 hidden items-center justify-end gap-1 text-xs font-medium text-blue-600" wire:loading.flex
                 wire:target="form.carrera_id,form.materia_id">
                 <x-icon name="spinner-gap" class="h-3.5 w-3.5 animate-spin" />

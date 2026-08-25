@@ -6,7 +6,6 @@ use App\Models\Movimiento;
 use App\Models\Semestre;
 use App\Models\Grupo;
 use App\Models\User;
-use App\Models\Carrera;
 use Livewire\Form;
 use App\Traits\UsesSemestreActivo;
 use App\Enums\MovesStatus;
@@ -47,8 +46,6 @@ class MovimientoForm extends Form
     public $estatuses = [];
     public $movimientos = [];
     public $grupos = [];
-    public $carreras = [];
-    public $materias = [];
     public $motivos = [];
     public $respuestas = [];
 
@@ -180,13 +177,24 @@ class MovimientoForm extends Form
     {
         $this->materia_id = '';
         $this->grupo_id   = '';
-        $this->cargaOpcionesGrupo($value);
+        $this->grupos     = [];
     }
 
     public function refreshOptionsForMateria($value): void
     {
-        $this->grupo_id = '';
-        $this->cargaGruposPorMateria($value);
+        $this->materia_id = $value;
+        $this->grupo_id   = '';
+
+        $this->grupos = Grupo::query()
+            ->select('id', 'siglas')
+            ->where('semestre_id', $this->getSemestreActivoId())
+            ->where('materia_id', $this->materia_id)
+            ->where('is_disponible', true)
+            ->when($this->carrera_id, fn($query) => $query->whereHas('materia', fn($materia) => $materia->where('carrera_id', $this->carrera_id)))
+            ->orderBy('siglas')
+            ->get()
+            ->map(fn($grupo) => ['id' => $grupo->id, 'siglas' => $grupo->siglas])
+            ->all();
     }
 
     private function normalizeTipo(string|MovesType|null $tipo): string
@@ -408,7 +416,9 @@ class MovimientoForm extends Form
             'value' => $c->value,
         ])->values()->all();
 
-        $this->cargaOpcionesGrupo($this->carrera_id ?: Auth::user()->carreras()->value('carreras.id'));
+        if (Auth::user()->es('Estudiante') && !$this->carrera_id) {
+            $this->carrera_id = Auth::user()->carreras()->value('carreras.id');
+        }
 
         $this->movimientos = Movimiento::where('user_id', Auth::user()->id)
             ->where('semestre_id', $semestre->id)
@@ -429,73 +439,6 @@ class MovimientoForm extends Form
             UserRoles::COORDINADOR => $this->estatuses = [MovesStatus::REGISTRADO, MovesStatus::REVISION, MovesStatus::RECHAZADO, MovesStatus::AUTORIZADO],
             default => $this->estatuses = MovesStatus::cases()
         };
-    }
-
-    private function cargaOpcionesGrupo($carreraId = null): void
-    {
-        $carreras = Carrera::query()
-            ->whereHas('materias.grupos', fn($query) => $query
-                ->where('semestre_id', $this->semestre->id)
-                ->where('is_disponible', true))
-            ->orderBy('nombre')
-            ->get(['id', 'nombre', 'siglas']);
-
-        if (Auth::user()->es('Estudiante')) {
-            $studentCareerId  = Auth::user()->carreras()->value('carreras.id');
-            $carreraId        = $this->normalizeTipo($this->tipo) === 'baja' ? $studentCareerId : $carreraId;
-            $this->carrera_id = $carreraId;
-
-            if ($this->normalizeTipo($this->tipo) === 'baja') {
-                $carreras = $carreras->where('id', $studentCareerId)->values();
-            }
-        }
-
-        $filtered = Grupo::query()
-            ->select('id', 'materia_id', 'siglas', 'semestre_id')
-            ->where('semestre_id', $this->semestre->id)
-            ->where('is_disponible', true)
-            ->when($carreraId, fn($query) => $query->whereHas('materia', fn($materia) => $materia->where('carrera_id', $carreraId)))
-            ->when($this->materia_id, fn($query) => $query->where('materia_id', $this->materia_id))
-            ->with([
-                'materia' => fn($query) => $query
-                    ->select('id', 'nombre_completo', 'clave', 'carrera_id')
-                    ->with(['carrera' => fn($career) => $career->select('id', 'nombre', 'siglas')])
-            ])
-            ->orderBy('siglas')
-            ->get();
-
-        $materias = $filtered->pluck('materia')
-            ->filter()
-            ->unique('id')
-            ->sortBy('nombre_completo')
-            ->values();
-
-        $this->carreras = $carreras->map(fn($carrera) => [
-            'id' => $carrera->id,
-            'nombre' => $carrera->nombre,
-            'siglas' => $carrera->siglas,
-        ])->values()->all();
-
-        $this->materias = $materias->map(fn($materia) => [
-            'id' => $materia->id,
-            'nombre_completo' => $materia->nombre_completo,
-            'clave' => $materia->clave,
-        ])->values()->all();
-
-        $this->grupos = $filtered->values()->map(fn($grupo) => [
-            'id' => $grupo->id,
-            'siglas' => $grupo->siglas,
-            'materia_id' => $grupo->materia_id,
-            'materia' => [
-                'clave' => $grupo->materia?->clave,
-            ],
-        ])->values()->all();
-    }
-
-    private function cargaGruposPorMateria($materiaId): void
-    {
-        $this->materia_id = $materiaId;
-        $this->cargaOpcionesGrupo($this->carrera_id);
     }
 
     private function setBackRoute($previous)
