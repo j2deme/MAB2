@@ -49,7 +49,8 @@ RUN rm -rf node_modules/.cache
 # Permisos Laravel
 RUN mkdir -p storage bootstrap/cache \
     && chown -R www-data:www-data storage bootstrap/cache \
-    && chmod -R 775 storage bootstrap/cache
+    && find storage bootstrap/cache -type d -exec chmod 2775 {} + \
+    && find storage bootstrap/cache -type f -exec chmod 664 {} +
 
 # Entrypoint
 COPY docker-entrypoint.sh /usr/local/bin/
