@@ -433,7 +433,7 @@ class MovimientoForm extends Form
 
     private function cargaOpcionesGrupo($carreraId = null): void
     {
-        $this->carreras = Carrera::query()
+        $carreras = Carrera::query()
             ->whereHas('materias.grupos', fn($query) => $query
                 ->where('semestre_id', $this->semestre->id)
                 ->where('is_disponible', true))
@@ -446,7 +446,7 @@ class MovimientoForm extends Form
             $this->carrera_id = $carreraId;
 
             if ($this->normalizeTipo($this->tipo) === 'baja') {
-                $this->carreras = $this->carreras->where('id', $studentCareerId)->values();
+                $carreras = $carreras->where('id', $studentCareerId)->values();
             }
         }
 
@@ -464,13 +464,32 @@ class MovimientoForm extends Form
             ->orderBy('siglas')
             ->get();
 
-        $this->materias = $filtered->pluck('materia')
+        $materias = $filtered->pluck('materia')
             ->filter()
             ->unique('id')
             ->sortBy('nombre_completo')
             ->values();
 
-        $this->grupos = $filtered->values();
+        $this->carreras = $carreras->map(fn($carrera) => [
+            'id' => $carrera->id,
+            'nombre' => $carrera->nombre,
+            'siglas' => $carrera->siglas,
+        ])->values()->all();
+
+        $this->materias = $materias->map(fn($materia) => [
+            'id' => $materia->id,
+            'nombre_completo' => $materia->nombre_completo,
+            'clave' => $materia->clave,
+        ])->values()->all();
+
+        $this->grupos = $filtered->values()->map(fn($grupo) => [
+            'id' => $grupo->id,
+            'siglas' => $grupo->siglas,
+            'materia_id' => $grupo->materia_id,
+            'materia' => [
+                'clave' => $grupo->materia?->clave,
+            ],
+        ])->values()->all();
     }
 
     private function cargaGruposPorMateria($materiaId): void
