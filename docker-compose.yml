@@ -2,7 +2,6 @@ services:
     web:
         image: mab:2.0
         build:
-            target: web
             context: .
         env_file:
             - .env
@@ -10,16 +9,21 @@ services:
             - "8091:80"
         volumes:
             - .:/var/www/html
-            - ./storage:/var/www/html/storage
+            - vendor:/var/www/html/vendor
+            - node_modules:/var/www/html/node_modules
+            - build:/var/www/html/public/build
         healthcheck:
             test: ["CMD", "curl", "-f", "http://localhost/health"]
-            interval: 5s
-            timeout: 3s
-            retries: 5
-            start_period: 10s
+            start_period: 30s
+            retries: 10
         networks:
             - app-network
 
 networks:
     app-network:
         driver: bridge
+
+volumes:
+    vendor:
+    node_modules:
+    build:
