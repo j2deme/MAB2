@@ -2,7 +2,7 @@
 $cols = ($slot->isEmpty()) ? 1 : 2;
 @endphp
 <div class="grid grid-cols-{{ $cols }}">
-    <div class="flex flex-col px-3">
+    <div class="flex flex-col items-center justify-center px-3 gap-1 {{ $slot->isEmpty() ? '' : 'pr-3' }}">
         <x-icon name="caret-up" fill {{ $attributes }} class="text-blue-500 dark:text-blue-400" />
         <x-icon name="caret-down" fill {{ $attributes }} class="text-red-500 dark:text-red-400" />
     </div>
