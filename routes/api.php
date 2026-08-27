@@ -47,7 +47,12 @@ Route::name('api.')->group(function () {
             // for a specific `carrera_id` without a search term or selected set.
             ->when(function () use ($request) {
                 return $request->boolean('available')
-                    || ($request->filled('carrera_id') && !$request->filled('search') && !$request->exists('selected'));
+                    // Treat as available when a carrera is selected and the client
+                    // is requesting the default list (no search, no selected items).
+                    // Use `filled('selected')` instead of `exists` because some
+                    // clients send an empty `selected` param which would make
+                    // `exists` true and skip the available filter.
+                    || ($request->filled('carrera_id') && !$request->filled('search') && !$request->filled('selected'));
             }, function (Builder $query) {
                 $semestre = \Cache::remember('semestre_activo', 3600, function () {
                     return Semestre::where('activo', true)->first();
@@ -68,7 +73,8 @@ Route::name('api.')->group(function () {
             ->orderBy('clave')
             ->get()
             ->map(function (Materia $materia) {
-                $materia->nombre_visual = "{$materia->carrera->siglas} - {$materia->nombre_completo} ({$materia->clave})";
+                $siglas                 = optional($materia->carrera)->siglas ?? '';
+                $materia->nombre_visual = "{$siglas} - {$materia->nombre_completo} ({$materia->clave})";
 
                 return $materia;
             });
@@ -80,6 +86,12 @@ Route::name('api.')->group(function () {
         $semestre = \Cache::remember('semestre_activo', 3600, function () {
             return Semestre::where('activo', true)->first();
         });
+
+        // If there is no active semester, return an empty collection early to
+        // avoid queries that assume a semester ID (which would throw an error).
+        if (!$semestre) {
+            return collect();
+        }
 
         $query = Grupo::query()
             ->where('semestre_id', $semestre->id)
@@ -119,8 +131,8 @@ Route::name('api.')->group(function () {
         $grupos = $query->orderBy('id')->get()->map(function (Grupo $grupo) {
             // Compose a human-friendly name used as option-label in selects
             $materia        = $grupo->materia;
-            $clave          = $materia->clave ?? '';
-            $nombreCompleto = $materia->nombre_completo ?? '';
+            $clave          = optional($materia)->clave ?? '';
+            $nombreCompleto = optional($materia)->nombre_completo ?? '';
             $siglas         = $grupo->siglas ?? '';
 
             $grupo->setAttribute('nombre', trim(sprintf('%s %s (%s)', $clave, $nombreCompleto, $siglas)));
