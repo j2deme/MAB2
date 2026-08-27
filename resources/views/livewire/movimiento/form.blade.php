@@ -106,8 +106,8 @@
             <x-select wire:model.live="form.materia_id" id="materia_id" name="materia_id" label="Materia"
                 placeholder="Busca una materia por nombre o clave" searchable wire:loading.attr="disabled"
                 wire:target="form.carrera_id,form.materia_id"
-                :async-data="route('api.materias.index', ['carrera_id' => $form->carrera_id])"
-                option-label="nombre_visual" option-value="id" :disabled="!$form->carrera_id" />
+                :async-data="route('api.materias.index', ['carrera_id' => $form->carrera_id, 'available' => 1])"
+                option-label="nombre_visual" option-value="id" always-fetch :disabled="!$form->carrera_id" />
             <span class="mt-1 hidden items-center justify-end gap-1 text-xs font-medium text-blue-600" wire:loading.flex
                 wire:target="form.carrera_id,form.materia_id">
                 <x-icon name="spinner-gap" class="h-3.5 w-3.5 animate-spin" />

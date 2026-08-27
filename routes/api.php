@@ -26,11 +26,8 @@ Route::name('api.')->group(function () {
                     ->orWhere('nombre', 'like', "%{$request->search}%")
                     ->orWhere('siglas', 'like', "%{$request->search}%")
             )
-            ->when(
-                $request->exists('selected'),
-                fn(Builder $query) => $query->whereIn('id', $request->input('selected', [])),
-                fn(Builder $query) => $query->limit(10)
-            )
+            ->when($request->exists('selected'), fn(Builder $query) => $query->whereIn('id', $request->input('selected', [])))
+            ->unless($request->filled('search') || $request->filled('carrera_id') || $request->exists('selected'), fn(Builder $query) => $query->limit(10))
             ->orderBy('nombre')
             ->get();
     })->name('carreras.index');
@@ -42,6 +39,24 @@ Route::name('api.')->group(function () {
             ->with('carrera')
             ->select('id', 'clave', 'nombre_completo', 'carrera_id')
             ->when($request->filled('carrera_id'), fn(Builder $query) => $query->where('carrera_id', $request->integer('carrera_id')))
+            // Some clients (WireUI async selects) may discard querystring params
+            // when performing subsequent fetches (search/pagination). To avoid
+            // returning unsafely unfiltered materias when a carrera is selected
+            // but no explicit `available` flag is present, we treat the request
+            // as requesting only available materias by default when called
+            // for a specific `carrera_id` without a search term or selected set.
+            ->when(function () use ($request) {
+                return $request->boolean('available')
+                    || ($request->filled('carrera_id') && !$request->filled('search') && !$request->exists('selected'));
+            }, function (Builder $query) {
+                $semestre = \Cache::remember('semestre_activo', 3600, function () {
+                    return Semestre::where('activo', true)->first();
+                });
+
+                $query->whereHas('grupos', fn(Builder $q) => $q
+                    ->where('semestre_id', $semestre?->id)
+                    ->where('is_disponible', true));
+            })
             ->when(
                 $request->search,
                 fn(Builder $query) => $query
@@ -49,11 +64,7 @@ Route::name('api.')->group(function () {
                         ->where('clave', 'like', "%{$request->search}%")
                         ->orWhere('nombre_completo', 'like', "%{$request->search}%"))
             )
-            ->when(
-                $request->exists('selected'),
-                fn(Builder $query) => $query->whereIn('id', $request->input('selected', [])),
-                fn(Builder $query) => $query->limit(10)
-            )
+            ->when($request->exists('selected'), fn(Builder $query) => $query->whereIn('id', $request->input('selected', [])))
             ->orderBy('clave')
             ->get()
             ->map(function (Materia $materia) {
@@ -103,8 +114,6 @@ Route::name('api.')->group(function () {
 
         if ($request->exists('selected')) {
             $query->whereIn('id', $request->input('selected', []));
-        } elseif (!$request->filled('search')) {
-            $query->limit(10);
         }
 
         $grupos = $query->orderBy('id')->get()->map(function (Grupo $grupo) {
