@@ -108,14 +108,27 @@ class User extends Authenticatable
      */
     public function es($rol): bool
     {
+        // Accept a single enum instance
+        if ($rol instanceof UserRoles) {
+            return $this->rol === $rol;
+        }
+
+        // Accept a string role name
         if (is_string($rol)) {
             return $this->rol === UserRoles::es($rol);
         }
 
+        // Accept arrays of mixed strings and enum instances
         if (is_array($rol)) {
             foreach ($rol as $r) {
-                if ($this->rol === UserRoles::es($r)) {
-                    return true;
+                if ($r instanceof UserRoles) {
+                    if ($this->rol === $r) {
+                        return true;
+                    }
+                } else {
+                    if ($this->rol === UserRoles::es($r)) {
+                        return true;
+                    }
                 }
             }
         }
