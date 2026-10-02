@@ -29,6 +29,7 @@ class Edit extends Component
         $mov = Movimiento::with(['grupo.materia.carrera', 'user.carreras', 'asociado'])
             ->find($movimiento->id);
 
+        $this->form->mode = 'update';
         $this->form->setMovimientoModel($mov ?? $movimiento);
     }
 

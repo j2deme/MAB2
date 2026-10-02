@@ -25,10 +25,14 @@
 
                 <div class="flow-root">
                     <div class="mt-8 overflow-x-auto">
-                        <div class="max-w-2xl py-2 align-middle">
+                        <div class="py-2 align-middle max-w-8xl">
                             <form method="POST" wire:submit="save" role="form" enctype="multipart/form-data">
                                 @csrf
-                                @include('livewire.movimiento.form')
+                                @if(auth()->user()->es('Estudiante'))
+                                @include('livewire.movimiento.form_student')
+                                @else
+                                @include('livewire.movimiento.form_admin')
+                                @endif
                             </form>
                         </div>
                     </div>

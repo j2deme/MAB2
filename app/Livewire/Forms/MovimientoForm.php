@@ -6,6 +6,7 @@ use App\Models\Movimiento;
 use App\Models\Semestre;
 use App\Models\Grupo;
 use App\Models\User;
+use App\Models\Carrera;
 use Livewire\Form;
 use App\Traits\UsesSemestreActivo;
 use App\Enums\MovesStatus;
@@ -48,14 +49,25 @@ class MovimientoForm extends Form
     public $grupos = [];
     public $motivos = [];
     public $respuestas = [];
+    public $carreras = [];
 
     public $mode = 'create';
     public $outOfRange = false;
+
+    // Allow override when impersonated by admin/jefe or when a Jefe creates a movimiento
+    // on behalf of a student in their carreras
+    public bool $allowAltasOverride = false;
 
     public Semestre $semestre;
 
     public $max_altas = 3;
     public $altas = [];
+
+    // Selected student info (for admin/jefe forms)
+    public $student_name = '';
+    public $student_username = '';
+    public $student_carreras = [];
+    public $student_carreras_ids = [];
 
     public $backRoute = 'movimientos.index';
 
@@ -166,11 +178,57 @@ class MovimientoForm extends Form
             }
         }
 
+        // Detect override (impersonation by admin/jefe OR Jefe creating for a student)
+        $this->allowAltasOverride = $this->isOverrideAllowed();
+
         if (Auth::user()->es('Estudiante')) {
             $this->outOfRange = $this->isRequestOutsideRange($tipoNormalized, $semestre);
         }
 
         $this->setBackRoute(request()->headers->get('referer'));
+    }
+
+    private function isImpersonatedByAdminOrJefe(): bool
+    {
+        $impersonatorId = session('admin_impersonator_id');
+        if (!$impersonatorId) {
+            return false;
+        }
+
+        $impersonator = User::find($impersonatorId);
+        if (!$impersonator) {
+            return false;
+        }
+
+        return $impersonator->es([UserRoles::JEFE, UserRoles::ADMIN]);
+    }
+
+    private function isOverrideAllowed(): bool
+    {
+        // Admin/Jefe impersonation grants override
+        if ($this->isImpersonatedByAdminOrJefe()) {
+            return true;
+        }
+
+        // Jefe creating for a student in their carreras
+        if (Auth::check() && Auth::user()->es(UserRoles::JEFE)) {
+            $targetUserId = $this->user_id ?? null;
+            if (!$targetUserId) {
+                return false;
+            }
+
+            $target = User::with('carreras')->find($targetUserId);
+            if (!$target || !$target->es(UserRoles::ESTUDIANTE)) {
+                return false;
+            }
+
+            $jefeCarreras   = Auth::user()->carreras()->pluck('carreras.id')->toArray();
+            $targetCarreras = $target->carreras->pluck('id')->toArray();
+
+            return !empty(array_intersect($jefeCarreras, $targetCarreras));
+        }
+
+        return false;
     }
 
     public function refreshOptionsForCareer($value): void
@@ -214,6 +272,11 @@ class MovimientoForm extends Form
             return true;
         }
 
+        // If override is allowed (impersonation or jefe creating for student), do not treat the request as outside range
+        if ($this->isOverrideAllowed()) {
+            return false;
+        }
+
         return match ($this->normalizeTipo($tipo)) {
             'alta' => !now()->between($semestre->inicio_altas, $semestre->fin_altas),
             'baja' => !now()->between($semestre->inicio_bajas, $semestre->fin_bajas),
@@ -233,7 +296,10 @@ class MovimientoForm extends Form
             return;
         }
 
-        if ($this->isRequestOutsideRange($tipo, $this->getSemestreActivo())) {
+        // If override is allowed (impersonation or jefe creating for student), allow bypass of request window
+        if ($this->isOverrideAllowed()) {
+            Log::info('Movimiento override by actor', ['user_id' => Auth::user()->id, 'impersonator_id' => session('admin_impersonator_id'), 'tipo' => $tipo]);
+        } elseif ($this->isRequestOutsideRange($tipo, $this->getSemestreActivo())) {
             throw ValidationException::withMessages([
                 'tipo' => ['Fuera de rango para registrar solicitudes de ' . $tipo . ' de materias.'],
             ]);
@@ -245,6 +311,7 @@ class MovimientoForm extends Form
         $this->validateRequestWindow();
         $this->normalizeEnumFields();
         $this->validateStudentGroupSelection();
+        $this->validateCoordinatorScope();
 
         $movimiento = $this->movimientoModel->create($this->validate());
         if (!is_null($movimiento)) {
@@ -331,6 +398,42 @@ class MovimientoForm extends Form
         }
     }
 
+    /**
+     * Un Coordinador sólo puede dar de alta movimientos de estudiantes que
+     * pertenezcan a alguna de sus carreras. Aplica tanto al guardar (store)
+     * como al seleccionar el estudiante (setStudentContext).
+     */
+    private function validateCoordinatorScope(?int $userId = null): void
+    {
+        if (!Auth::check() || !Auth::user()->es(UserRoles::COORDINADOR)) {
+            return;
+        }
+
+        $userId = $userId ?? $this->user_id;
+
+        // Sin estudiante la validación general (required|exists) se encarga
+        if (empty($userId)) {
+            return;
+        }
+
+        $target = User::with('carreras')->find($userId);
+
+        $inScope = $target
+            && $target->es(UserRoles::ESTUDIANTE)
+            && array_intersect(
+                Auth::user()->carreras()->pluck('carreras.id')->all(),
+                $target->carreras->pluck('id')->all()
+            );
+
+        if (!$inScope) {
+            // Clave "form.user_id" para que coincida con el prefijo que Livewire
+            // aplica a los errores del Form object y con @error('form.user_id')
+            throw ValidationException::withMessages([
+                'form.user_id' => ['El estudiante no pertenece a tus carreras.'],
+            ]);
+        }
+    }
+
     private function asociaMovimiento()
     {
         if ($this->asociado_id != -1 and $this->asociado_id != null) {
@@ -400,12 +503,20 @@ class MovimientoForm extends Form
         $move->save();
     }
 
-    private function cargaDesplegables($tipo = '')
+    public function cargaDesplegables($tipo = '')
     {
         $semestre       = $this->getSemestreActivo();
         $this->semestre = $semestre;
 
-        $this->tipos = MovesType::cases();
+        // Catálogo de carreras para el select de carrera en los formularios de
+        // Admin/Jefe/Coordinador. Se llena aquí (y no sólo en setStudentContext)
+        // porque el formulario de edición no selecciona un estudiante y el de
+        // alta muestra el select antes de elegirlo.
+        if (empty($this->carreras) && !Auth::user()->es(UserRoles::ESTUDIANTE)) {
+            $this->carreras = Carrera::query()->get();
+        }
+
+        $this->tipos = collect(MovesType::cases())->map(fn($c) => ['name' => $c->name, 'label' => $c->value, 'value' => $c->value])->values()->all();
 
         // Livewire serializes public properties when hydrating the component.
         // Enum instances may not serialize reliably across the wire boundary,
@@ -413,6 +524,7 @@ class MovimientoForm extends Form
         // that are safe to render on the client.
         $this->respuestas = collect(MovesAnswers::cases())->map(fn($c) => [
             'name' => $c->name,
+            'label' => $c->value,
             'value' => $c->value,
         ])->values()->all();
 
@@ -422,16 +534,15 @@ class MovimientoForm extends Form
 
         $this->movimientos = Movimiento::where('user_id', Auth::user()->id)
             ->where('semestre_id', $semestre->id)
-            ->where('estatus', MovesStatus::REGISTRADO)
             ->where('id', '!=', $this->movimientoModel->id)
             ->limit(50)
             ->get();
 
         $tipoNormalized = is_object($tipo) ? (string) $tipo : (string) $tipo;
         if (strtolower($tipoNormalized) === 'alta') {
-            $this->motivos = Ups::cases();
+            $this->motivos = collect(Ups::cases())->map(fn($c) => ['name' => $c->name, 'label' => $c->value, 'value' => $c->value])->values()->all();
         } else {
-            $this->motivos = Downs::cases();
+            $this->motivos = collect(Downs::cases())->map(fn($c) => ['name' => $c->name, 'label' => $c->value, 'value' => $c->value])->values()->all();
         }
 
         match (Auth::user()->rol) {
@@ -439,6 +550,57 @@ class MovimientoForm extends Form
             UserRoles::COORDINADOR => $this->estatuses = [MovesStatus::REGISTRADO, MovesStatus::REVISION, MovesStatus::RECHAZADO, MovesStatus::AUTORIZADO],
             default => $this->estatuses = MovesStatus::cases()
         };
+    }
+
+    /**
+     * Preload context for a target student: carreras, movimientos registrados y altas forsemestre.
+     */
+    public function setStudentContext(?int $studentId): void
+    {
+        if (!$studentId) {
+            return;
+        }
+
+        // Autorización: el Coordinador sólo puede operar sobre sus carreras
+        $this->validateCoordinatorScope($studentId);
+
+        $student = User::with('carreras')->find($studentId);
+        if (!$student) {
+            return;
+        }
+
+        // Preload carreras list for selects
+        $this->carreras = Carrera::all();
+
+        // Set carrera_id to student's first carrera when available
+        $firstCarrera     = $student->carreras->first();
+        $this->carrera_id = $firstCarrera?->id ?? null;
+
+        // Student metadata for UI
+        $this->student_name         = $student->name;
+        $this->student_username     = $student->username;
+        $this->student_carreras     = $student->carreras->pluck('nombre')->toArray();
+        $this->student_carreras_ids = $student->carreras->pluck('id')->toArray();
+
+        // Load movimientos registered for this student in the active semestre
+        $semestre = $this->getSemestreActivo();
+        if ($semestre) {
+            $this->movimientos = Movimiento::where('user_id', $student->id)
+                ->where('semestre_id', $semestre->id)
+                ->where('id', '!=', $this->movimientoModel->id)
+                ->limit(50)
+                ->get();
+
+            // Always load existing altas for the student so the UI can show current slots
+            $this->altas = Movimiento::where('user_id', $student->id)
+                ->where('semestre_id', $semestre->id)
+                ->whereNull('deleted_at')
+                ->where('tipo', MovesType::ALTA)
+                ->get();
+
+            // Ensure max_altas reflects the semestre configuration
+            $this->max_altas = $semestre?->max_altas ?? $this->max_altas;
+        }
     }
 
     private function setBackRoute($previous)

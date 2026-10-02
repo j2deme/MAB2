@@ -7,6 +7,7 @@ use App\Models\Semestre;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -147,9 +148,24 @@ Route::name('api.')->group(function () {
     Route::get('/estudiantes', function (Request $request) {
         $request->headers->set('Content-Type', 'application/json');
 
+        $user = Auth::user();
+
+        // Corre con middleware web para que exista sesión y se pueda filtrar por rol.
+        if (!$user) {
+            return response()->json([]);
+        }
+
         return User::query()
             ->where('rol', \App\Enums\UserRoles::ESTUDIANTE)
             ->select('id', 'name', 'username')
+            // Un Coordinador sólo puede consultar estudiantes de sus carreras
+            ->when(
+                $user->es(\App\Enums\UserRoles::COORDINADOR),
+                fn(Builder $query) => $query->whereHas(
+                    'carreras',
+                    fn(Builder $q) => $q->whereIn('carreras.id', $user->carreras()->pluck('carreras.id'))
+                )
+            )
             ->when(
                 $request->search,
                 fn(Builder $query) => $query
@@ -162,7 +178,7 @@ Route::name('api.')->group(function () {
             )
             ->orderBy('username')
             ->get();
-    })->name('estudiantes.index');
+    })->middleware('web')->name('estudiantes.index');
 
     // Ruta unificada para validar/obtener datos del estudiante (GET o POST)
     Route::match(['get', 'post'], '/validate/student', function (Request $request) {
