@@ -87,9 +87,15 @@ require __DIR__ . '/auth.php';
 
 // Stop impersonation route
 Route::post('/impersonate/stop', function () {
+    // If we don't have an impersonator id in session, the original admin session
+    // may have expired. Instead of returning 403, log out the current (impersonated)
+    // user and redirect to the login page with a friendly message.
     if (!session()->has('admin_impersonator_id')) {
-        abort(403);
+        session()->forget(['admin_impersonating']);
+        \Illuminate\Support\Facades\Auth::logout();
+        return redirect()->route('login')->with('warning', 'La sesión del administrador expiró. Inicia sesión nuevamente.');
     }
+
     $adminId = session('admin_impersonator_id');
     session()->forget(['admin_impersonator_id', 'admin_impersonating']);
     \Illuminate\Support\Facades\Auth::loginUsingId($adminId);

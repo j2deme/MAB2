@@ -46,10 +46,18 @@ final class UsersTable extends PowerGridComponent
     public function datasource(): Builder
     {
         /** @var \Illuminate\Database\Eloquent\Builder $query */
-        $query = User::query()
-            ->with('carreras')
+        $query = User::query()->with('carreras')
             ->orderBy('rol')
             ->orderBy('username');
+
+        // If current user is a Coordinator, restrict the listing to students
+        // that belong to the careers the coordinator manages.
+        if (Auth::check() && Auth::user()->es('Coordinador')) {
+            $careerIds = Auth::user()->carreras()->pluck('carreras.id')->toArray();
+
+            $query->where('rol', UserRoles::ESTUDIANTE->value)
+                ->whereHas('carreras', fn(Builder $q) => $q->whereIn('carreras.id', $careerIds));
+        }
 
         return $query;
     }
@@ -147,6 +155,12 @@ final class UsersTable extends PowerGridComponent
     #[\Livewire\Attributes\On('delete')]
     public function delete($rowId): void
     {
+        // Only Administrador and Jefe can delete users
+        if (!Auth::user() || !Auth::user()->es(['Administrador', 'Jefe'])) {
+            $this->notification()->error('No autorizado', 'Acción permitida solo para administradores o jefes.');
+            return;
+        }
+
         $row = User::query()->find($rowId);
         // Si es el usuario actual, no permitir eliminar
         // if ($rowId == Auth::user()->id) {
@@ -182,6 +196,16 @@ final class UsersTable extends PowerGridComponent
         // TODO: Agrega botón para inscribir si es estudiante
     }
 
+    /**
+     * Abre el modal de cambio de contraseña para un estudiante.
+     * Se despacha el evento desde el servidor porque Livewire v3 ya no
+     * soporta $emit() en el lado del cliente.
+     */
+    public function openCoordinatorPasswordModal($userId): void
+    {
+        $this->dispatch('openCoordinatorPasswordModal', $userId);
+    }
+
     #[\Livewire\Attributes\On('impersonate')]
     public function impersonate($userId)
     {
@@ -201,10 +225,13 @@ final class UsersTable extends PowerGridComponent
             return;
         }
 
-        session(['admin_impersonator_id' => Auth::id()]);
-        session(['admin_impersonating' => true]);
+        $adminId = Auth::id();
 
         FacadesAuth::loginUsingId($user->id);
+
+        // Store the impersonator id after loginUsingId to avoid session regeneration
+        // wiping previously set session keys when the guard regenerates the session.
+        session(['admin_impersonator_id' => $adminId, 'admin_impersonating' => true]);
 
         return redirect()->route('dashboard');
     }

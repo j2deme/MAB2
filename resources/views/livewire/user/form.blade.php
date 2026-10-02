@@ -1,5 +1,26 @@
 <div class="space-y-6">
     <x-errors />
+    @if (auth()->user()->es('Coordinador') && $form->mode === 'update' && isset($form->userModel) &&
+    $form->userModel->es('Estudiante'))
+    <div class="p-4 bg-gray-50 rounded">
+        <h3 class="text-sm font-medium">Datos del estudiante</h3>
+        <div class="mt-2 text-sm text-gray-700">
+            <div><strong>Nombre:</strong> {{ $form->userModel->name }}</div>
+            <div><strong>Usuario:</strong> {{ $form->userModel->username }}</div>
+            <div><strong>Carreras:</strong> {{ $form->userModel->carreras->pluck('nombre')->join(', ') }}</div>
+        </div>
+
+        <div class="mt-4">
+            <x-password wire:model.defer="newPassword" id="newPassword" name="newPassword"
+                :label="__('Nueva contraseña')" placeholder="Nueva contraseña" autocomplete="off" />
+        </div>
+
+        <div class="mt-4 flex items-center gap-4">
+            <x-primary-button wire:click.prevent="coordinatorResetPassword">Cambiar contraseña</x-primary-button>
+            <x-link label="Cancelar" :href="route('users.index')" />
+        </div>
+    </div>
+    @else
     <div>
         <x-input wire:model.defer='form.name' id='name' name='name' class='' :label="__('Name')"
             placeholder='Nombre completo' />
@@ -64,3 +85,4 @@
         @endif
     </div>
 </div>
+@endif

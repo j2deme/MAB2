@@ -13,6 +13,7 @@
                         <h1 class="text-base font-semibold leading-6 text-gray-900">{{ __('Usuarios') }}</h1>
                     </div>
                     <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+                        @if(Auth::user()->es(['Administrador','Jefe']))
                         <x-button primary :href="route('users.create')">
                             <x-icon name="plus" class="w-4 h-4 mr-2" />
                             {{ __('Add') }} {{ __('usuarios') }}
@@ -21,6 +22,7 @@
                             <x-icon name="upload" class="w-4 h-4 mr-2" />
                             Subir
                         </x-button>
+                        @endif
                     </div>
                 </div>
 

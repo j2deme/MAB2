@@ -20,6 +20,7 @@
 <body class="font-sans antialiased">
     <x-notifications />
     <x-dialog />
+    <livewire:users.coordinator-password-modal />
     @if (session()->has('wireui:notification') and false)
     <script>
         Wireui.hook('notifications:load', () => {
