@@ -3,7 +3,6 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\DB;
 
 return new class extends Migration {
   /**
@@ -204,10 +203,13 @@ return new class extends Migration {
 
   /**
    * Verifica si un índice ya existe en una tabla.
+   *
+   * Se usa Schema::hasIndex() (multi-driver) y no el "SHOW INDEXES",
+   * que es SQL exclusivo de MySQL y rompía esta migración en SQLite.
+   * En MySQL el resultado es exactamente el mismo.
    */
   private function indexExists(string $table, string $indexName): bool
   {
-    $indexes = DB::select("SHOW INDEXES FROM {$table} WHERE Key_name = ?", [$indexName]);
-    return count($indexes) > 0;
+    return Schema::hasIndex($table, $indexName);
   }
 };
