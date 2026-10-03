@@ -34,7 +34,7 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
 RUN apt-get install -y nodejs
 
-# Instalar dependencias PHP (incluye dev)
+# Instalar dependencias PHP
 RUN composer install
 
 # Instalar dependencias JS
@@ -57,14 +57,14 @@ RUN mkdir -p storage bootstrap/cache \
 # 1. Deshabilitar funciones peligrosas de PHP en todo el contenedor
 RUN echo "disable_functions = exec,passthru,shell_exec,system,proc_open,popen,curl_multi_exec,parse_ini_file,show_source" > /usr/local/etc/php/conf.d/hardening.ini
 
-# 2. Configurar Apache para prohibir la ejecución de archivos PHP en la carpeta storage
-RUN echo '<Directory "/var/www/html/storage">\n\
+# 2. Configurar Apache para prohibir la ejecución de archivos PHP en la carpeta storage (Uso de printf para saltos de línea limpios)
+RUN printf '<Directory "/var/www/html/storage">\n\
     AllowOverride None\n\
     Require all denied\n\
-    <FilesMatch "\.(php|phtml|phar)$">\n\
+    <FilesMatch "\\.(php|phtml|phar)$">\n\
     Require all denied\n\
     </FilesMatch>\n\
-    </Directory>' > /etc/apache2/conf-available/block-storage-execution.conf \
+    </Directory>\n' > /etc/apache2/conf-available/block-storage-execution.conf \
     && a2enconf block-storage-execution
 
 # Entrypoint
