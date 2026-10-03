@@ -26,6 +26,11 @@ services:
             retries: 10
         networks:
             - app-network
+        logging:
+            driver: "json-file"
+            options:
+                max-size: "10m"   # Máximo 10 MB por archivo de log
+                max-file: "3"     # Conservar solo los últimos 3 archivos
 
 networks:
     app-network:
