@@ -256,6 +256,12 @@ Route::name('api.')->group(function () {
         }
     })->name('estudiantes.validate');
 
+    Route::post('/password/forgot', [\App\Http\Controllers\Api\StudentPasswordResetController::class, 'forgot'])
+        ->middleware('throttle:password-forgot')->name('password.forgot');
+
+    Route::post('/password/reset', [\App\Http\Controllers\Api\StudentPasswordResetController::class, 'reset'])
+        ->middleware('throttle:password-reset')->name('password.reset');
+
     Route::fallback(function () {
         return response()->json([
             'success' => false,
