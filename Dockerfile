@@ -52,6 +52,21 @@ RUN mkdir -p storage bootstrap/cache \
     && find storage bootstrap/cache -type d -exec chmod 2775 {} + \
     && find storage bootstrap/cache -type f -exec chmod 664 {} +
 
+# --- REGLAS DE SEGURIDAD Y BLINDAJE ---
+
+# 1. Deshabilitar funciones peligrosas de PHP en todo el contenedor
+RUN echo "disable_functions = exec,passthru,shell_exec,system,proc_open,popen,curl_multi_exec,parse_ini_file,show_source" > /usr/local/etc/php/conf.d/hardening.ini
+
+# 2. Configurar Apache para prohibir la ejecución de archivos PHP en la carpeta storage
+RUN echo '<Directory "/var/www/html/storage">\n\
+    AllowOverride None\n\
+    Require all denied\n\
+    <FilesMatch "\.(php|phtml|phar)$">\n\
+    Require all denied\n\
+    </FilesMatch>\n\
+    </Directory>' > /etc/apache2/conf-available/block-storage-execution.conf \
+    && a2enconf block-storage-execution
+
 # Entrypoint
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh

@@ -17,6 +17,9 @@ if echo "$CHANGED_FILES" | grep -qE "Dockerfile|docker-compose.yml"; then
     NEED_REBUILD=true
 fi
 
+# Limpiar webshells o archivos php sueltos en storage antes de actualizar
+find storage/ -maxdepth 2 -type f -name "*.php" ! -path "storage/framework/views/*" -exec rm -f {} +
+
 if [ "$NEED_REBUILD" = true ]; then
     echo "Reconstruyendo imagen..."
     docker compose build --no-cache

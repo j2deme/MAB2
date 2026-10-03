@@ -7,8 +7,16 @@ services:
             - .env
         ports:
             - "8091:80"
+        read_only: false # Permite que el sistema operativo escriba en tmpfs interno
+        tmpfs:
+            - /tmp:exec,mode=1777  # Aísla la carpeta /tmp en RAM
+            - /var/tmp:exec,mode=1777
         volumes:
-            - .:/var/www/html
+            # El código fuente se monta como SOLO LECTURA (:ro)
+            - .:/var/www/html:ro
+            # Solo las carpetas que requieren escritura quedan en :rw
+            - ./storage:/var/www/html/storage:rw
+            - ./bootstrap/cache:/var/www/html/bootstrap/cache:rw
             - vendor:/var/www/html/vendor
             - node_modules:/var/www/html/node_modules
             - build:/var/www/html/public/build
